@@ -23,8 +23,37 @@ class AccountTests(TestCase):
         response = self.client.get(reverse('accounts:login'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Sign in to your application workspace")
+        self.assertContains(response, "Continue with Google")
 
     def test_register_page_renders(self):
         response = self.client.get(reverse('accounts:register'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Start your postgraduate journey")
+        self.assertContains(response, "Sign up with Google")
+
+    def test_google_oauth_service_provisioning(self):
+        from .oauth import GoogleOAuthService
+        oauth = GoogleOAuthService()
+        google_info = {
+            'email': 'new.scholar@gmail.com',
+            'given_name': 'Amara',
+            'family_name': 'Eze',
+            'email_verified': True
+        }
+        user, created = oauth.get_or_create_user(google_info)
+        self.assertTrue(created)
+        self.assertEqual(user.email, 'new.scholar@gmail.com')
+        self.assertEqual(user.first_name, 'Amara')
+        self.assertTrue(user.is_email_verified)
+        self.assertTrue(hasattr(user, 'applicant_profile'))
+
+        # Existing user test
+        user2, created2 = oauth.get_or_create_user(google_info)
+        self.assertFalse(created2)
+        self.assertEqual(user2.id, user.id)
+
+    def test_google_login_sandbox_flow(self):
+        response = self.client.get(reverse('accounts:google_login') + '?sandbox=1&email=test.google@example.com&name=Test+Google')
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(User.objects.filter(email='test.google@example.com').exists())
+

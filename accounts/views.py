@@ -57,10 +57,107 @@ def login_view(request):
 
     return render(request, 'accounts/login.html', {'form': form, 'hide_app_shell': True})
 
+from django.urls import reverse
+from .oauth import GoogleOAuthService
+
+def google_login_view(request):
+    """
+    Redirects the applicant to Google's OAuth2 consent screen.
+    If keys are not configured in development, provides a sandbox 1-click test flow.
+    """
+    if request.user.is_authenticated:
+        return redirect('dashboard:index')
+
+    oauth = GoogleOAuthService()
+    redirect_uri = request.build_absolute_uri(reverse('accounts:google_callback'))
+
+    if not oauth.is_configured:
+        # Development Sandbox mode when client ID is not configured in .env
+        if request.GET.get('sandbox') == '1':
+            demo_email = request.GET.get('email', 'google.applicant@example.com')
+            first_name = request.GET.get('name', 'Google Applicant').split()[0]
+            last_name = request.GET.get('name', 'Google Applicant').split()[-1]
+            user, created = oauth.get_or_create_user({
+                'email': demo_email,
+                'given_name': first_name,
+                'family_name': last_name,
+                'email_verified': True
+            })
+            login(request, user)
+            if created:
+                messages.success(request, f"Welcome to ScholarFlow, {user.first_name}! (Google Sign-In Demo)")
+                return redirect('accounts:onboarding')
+            messages.success(request, f"Signed in with Google as {user.email} (Demo Mode)")
+            return redirect('dashboard:index')
+
+        context = {
+            'hide_app_shell': True,
+            'redirect_uri': redirect_uri,
+        }
+        return render(request, 'accounts/google_setup_notice.html', context)
+
+    auth_url = oauth.get_authorization_url(request, redirect_uri)
+    return redirect(auth_url)
+
+
+def google_callback_view(request):
+    """
+    Handles the Google OAuth2 callback, verifies state, exchanges code for user profile,
+    provisions the user, and initiates the session.
+    """
+    if request.user.is_authenticated:
+        return redirect('dashboard:index')
+
+    error = request.GET.get('error')
+    if error:
+        messages.error(request, f"Google authentication was cancelled or failed: {error}")
+        return redirect('accounts:login')
+
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+    expected_state = request.session.get('google_oauth_state')
+
+    if not code or not state or state != expected_state:
+        messages.error(request, "Google authentication session validation failed. Please try again.")
+        return redirect('accounts:login')
+
+    # Clear state from session
+    request.session.pop('google_oauth_state', None)
+
+    oauth = GoogleOAuthService()
+    redirect_uri = request.build_absolute_uri(reverse('accounts:google_callback'))
+    
+    tokens = oauth.exchange_code_for_tokens(code, redirect_uri)
+    if not tokens or 'access_token' not in tokens:
+        messages.error(request, "Failed to retrieve access token from Google. Please verify credentials.")
+        return redirect('accounts:login')
+
+    google_info = oauth.fetch_user_info(tokens['access_token'])
+    if not google_info or not google_info.get('email'):
+        messages.error(request, "Could not retrieve your verified Google email address.")
+        return redirect('accounts:login')
+
+    try:
+        user, created = oauth.get_or_create_user(google_info)
+        login(request, user)
+        if created:
+            messages.success(request, f"Welcome to ScholarFlow, {user.first_name}! Your Google account is verified.")
+            return redirect('accounts:onboarding')
+        else:
+            messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+            if not user.onboarding_completed:
+                return redirect('accounts:onboarding')
+            return redirect('dashboard:index')
+    except Exception as e:
+        messages.error(request, f"Failed to authenticate user: {str(e)}")
+        return redirect('accounts:login')
+
+
 def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect('accounts:landing')
+
 
 from documents.models import Document
 from applicants.models import Employment, Project, Achievement

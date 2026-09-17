@@ -29,10 +29,11 @@ class AIService:
     def _log_action(self, user, action_type: str, summary: str, input_ref: str = "", output_summary: str = "", status: str = "success"):
         try:
             if user and user.is_authenticated:
+                model_name = getattr(settings, 'GEMINI_MODEL', 'gemini-3.6-flash')
                 AIAuditLog.objects.create(
                     user=user,
                     action_type=action_type,
-                    provider='gemini-2.5-flash' if self.gemini_key else 'deterministic-rules',
+                    provider=model_name if self.gemini_key else 'deterministic-rules',
                     summary=summary,
                     input_ref=input_ref,
                     output_summary=output_summary,

@@ -157,6 +157,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 # AI Configuration
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.6-flash')
 
 # Google OAuth2 Authentication
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')

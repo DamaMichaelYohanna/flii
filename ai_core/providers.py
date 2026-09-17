@@ -18,9 +18,12 @@ class BaseAIProvider(ABC):
         pass
 
 
+from django.conf import settings
+
 class GeminiProvider(BaseAIProvider):
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.environ.get('GEMINI_API_KEY', '')
+        self.api_key = api_key or getattr(settings, 'GEMINI_API_KEY', '') or os.environ.get('GEMINI_API_KEY', '')
+        self.model_name = getattr(settings, 'GEMINI_MODEL', '') or os.environ.get('GEMINI_MODEL', 'gemini-3.6-flash')
         self.client = None
         if self.api_key:
             try:
@@ -37,7 +40,7 @@ class GeminiProvider(BaseAIProvider):
         
         try:
             response = self.client.models.generate_content(
-                model='gemini-2.5-flash',
+                model=self.model_name,
                 contents=full_prompt,
                 config={
                     'response_mime_type': 'application/json',
@@ -55,13 +58,14 @@ class GeminiProvider(BaseAIProvider):
             raise ValueError("Gemini API key is not configured.")
         try:
             response = self.client.models.generate_content(
-                model='gemini-2.5-flash',
+                model=self.model_name,
                 contents=f"{system_prompt}\n\n{user_prompt}"
             )
             return response.text
         except Exception as e:
             logger.error(f"Gemini text generation failed: {e}")
             raise e
+
 
 
 class DeterministicSafeProvider(BaseAIProvider):

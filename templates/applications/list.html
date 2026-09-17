@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Application Workspaces | ScholarFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Application Workspaces</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Manage your active scholarship applications, track required documents, and draft responses.</p>
+        </div>
+        <a href="{% url 'opportunities:list' %}" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-2 self-start">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Find New Opportunities
+        </a>
+    </div>
+
+    {% if applications %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for app in applications %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:border-teal-300 transition-all space-y-4">
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                        {{ app.get_status_display }}
+                    </span>
+                    <span class="text-xs font-medium text-slate-500">{{ app.opportunity.country }}</span>
+                </div>
+
+                <h3 class="font-bold text-slate-900 text-base line-clamp-2">
+                    <a href="{% url 'applications:detail' app.id %}" class="hover:text-teal-600">{{ app.opportunity.title }}</a>
+                </h3>
+
+                <p class="text-xs text-slate-500">{{ app.opportunity.provider }}</p>
+
+                <!-- Progress Bar -->
+                <div class="pt-2">
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="text-slate-600">Readiness</span>
+                        <span class="font-bold text-teal-700">{{ app.progress_percentage }}%</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-teal-500 rounded-full" style="width: {{ app.progress_percentage }}%"></div>
+                    </div>
+                </div>
+
+                <div class="text-[11px] text-slate-500 flex items-center justify-between pt-1">
+                    <span>{{ app.requirements.count }} checklist items</span>
+                    <span>Due: {{ app.opportunity.deadline|date:"M d, Y" }}</span>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-600">{{ app.opportunity.days_remaining }} days left</span>
+                <a href="{% url 'applications:detail' app.id %}" class="px-4 py-2 bg-slate-900 hover:bg-teal-600 text-white font-semibold text-xs rounded-xl transition-colors">
+                    Open Workspace →
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+        <i data-lucide="folder-plus" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
+        <h3 class="text-base font-bold text-slate-900">No active applications yet</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Explore verified scholarships and click 'Start Application' to open your first dedicated workspace.</p>
+        <a href="{% url 'opportunities:list' %}" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-sm">
+            <i data-lucide="compass" class="w-4 h-4"></i>
+            Discover Scholarships
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

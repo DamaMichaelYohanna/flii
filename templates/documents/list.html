@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Document Vault | ScholarFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Document Vault</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Upload core academic documents once and link them across multiple scholarship workspaces.</p>
+        </div>
+        <button onclick="document.getElementById('uploadModal').classList.remove('hidden')" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2 self-start">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            Upload New Document
+        </button>
+    </div>
+
+    <!-- Documents List Table / Cards -->
+    {% if documents %}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+        {% for doc in documents %}
+        <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 flex-shrink-0">
+                    <i data-lucide="file-text" class="w-5 h-5 text-teal-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">{{ doc.title }}</h3>
+                    <div class="text-xs text-slate-500 flex flex-wrap items-center gap-2 mt-0.5">
+                        <span class="font-medium text-slate-700">{{ doc.get_document_type_display }}</span>
+                        <span>•</span>
+                        <span>{{ doc.formatted_size }}</span>
+                        <span>•</span>
+                        <span>Uploaded {{ doc.upload_date|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 self-end sm:self-center">
+                <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    {{ doc.get_verification_status_display }}
+                </span>
+
+                {% if doc.file %}
+                <a href="{% url 'documents:download' doc.id %}" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-teal-700 transition-colors" title="Download">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </a>
+                {% endif %}
+
+                <form method="POST" action="{% url 'documents:delete' doc.id %}" onsubmit="return confirm('Are you sure you want to remove this document from your vault?');">
+                    {% csrf_token %}
+                    <button type="submit" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+        <i data-lucide="file-up" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
+        <h3 class="text-base font-bold text-slate-900">Your Document Vault is empty</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Upload your academic CV, transcripts, degree certificates, and passport to easily attach them to application workspaces.</p>
+        <button onclick="document.getElementById('uploadModal').classList.remove('hidden')" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-sm">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            Upload Document
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Upload Modal Dialog -->
+    <div id="uploadModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900">Upload to Document Vault</h3>
+                <button onclick="document.getElementById('uploadModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url 'documents:list' %}" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Document Title</label>
+                    <input type="text" name="title" placeholder="e.g. Unilag Official Transcript" required class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Document Category</label>
+                    <select name="document_type" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500">
+                        {% for code, label in doc_types %}
+                        <option value="{{ code }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">File Attachment (PDF / PNG / JPG)</label>
+                    <input type="file" name="file" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Notes / Verification Details (Optional)</label>
+                    <textarea name="notes" rows="2" placeholder="e.g. Certified copy signed by University Registrar" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300"></textarea>
+                </div>
+
+                <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="document.getElementById('uploadModal').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm">Save & Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

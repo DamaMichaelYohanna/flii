@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Human-in-the-Loop Approvals | ScholarFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Human-in-the-Loop Approvals</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Consequential AI actions strictly require your explicit review and approval before execution.</p>
+        </div>
+        <span class="px-3 py-1 bg-amber-50 text-amber-800 rounded-lg text-xs font-bold border border-amber-200">
+            {{ pending_count }} Action{{ pending_count|pluralize }} Requiring Decision
+        </span>
+    </div>
+
+    <!-- Action items list -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+        {% if actions %}
+        {% for act in actions %}
+        <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+            <div class="flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 {% if act.status == 'pending' %}bg-amber-100 text-amber-800{% elif act.status == 'approved' %}bg-emerald-100 text-emerald-800{% else %}bg-slate-100 text-slate-600{% endif %}">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-sm font-bold text-slate-900">{{ act.title }}</h3>
+                        <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {% if act.status == 'pending' %}bg-amber-50 text-amber-800 border border-amber-200{% elif act.status == 'approved' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% else %}bg-rose-50 text-rose-800 border border-rose-200{% endif %}">
+                            {{ act.get_status_display }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl">{{ act.description }}</p>
+                    <div class="text-[11px] text-slate-400 mt-1">Created {{ act.created_at|date:"M d, Y H:i" }}</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 self-end sm:self-center">
+                {% if act.status == 'pending' %}
+                <a href="{% url 'agent_hub:action_detail' act.id %}" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors">
+                    Review & Decide →
+                </a>
+                {% else %}
+                <span class="text-xs font-semibold text-slate-500">Resolved {{ act.resolved_at|date:"M d, H:i" }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="p-12 text-center text-xs text-slate-500">
+            No agent action approval requests logged.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}ScholarFlow AI Agent Assistant{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">ScholarFlow AI Assistant</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Specialized autonomous assistant for opportunity discovery, eligibility checks, and application guidance.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="px-3 py-1 bg-teal-50 text-teal-800 rounded-full text-xs font-bold border border-teal-200 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
+                Tools Loaded & Grounded
+            </span>
+        </div>
+    </div>
+
+    <!-- Main Chat Workspace Card -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[650px] overflow-hidden">
+        <!-- Chat Messages Window -->
+        <div id="chatMessages" class="flex-1 p-6 overflow-y-auto space-y-5 bg-slate-50/50">
+            <!-- Initial Greeting Message -->
+            <div class="flex items-start gap-3 max-w-2xl">
+                <div class="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+                    <i data-lucide="bot" class="w-4 h-4"></i>
+                </div>
+                <div class="space-y-1">
+                    <div class="bg-white p-4 rounded-2xl rounded-tl-sm border border-slate-200 text-xs text-slate-800 leading-relaxed shadow-sm space-y-2">
+                        <p class="font-semibold text-slate-900">Hello, {{ user.first_name|default:user.username }}! I am your ScholarFlow Application Agent.</p>
+                        <p>I have access to your verified applicant profile, uploaded documents, and Story Bank records.</p>
+                        <div class="pt-2 border-t border-slate-100 font-medium text-slate-700">Try asking:</div>
+                        <ul class="space-y-1 text-slate-600 list-disc list-inside">
+                            <li>"Find fully funded MSc in Germany"</li>
+                            <li>"Check what documents I'm missing"</li>
+                            <li>"Submit my application package for review"</li>
+                        </ul>
+                    </div>
+                    <span class="text-[10px] text-slate-400 pl-1">ScholarFlow Agent • Grounded in Profile</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestion Chips Bar -->
+        <div class="px-6 py-2.5 bg-white border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs">
+            <span class="text-[11px] font-semibold text-slate-400 flex-shrink-0">Quick prompts:</span>
+            <button onclick="sendQuickPrompt('Find fully funded MSc in Germany')" class="px-3 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-slate-700 font-medium transition-colors flex-shrink-0">
+                🔍 Find funded MSc in Germany
+            </button>
+            <button onclick="sendQuickPrompt('Check what documents I am missing')" class="px-3 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-slate-700 font-medium transition-colors flex-shrink-0">
+                📄 Missing documents check
+            </button>
+            <button onclick="sendQuickPrompt('Submit my application package')" class="px-3 py-1 bg-slate-100 hover:bg-amber-50 hover:text-amber-800 rounded-lg text-slate-700 font-medium transition-colors flex-shrink-0">
+                🛡️ Test Human-in-the-Loop Action
+            </button>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="p-4 bg-white border-t border-slate-200">
+            <form id="chatForm" onsubmit="handleChatSubmit(event)" class="flex items-center gap-3">
+                <input type="text" id="chatInput" placeholder="Ask ScholarFlow agent anything (e.g. Find scholarships, check eligibility)..." required class="flex-1 px-4 py-3 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                <button type="submit" id="sendBtn" class="px-5 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2">
+                    <span>Send</span>
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function sendQuickPrompt(text) {
+    document.getElementById('chatInput').value = text;
+    document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+}
+
+async function handleChatSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    input.value = '';
+    const container = document.getElementById('chatMessages');
+
+    // Append User Bubble
+    const userBubble = document.createElement('div');
+    userBubble.className = 'flex items-start justify-end gap-3';
+    userBubble.innerHTML = `
+        <div class="bg-teal-600 text-white p-3.5 rounded-2xl rounded-tr-sm text-xs max-w-xl leading-relaxed shadow-sm font-medium">
+            ${msg}
+        </div>
+    `;
+    container.appendChild(userBubble);
+    container.scrollTop = container.scrollHeight;
+
+    // Append Loading Bubble
+    const loadingBubble = document.createElement('div');
+    loadingBubble.id = 'loadingMsg';
+    loadingBubble.className = 'flex items-start gap-3 max-w-2xl';
+    loadingBubble.innerHTML = `
+        <div class="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+        </div>
+        <div class="bg-white p-4 rounded-2xl rounded-tl-sm border border-slate-200 text-xs text-slate-500 italic shadow-sm flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
+            Executing agent tools & retrieving verified records...
+        </div>
+    `;
+    container.appendChild(loadingBubble);
+    container.scrollTop = container.scrollHeight;
+    lucide.createIcons();
+
+    // Call Backend AJAX
+    const formData = new FormData();
+    formData.append('message', msg);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    try {
+        const res = await fetch("{% url 'agent_hub:ajax_agent_message' %}", {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await res.json();
+        
+        loadingBubble.remove();
+
+        const agentBubble = document.createElement('div');
+        agentBubble.className = 'flex items-start gap-3 max-w-2xl';
+        agentBubble.innerHTML = `
+            <div class="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+            </div>
+            <div class="space-y-1">
+                <div class="bg-white p-4 rounded-2xl rounded-tl-sm border border-slate-200 text-xs text-slate-800 leading-relaxed shadow-sm space-y-2 whitespace-pre-line">
+                    ${data.response}
+                </div>
+                <div class="flex items-center gap-2 text-[10px] text-slate-400 pl-1">
+                    <span>Tool used: <strong class="text-teal-700">${data.tool_used || 'general'}</strong></span>
+                </div>
+            </div>
+        `;
+        container.appendChild(agentBubble);
+        container.scrollTop = container.scrollHeight;
+    } catch (err) {
+        loadingBubble.remove();
+        console.error("Chat error:", err);
+    } finally {
+        lucide.createIcons();
+    }
+}
+</script>
+{% endblock %}

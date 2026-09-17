@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks & Deadlines | ScholarFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Tasks & Deadline Command</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Track action items and upcoming application milestones across all workspaces.</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+            <span class="px-3 py-1 bg-amber-50 text-amber-800 rounded-lg font-bold border border-amber-200">{{ pending_count }} Pending</span>
+            <span class="px-3 py-1 bg-emerald-50 text-emerald-800 rounded-lg font-bold border border-emerald-200">{{ completed_count }} Completed</span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+        {% if tasks %}
+        {% for task in tasks %}
+        <div class="p-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-3">
+                <a href="{% url 'applications:toggle_task' task.id %}" class="p-1 rounded text-slate-400 hover:text-teal-600">
+                    <i data-lucide="{% if task.is_completed %}check-circle-2{% else %}circle{% endif %}" class="w-5 h-5 {% if task.is_completed %}text-emerald-600 fill-emerald-100{% endif %}"></i>
+                </a>
+                <div>
+                    <h3 class="text-sm font-semibold {% if task.is_completed %}line-through text-slate-400{% else %}text-slate-900{% endif %}">
+                        {{ task.title }}
+                    </h3>
+                    <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                        <a href="{% url 'applications:detail' task.application.id %}" class="text-teal-600 hover:underline">{{ task.application.opportunity.title }}</a>
+                        {% if task.due_date %}
+                        <span>•</span>
+                        <span>Due: {{ task.due_date|date:"M d, Y" }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if task.created_by_ai %}
+            <span class="text-[10px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">AI Created</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="p-12 text-center text-xs text-slate-500">
+            No checklist tasks recorded yet.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Story Bank (STAR Grounding) | ScholarFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Story Bank (STAR Method)</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Your personal repository of verified experiences. The AI references these to draft genuine essays without hallucination.</p>
+        </div>
+        <button onclick="document.getElementById('storyModal').classList.remove('hidden')" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2 self-start">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Add New Story
+        </button>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="flex flex-wrap items-center gap-2 text-xs">
+        <a href="{% url 'stories:list' %}" class="px-3 py-1.5 rounded-lg border font-semibold {% if not selected_category %}bg-slate-900 text-white border-slate-900{% else %}bg-white text-slate-700 border-slate-200 hover:bg-slate-50{% endif %}">
+            All Stories ({{ total_count }})
+        </a>
+        {% for cat_code, cat_name in categories %}
+        <a href="?category={{ cat_code }}" class="px-3 py-1.5 rounded-lg border font-semibold {% if selected_category == cat_code %}bg-slate-900 text-white border-slate-900{% else %}bg-white text-slate-700 border-slate-200 hover:bg-slate-50{% endif %}">
+            {{ cat_name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Stories List -->
+    {% if stories %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for story in stories %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4 hover:border-teal-300 transition-all">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-teal-50 text-teal-800 border border-teal-200">
+                        {{ story.get_category_display }}
+                    </span>
+                    <h3 class="font-bold text-base text-slate-900 mt-2">{{ story.title }}</h3>
+                </div>
+
+                <form method="POST" action="{% url 'stories:delete' story.id %}" onsubmit="return confirm('Delete this story from your Story Bank?');">
+                    {% csrf_token %}
+                    <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- STAR Breakdown Box -->
+            <div class="space-y-2 text-xs text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 divide-y divide-slate-200/60">
+                <div class="pb-2">
+                    <span class="font-bold text-slate-800">Situation:</span> {{ story.situation }}
+                </div>
+                <div class="py-2">
+                    <span class="font-bold text-slate-800">Challenge:</span> {{ story.challenge }}
+                </div>
+                <div class="py-2">
+                    <span class="font-bold text-slate-800">Action:</span> {{ story.action }}
+                </div>
+                <div class="py-2">
+                    <span class="font-bold text-emerald-800">Result & Metrics:</span> {{ story.result }}
+                </div>
+                <div class="pt-2">
+                    <span class="font-bold text-slate-800">Lesson Learned:</span> {{ story.lesson_learned }}
+                </div>
+            </div>
+
+            {% if story.skills_demonstrated %}
+            <div class="text-[11px] text-slate-500">
+                <span class="font-semibold text-slate-700">Demonstrated Skills:</span> {{ story.skills_demonstrated }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+        <i data-lucide="book-plus" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
+        <h3 class="text-base font-bold text-slate-900">Your Story Bank is empty</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Add real experiences (leadership, overcoming obstacles, community impact) using the STAR framework to power grounded AI drafting.</p>
+        <button onclick="document.getElementById('storyModal').classList.remove('hidden')" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-sm">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Add Your First Story
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Add Story Modal -->
+    <div id="storyModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900">Add Story to Grounding Bank</h3>
+                <button onclick="document.getElementById('storyModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url 'stories:list' %}" class="space-y-3 text-xs">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold uppercase text-slate-600 mb-1">Story Headline</label>
+                        <input type="text" name="title" placeholder="e.g. Scaling Edge ML on Budget Hardware" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-semibold uppercase text-slate-600 mb-1">Category</label>
+                        <select name="category" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                            {% for code, name in categories %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Situation (Context & Setting)</label>
+                    <textarea name="situation" rows="2" placeholder="Where and when did this happen? What was the context?" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Challenge (Specific Obstacle / Bottleneck)</label>
+                    <textarea name="challenge" rows="2" placeholder="What was the core difficulty or complication you faced?" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Action (Steps You Directly Led)</label>
+                    <textarea name="action" rows="2" placeholder="What concrete initiatives and actions did you take?" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Result & Quantifiable Impact</label>
+                    <textarea name="result" rows="2" placeholder="What was the measurable outcome or metric achieved?" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold uppercase text-slate-600 mb-1">Lesson Learned</label>
+                        <input type="text" name="lesson_learned" placeholder="Personal reflection or key takeaway" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-semibold uppercase text-slate-600 mb-1">Demonstrated Skills</label>
+                        <input type="text" name="skills_demonstrated" placeholder="e.g. Python, Leadership, Negotiation" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="document.getElementById('storyModal').classList.add('hidden')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-sm">Save Story</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

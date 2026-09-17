@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Review Action #{{ action.id }} | ScholarFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex items-center justify-between text-xs text-slate-500">
+        <a href="{% url 'agent_hub:action_list' %}" class="inline-flex items-center gap-1.5 font-medium hover:text-teal-700">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Approvals List
+        </a>
+        <span class="font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+            Action #{{ action.id }} ({{ action.get_status_display }})
+        </span>
+    </div>
+
+    <!-- Review Card -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <div class="space-y-2 border-b border-slate-100 pb-4">
+            <div class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amber-600"></i>
+                Human Authorization Checkpoint
+            </div>
+            <h1 class="text-xl md:text-2xl font-black text-slate-900">{{ action.title }}</h1>
+            <p class="text-xs text-slate-500">Requested on {{ action.created_at|date:"M d, Y H:i:s" }} UTC</p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+            <div class="font-bold text-slate-800">What the AI intends to do:</div>
+            <p class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 leading-relaxed">{{ action.description }}</p>
+        </div>
+
+        {% if action.payload %}
+        <div class="space-y-2 text-xs">
+            <div class="font-bold text-slate-800">Action Parameters & Payload:</div>
+            <pre class="p-4 bg-slate-900 text-teal-300 rounded-xl font-mono text-[11px] overflow-x-auto">{{ action.payload }}</pre>
+        </div>
+        {% endif %}
+
+        {% if action.status == 'pending' %}
+        <!-- Decision Form -->
+        <form method="POST" class="pt-4 border-t border-slate-100 space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Feedback / Notes (Optional)</label>
+                <textarea name="feedback" rows="2" placeholder="Add instructions, corrections, or notes for the audit trail..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button type="submit" name="decision" value="reject" class="px-5 py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition-colors">
+                    Reject Action
+                </button>
+                <button type="submit" name="decision" value="approve" class="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    Authorize & Approve
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="p-4 rounded-xl {% if action.status == 'approved' %}bg-emerald-50 text-emerald-800 border-emerald-200{% else %}bg-rose-50 text-rose-800 border-rose-200{% endif %} border text-xs">
+            <strong>Decision Recorded:</strong> {{ action.get_status_display }} on {{ action.resolved_at|date:"M d, Y H:i" }}
+            {% if action.human_feedback %}
+            <div class="mt-1 font-normal">Feedback: "{{ action.human_feedback }}"</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

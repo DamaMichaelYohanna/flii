@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Onboarding Wizard | ScholarFlow{% endblock %}
+
+{% block public_content %}
+<div class="min-h-screen bg-slate-100 flex flex-col py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto w-full">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 mb-2 text-teal-700 font-bold text-lg">
+                <i data-lucide="graduation-cap" class="w-6 h-6"></i> ScholarFlow Onboarding
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Let's build your verified applicant profile</h1>
+            <p class="text-sm text-slate-600 mt-1">This structured data prevents AI hallucinations and enables precise scholarship matching.</p>
+        </div>
+
+        <!-- 7-Step Progress Steps Bar -->
+        <div class="mb-8 bg-white p-4 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+            <div class="flex items-center justify-between min-w-[500px]">
+                <div class="flex items-center gap-1.5 {% if step >= 1 %}text-teal-700 font-bold{% else %}text-slate-400{% endif %}">
+                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs {% if step >= 1 %}bg-teal-600 text-white{% else %}bg-slate-200{% endif %}">1</span>
+                    <span class="text-xs">Personal</span>
+                </div>
+                <div class="h-0.5 w-6 bg-slate-200 {% if step >= 2 %}bg-teal-600{% endif %}"></div>
+                <div class="flex items-center gap-1.5 {% if step >= 2 %}text-teal-700 font-bold{% else %}text-slate-400{% endif %}">
+                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs {% if step >= 2 %}bg-teal-600 text-white{% else %}bg-slate-200{% endif %}">2</span>
+                    <span class="text-xs">Education</span>
+                </div>
+                <div class="h-0.5 w-6 bg-slate-200 {% if step >= 3 %}bg-teal-600{% endif %}"></div>
+                <div class="flex items-center gap-1.5 {% if step >= 3 %}text-teal-700 font-bold{% else %}text-slate-400{% endif %}">
+                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs {% if step >= 3 %}bg-teal-600 text-white{% else %}bg-slate-200{% endif %}">3</span>
+                    <span class="text-xs">Experience</span>
+                </div>
+                <div class="h-0.5 w-6 bg-slate-200 {% if step >= 4 %}bg-teal-600{% endif %}"></div>
+                <div class="flex items-center gap-1.5 {% if step >= 4 %}text-teal-700 font-bold{% else %}text-slate-400{% endif %}">
+                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs {% if step >= 4 %}bg-teal-600 text-white{% else %}bg-slate-200{% endif %}">4</span>
+                    <span class="text-xs">Projects</span>
+                </div>
+                <div class="h-0.5 w-6 bg-slate-200 {% if step >= 5 %}bg-teal-600{% endif %}"></div>
+                <div class="flex items-center gap-1.5 {% if step >= 5 %}text-teal-700 font-bold{% else %}text-slate-400{% endif %}">
+                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs {% if step >= 5 %}bg-teal-600 text-white{% else %}bg-slate-200{% endif %}">5</span>
+                    <span class="text-xs">Goals</span>
+                </div>
+                <div class="h-0.5 w-6 bg-slate-200 {% if step >= 6 %}bg-teal-600{% endif %}"></div>
+                <div class="flex items-center gap-1.5 {% if step >= 6 %}text-teal-700 font-bold{% else %}text-slate-400{% endif %}">
+                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs {% if step >= 6 %}bg-teal-600 text-white{% else %}bg-slate-200{% endif %}">6</span>
+                    <span class="text-xs">Documents</span>
+                </div>
+                <div class="h-0.5 w-6 bg-slate-200 {% if step >= 7 %}bg-teal-600{% endif %}"></div>
+                <div class="flex items-center gap-1.5 {% if step >= 7 %}text-teal-700 font-bold{% else %}text-slate-400{% endif %}">
+                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs {% if step >= 7 %}bg-teal-600 text-white{% else %}bg-slate-200{% endif %}">7</span>
+                    <span class="text-xs">Story Bank</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <form method="POST" action="{% url 'accounts:onboarding' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="{{ step }}">
+
+                {% if step == 1 %}
+                <!-- Step 1: Personal Info -->
+                <div class="space-y-5">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-900">Step 1: Personal & Geographic Identity</h2>
+                        <p class="text-xs text-slate-500">Essential for determining nationality quotas and international eligibility.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Country of Origin</label>
+                            <input type="text" name="country_of_origin" value="{{ profile.country_of_origin|default:'Nigeria' }}" required class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nationality</label>
+                            <input type="text" name="nationality" value="{{ profile.nationality|default:'Nigerian' }}" required class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Phone Number</label>
+                            <input type="text" name="phone" value="{{ profile.phone }}" placeholder="+234 803 000 0000" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Current Location</label>
+                            <input type="text" name="current_location" value="{{ profile.current_location }}" placeholder="Lagos, Nigeria" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Professional Headline / Bio Summary</label>
+                        <input type="text" name="headline" value="{{ profile.headline }}" placeholder="e.g. First-Class Computer Science Graduate | AI Researcher" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
+                </div>
+
+                {% elif step == 2 %}
+                <!-- Step 2: Education -->
+                <div class="space-y-5">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-900">Step 2: Primary Undergraduate Degree</h2>
+                        <p class="text-xs text-slate-500">Your degree classification and CGPA determine academic eligibility thresholds.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">University / Institution</label>
+                            <input type="text" name="institution" placeholder="e.g. University of Lagos (UNILAG)" required class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Degree Level</label>
+                            <select name="degree_level" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                                <option value="bachelors">Bachelor's Degree (BSc / BEng / BA)</option>
+                                <option value="hnd">Higher National Diploma (HND)</option>
+                                <option value="masters">Master's Degree</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Field of Study</label>
+                            <input type="text" name="field_of_study" placeholder="e.g. Computer Science" required class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Grade Classification</label>
+                            <input type="text" name="grade_classification" placeholder="e.g. First Class Honours, 2:1" required class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">CGPA</label>
+                                <input type="number" step="0.01" name="cgpa" placeholder="4.85" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Max Scale</label>
+                                <input type="number" step="0.01" name="max_cgpa" value="5.00" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% elif step == 3 %}
+                <!-- Step 3: Employment / Experience -->
+                <div class="space-y-5">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-900">Step 3: Professional Experience / Internships</h2>
+                        <p class="text-xs text-slate-500">Helps match opportunities with work experience or leadership requirements (e.g. Chevening, DAAD).</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Organization / Employer</label>
+                            <input type="text" name="organization" placeholder="e.g. Helios Pay / Tech Corp" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Job Title / Role</label>
+                            <input type="text" name="job_title" placeholder="e.g. Software Engineer / Research Assistant" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Key Responsibilities & Achievements</label>
+                        <textarea name="responsibilities" rows="3" placeholder="Describe your key duties, projects built, and measurable impact..." class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm"></textarea>
+                    </div>
+                </div>
+
+                {% elif step == 4 %}
+                <!-- Step 4: Projects & Achievements -->
+                <div class="space-y-5">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-900">Step 4: Capstone Projects & Technical Portfolio</h2>
+                        <p class="text-xs text-slate-500">Highlighted in your motivation statements and academic match assessments.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Project Title</label>
+                        <input type="text" name="project_title" placeholder="e.g. AgriVision: Edge Deep Learning for Crop Disease" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Technologies Used</label>
+                        <input type="text" name="technologies" placeholder="e.g. Python, PyTorch, Django, React" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Project Summary & Impact</label>
+                        <textarea name="project_description" rows="3" placeholder="What problem did it solve? What was the measurable outcome?" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm"></textarea>
+                    </div>
+                </div>
+
+                {% elif step == 5 %}
+                <!-- Step 5: Study Goals -->
+                <div class="space-y-5">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-900">Step 5: Target Postgraduate Goals</h2>
+                        <p class="text-xs text-slate-500">Helps ScholarFlow prioritize relevant funded opportunities for you.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Target Fields of Study</label>
+                        <input type="text" name="target_fields" placeholder="e.g. Artificial Intelligence, Data Science, Software Engineering" required class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Preferred Destination Countries</label>
+                        <input type="text" name="target_countries" placeholder="e.g. Germany, United Kingdom, Sweden, France, Canada" required class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Funding Requirement</label>
+                        <select name="funding_preference" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                            <option value="fully_funded">Fully Funded Only (Tuition + Living Stipend + Flights)</option>
+                            <option value="tuition_waiver">Tuition Waiver / Partial</option>
+                            <option value="self_funded">Any Opportunity</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Career Objective</label>
+                        <textarea name="career_goals" rows="2" placeholder="Briefly describe your career ambition post-graduation..." class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm"></textarea>
+                    </div>
+                </div>
+
+                {% elif step == 6 %}
+                <!-- Step 6: Core Documents Upload -->
+                <div class="space-y-5">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-900">Step 6: Upload Core Documents (Document Vault)</h2>
+                        <p class="text-xs text-slate-500">Upload your key files once (PDF/DOCX) so you can reuse them across all scholarship workspaces.</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <label class="block text-xs font-bold text-slate-900 mb-1">Academic CV / Resume</label>
+                            <p class="text-[11px] text-slate-500 mb-2">Upload your current academic curriculum vitae.</p>
+                            <input type="file" name="cv_file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                        </div>
+
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <label class="block text-xs font-bold text-slate-900 mb-1">Official Academic Transcript</label>
+                            <p class="text-[11px] text-slate-500 mb-2">Upload your official undergraduate transcript or statement of results.</p>
+                            <input type="file" name="transcript_file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                        </div>
+
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <label class="block text-xs font-bold text-slate-900 mb-1">Degree Certificate / Statement of Result</label>
+                            <p class="text-[11px] text-slate-500 mb-2">Upload your Bachelor's degree certificate or official notification of result.</p>
+                            <input type="file" name="cert_file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                        </div>
+                    </div>
+                </div>
+
+                {% elif step == 7 %}
+                <!-- Step 7: First STAR Story -->
+                <div class="space-y-5">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-900">Step 7: Add Your First Story Bank Entry</h2>
+                        <p class="text-xs text-slate-500">The Story Bank provides verified real-world evidence for the AI to draft essays without hallucinating.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Story Headline</label>
+                            <input type="text" name="story_title" placeholder="e.g. Leading the Undergraduate AI Mentorship Guild" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Category</label>
+                            <select name="story_category" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm">
+                                <option value="leadership">Leadership & Initiative</option>
+                                <option value="academic">Academic Achievement</option>
+                                <option value="problem_solving">Problem Solving & Technical Innovation</option>
+                                <option value="community">Community Impact</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Situation & Challenge</label>
+                        <textarea name="situation" rows="2" placeholder="What was the background, obstacle, or problem you tackled?" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Action You Took</label>
+                        <textarea name="action" rows="2" placeholder="What specific steps did you lead and execute?" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Result & Impact (Metrics)</label>
+                        <textarea name="result" rows="2" placeholder="What was the quantifiable result or outcome?" class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm"></textarea>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Footer navigation buttons -->
+                <div class="mt-8 pt-4 border-t border-slate-200 flex items-center justify-between">
+                    {% if step > 1 %}
+                    <a href="/onboarding/?step={{ step|add:'-1' }}" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">← Back</a>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm shadow-md transition-colors">
+                        {% if step == 7 %}Complete & Open Workspace →{% else %}Continue to Step {{ step|add:'1' }} →{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

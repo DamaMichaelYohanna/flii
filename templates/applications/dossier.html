@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}Application Dossier: {{ application.opportunity.title }} | ScholarFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8 print:p-0 print:space-y-4">
+
+    <!-- Top Navigation & Print Actions (Hidden on Print) -->
+    <div class="flex items-center justify-between text-xs text-slate-500 print:hidden">
+        <a href="{% url 'applications:detail' application.id %}" class="inline-flex items-center gap-1.5 font-medium hover:text-teal-700">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Application Workspace
+        </a>
+        <div class="flex items-center gap-3">
+            <button onclick="window.print()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl flex items-center gap-1.5 transition-colors">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                Print / Save as PDF
+            </button>
+            {% if application.opportunity.application_url %}
+            <a href="{{ application.opportunity.application_url }}" target="_blank" rel="noopener noreferrer" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-colors">
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+                Open Official Portal ↗
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Dossier Header Card -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm print:border-none print:shadow-none space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 mb-2 print:border-slate-300">
+                    <span>{{ dossier.country }}</span>
+                    <span>•</span>
+                    <span>Application Dossier & Fast-Copy Hub</span>
+                </div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">{{ dossier.opportunity_title }}</h1>
+                <p class="text-sm text-slate-600 mt-1">{{ dossier.provider }}</p>
+            </div>
+            
+            <div class="text-right flex flex-col items-start md:items-end justify-center">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Readiness Score</span>
+                <span class="text-2xl font-black text-teal-600">{{ dossier.progress_percentage }}% Ready</span>
+                <span class="text-xs text-rose-600 font-semibold mt-0.5">Deadline: {{ dossier.deadline|date:"M d, Y" }}</span>
+            </div>
+        </div>
+
+        <p class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100 print:hidden">
+            💡 <strong>Fast Portal Copy Helper:</strong> Use the <strong>"Copy"</strong> buttons next to each field below to paste your grounded biographical information, academic records, and generated essays directly into the scholarship application portal form.
+        </p>
+    </div>
+
+    <!-- Section 1: Personal & Biographical Form Fields -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm print:border-none space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="user" class="w-5 h-5 text-teal-600"></i>
+                1. Personal & Contact Details
+            </h2>
+            <button onclick="copyAllPersonal()" class="text-xs font-bold text-teal-700 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg border border-teal-200 flex items-center gap-1.5 print:hidden">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                Copy All Personal Data
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+            <!-- Full Name -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Full Name</span>
+                    <span id="field-fullname" class="font-bold text-slate-900 text-sm">{{ dossier.personal_info.full_name }}</span>
+                </div>
+                <button onclick="copyText('field-fullname', this)" class="p-1.5 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors print:hidden" title="Copy">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Email -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Email Address</span>
+                    <span id="field-email" class="font-bold text-slate-900">{{ dossier.personal_info.email }}</span>
+                </div>
+                <button onclick="copyText('field-email', this)" class="p-1.5 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors print:hidden" title="Copy">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Phone -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Phone Number</span>
+                    <span id="field-phone" class="font-bold text-slate-900">{{ dossier.personal_info.phone|default:"Not specified" }}</span>
+                </div>
+                <button onclick="copyText('field-phone', this)" class="p-1.5 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors print:hidden" title="Copy">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Nationality -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Nationality</span>
+                    <span id="field-nationality" class="font-bold text-slate-900">{{ dossier.personal_info.nationality }}</span>
+                </div>
+                <button onclick="copyText('field-nationality', this)" class="p-1.5 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors print:hidden" title="Copy">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Country of Origin -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Country of Origin / Citizenship</span>
+                    <span id="field-country" class="font-bold text-slate-900">{{ dossier.personal_info.country_of_origin }}</span>
+                </div>
+                <button onclick="copyText('field-country', this)" class="p-1.5 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors print:hidden" title="Copy">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-slate-400 block">Date of Birth (YYYY-MM-DD)</span>
+                    <span id="field-dob" class="font-bold text-slate-900">{{ dossier.personal_info.date_of_birth|default:"Not specified" }}</span>
+                </div>
+                <button onclick="copyText('field-dob', this)" class="p-1.5 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors print:hidden" title="Copy">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        {% if dossier.personal_info.bio_summary %}
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase text-slate-400">Professional Summary / Bio</span>
+                <button onclick="copyText('field-bio', this)" class="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1 print:hidden">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Bio
+                </button>
+            </div>
+            <p id="field-bio" class="text-xs text-slate-800 leading-relaxed">{{ dossier.personal_info.bio_summary }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Section 2: Academic History & Credentials -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm print:border-none space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="graduation-cap" class="w-5 h-5 text-teal-600"></i>
+                2. Academic Qualifications & Grades
+            </h2>
+        </div>
+
+        <div class="space-y-4">
+            {% for edu in dossier.all_educations %}
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-900">{{ edu.institution }}</h3>
+                        <p class="text-xs text-slate-600">{{ edu.get_degree_level_display }} in {{ edu.field_of_study }}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        {% if edu.cgpa %}
+                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-lg">CGPA: {{ edu.cgpa }}/{{ edu.max_cgpa }}</span>
+                        {% endif %}
+                        {% if edu.grade_classification %}
+                        <span class="px-2.5 py-1 bg-teal-100 text-teal-800 font-bold text-xs rounded-lg">{{ edu.grade_classification }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-2 border-t border-slate-200">
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 block">Graduation Year</span>
+                        <span class="font-semibold text-slate-800">{{ edu.graduation_year|default:"N/A" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 block">Country</span>
+                        <span class="font-semibold text-slate-800">{{ edu.country }}</span>
+                    </div>
+                    {% if edu.relevant_coursework %}
+                    <div class="col-span-2">
+                        <span class="text-[10px] font-bold text-slate-400 block">Key Coursework</span>
+                        <span class="text-slate-700 truncate block">{{ edu.relevant_coursework }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-xs text-slate-500 italic">No education records found. Please update your profile.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Section 3: Drafted & Grounded Application Essays -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm print:border-none space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+                <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-5 h-5 text-teal-600"></i>
+                    3. AI-Drafted Application Essays & Statements
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Grounded strictly in your STAR story bank and verified achievements.</p>
+            </div>
+            <span class="px-3 py-1 bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold rounded-full">
+                {{ dossier.essay_requirements|length }} Essays Ready
+            </span>
+        </div>
+
+        <div class="space-y-6">
+            {% for req in dossier.essay_requirements %}
+            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/60 pb-3">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">Essay Requirement #{{ forloop.counter }}</span>
+                        <h3 class="font-extrabold text-base text-slate-900 mt-1">{{ req.name }}</h3>
+                        {% if req.description %}
+                        <p class="text-xs text-slate-500 mt-0.5">{{ req.description }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="copyText('essay-content-{{ req.id }}', this)" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-colors print:hidden">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            Copy Essay Text
+                        </button>
+                    </div>
+                </div>
+
+                {% if req.ai_grounding_notes %}
+                <div class="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-900 flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                    <span><strong>Grounding Verification:</strong> {{ req.ai_grounding_notes }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Essay Text Block -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed whitespace-pre-line font-serif text-[13px]" id="essay-content-{{ req.id }}">
+{{ req.draft_response }}
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8 text-slate-400">
+                <i data-lucide="pen-tool" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                <p class="text-xs">No essay drafts generated yet. Click <strong>"Auto-Assemble Package"</strong> in the workspace to generate them instantly.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Section 4: Vault Document Attachments -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm print:border-none space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+                <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="paperclip" class="w-5 h-5 text-teal-600"></i>
+                    4. Attached Vault Documents
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Matched and verified files from your Document Vault ready for portal upload.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for req in dossier.document_requirements %}
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+                        {{ req.attached_document.file_format|default:"PDF" }}
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase text-slate-400 block">{{ req.name }}</span>
+                        <h4 class="font-bold text-xs text-slate-900 truncate max-w-[200px]">{{ req.attached_document.title }}</h4>
+                        <span class="text-[11px] text-slate-500">{{ req.attached_document.formatted_size }}</span>
+                    </div>
+                </div>
+
+                {% if req.attached_document.file %}
+                <a href="{{ req.attached_document.file.url }}" target="_blank" class="p-2 bg-white hover:bg-slate-100 border border-slate-200 text-teal-700 font-bold text-xs rounded-lg flex items-center gap-1 transition-colors print:hidden" download>
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Download
+                </a>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-xs text-slate-500 italic col-span-2">No documents attached yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Bottom Action Bar (Hidden on Print) -->
+    <div class="bg-gradient-to-r from-teal-900 to-slate-900 p-6 rounded-2xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 print:hidden">
+        <div>
+            <h3 class="font-extrabold text-base">Ready for Final Submission?</h3>
+            <p class="text-xs text-teal-200 mt-0.5">Review your copied responses, paste them into the portal, and record your submission confirmation.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'applications:detail' application.id %}" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl transition-colors">
+                Workspace Checklist
+            </a>
+            {% if application.opportunity.application_url %}
+            <a href="{{ application.opportunity.application_url }}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2">
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+                Open Official Portal & Submit ↗
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function copyText(elementId, btn) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `<span class="text-emerald-600 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> Copied!</span>`;
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            if (window.lucide) lucide.createIcons();
+        }, 2000);
+    });
+}
+
+function copyAllPersonal() {
+    const data = `Full Name: {{ dossier.personal_info.full_name }}
+Email: {{ dossier.personal_info.email }}
+Phone: {{ dossier.personal_info.phone }}
+Nationality: {{ dossier.personal_info.nationality }}
+Country of Origin: {{ dossier.personal_info.country_of_origin }}
+Date of Birth: {{ dossier.personal_info.date_of_birth }}
+Location: {{ dossier.personal_info.current_location }}
+Headline: {{ dossier.personal_info.headline }}
+Bio: {{ dossier.personal_info.bio_summary }}`;
+
+    navigator.clipboard.writeText(data.trim()).then(() => {
+        alert("All personal and contact fields copied to clipboard!");
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | ScholarFlow Command Center{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8">
+    <!-- Welcome Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-slate-800 p-6 md:p-8 rounded-2xl text-white shadow-sm border border-slate-700">
+        <div>
+            <div class="text-xs font-semibold text-teal-400 tracking-wider uppercase mb-1">ScholarFlow Command Center</div>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Good day, {{ user.first_name|default:user.username }} 👋</h1>
+            <p class="mt-1 text-sm text-slate-300">Here is your real-time scholarship discovery and application status.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'opportunities:run_scout' %}" class="px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs tracking-wide shadow-md transition-all flex items-center gap-2">
+                <i data-lucide="radar" class="w-4 h-4 text-slate-950"></i>
+                Run AI Scout (Web Scrape)
+            </a>
+            <a href="{% url 'opportunities:list' %}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-600 transition-all flex items-center gap-2">
+                <i data-lucide="compass" class="w-4 h-4"></i>
+                Discover Opportunities
+            </a>
+            <a href="{% url 'agent_hub:agent_chat' %}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 font-semibold text-xs border border-slate-600 transition-all flex items-center gap-2">
+                <i data-lucide="bot" class="w-4 h-4 text-teal-400"></i>
+                Ask AI Assistant
+            </a>
+        </div>
+    </div>
+
+    <!-- Human Approvals Alert (if any pending) -->
+    {% if pending_actions %}
+    <div class="p-5 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-700">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-amber-900">Human Approval Required ({{ pending_actions.count }} Pending)</h3>
+                    <p class="text-xs text-amber-800 mt-0.5">The AI requires your explicit confirmation before executing consequential actions.</p>
+                    <div class="mt-3 space-y-2">
+                        {% for act in pending_actions %}
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-white border border-amber-200 text-xs gap-2">
+                            <span class="font-semibold text-slate-800">{{ act.title }}</span>
+                            <div class="flex items-center gap-2">
+                                <a href="{% url 'agent_hub:action_detail' act.id %}" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-md">Review & Authorize</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 5 Overview Metric Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">Found</span>
+                <i data-lucide="compass" class="w-4 h-4 text-teal-600"></i>
+            </div>
+            <div class="text-2xl font-black text-slate-900">{{ total_opportunities }}</div>
+            <div class="text-[11px] text-slate-500 mt-1">Verified opportunities</div>
+        </div>
+
+        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">Shortlisted</span>
+                <i data-lucide="bookmark" class="w-4 h-4 text-blue-600"></i>
+            </div>
+            <div class="text-2xl font-black text-slate-900">{{ shortlisted_count }}</div>
+            <div class="text-[11px] text-slate-500 mt-1">Saved opportunities</div>
+        </div>
+
+        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">In Progress</span>
+                <i data-lucide="folder-kanban" class="w-4 h-4 text-indigo-600"></i>
+            </div>
+            <div class="text-2xl font-black text-slate-900">{{ in_progress_count }}</div>
+            <div class="text-[11px] text-slate-500 mt-1">Active workspaces</div>
+        </div>
+
+        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">Tasks Due</span>
+                <i data-lucide="check-square" class="w-4 h-4 text-amber-600"></i>
+            </div>
+            <div class="text-2xl font-black text-slate-900">{{ tasks_due }}</div>
+            <div class="text-[11px] text-slate-500 mt-1">Pending checklist items</div>
+        </div>
+
+        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm col-span-2 md:col-span-1">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">Deadlines</span>
+                <i data-lucide="clock" class="w-4 h-4 text-rose-600"></i>
+            </div>
+            <div class="text-2xl font-black {% if deadlines_this_week > 0 %}text-rose-600{% else %}text-slate-900{% endif %}">
+                {{ deadlines_this_week }}
+            </div>
+            <div class="text-[11px] text-slate-500 mt-1">Due within 7 days</div>
+        </div>
+    </div>
+
+    <!-- Main 2-Column Section: Workspaces & AI Recommendations -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left 2 Cols: Applications in Progress -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="folder-kanban" class="w-5 h-5 text-teal-600"></i>
+                    Applications in Progress
+                </h2>
+                <a href="{% url 'applications:list' %}" class="text-xs font-semibold text-teal-600 hover:text-teal-700">View All Workspaces →</a>
+            </div>
+
+            {% if active_applications %}
+            <div class="space-y-4">
+                {% for app in active_applications %}
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-teal-300 transition-all">
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div>
+                            <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 mb-1.5">
+                                <span>{{ app.opportunity.country }}</span>
+                                <span>•</span>
+                                <span>{{ app.opportunity.get_degree_level_display }}</span>
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-base">
+                                <a href="{% url 'applications:detail' app.id %}" class="hover:text-teal-600">{{ app.opportunity.title }}</a>
+                            </h3>
+                            <div class="text-xs text-slate-500 mt-0.5">{{ app.opportunity.provider }}</div>
+                        </div>
+
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                                {{ app.get_status_display }}
+                            </span>
+                            <a href="{% url 'applications:detail' app.id %}" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white font-medium text-xs hover:bg-teal-600 transition-colors">
+                                Open Workspace
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="font-semibold text-slate-700">Application Readiness</span>
+                            <span class="font-bold text-teal-700">{{ app.progress_percentage }}% Complete</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-teal-500 rounded-full transition-all duration-500" style="width: {{ app.progress_percentage }}%"></div>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>{{ app.requirements.count }} Requirements Tracked</span>
+                            <span>Deadline: {{ app.opportunity.deadline|date:"M d, Y" }} ({{ app.opportunity.days_remaining }}d left)</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty state -->
+            <div class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+                <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="folder-plus" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900">You haven't started an application yet</h3>
+                <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Explore verified scholarships matching your profile and start preparing with AI assistance.</p>
+                <a href="{% url 'opportunities:list' %}" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-sm">
+                    <i data-lucide="compass" class="w-4 h-4"></i>
+                    Discover Opportunities
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Outstanding Tasks List -->
+            <div class="pt-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="check-square" class="w-5 h-5 text-amber-600"></i>
+                        Outstanding Checklist Tasks
+                    </h2>
+                    <a href="{% url 'applications:tasks' %}" class="text-xs font-semibold text-teal-600 hover:text-teal-700">Manage Tasks →</a>
+                </div>
+
+                {% if urgent_tasks %}
+                <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 shadow-sm">
+                    {% for t in urgent_tasks %}
+                    <div class="p-4 flex items-center justify-between gap-3 text-xs">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="circle" class="w-4 h-4 text-slate-400"></i>
+                            <div>
+                                <div class="font-semibold text-slate-800">{{ t.title }}</div>
+                                <div class="text-[11px] text-slate-500">{{ t.application.opportunity.title }}</div>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 text-[11px]">Due {{ t.due_date|default:"Soon" }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-4 bg-white rounded-xl border border-slate-200 text-xs text-slate-500 text-center">
+                    All application tasks are up to date!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right 1 Col: AI Recommendations & Upcoming Deadlines -->
+        <div class="space-y-6">
+            <!-- AI Recommendations (Profile Fit) -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-teal-600"></i>
+                        AI Profile Fit Matches
+                    </h2>
+                    <span class="text-[11px] text-slate-400">Grounded in Profile</span>
+                </div>
+
+                <div class="space-y-3">
+                    {% for rec in ai_recommendations %}
+                    <a href="{% url 'opportunities:detail' rec.opp.id %}" class="block p-3.5 rounded-xl border border-slate-100 hover:border-teal-300 hover:bg-slate-50 transition-all">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="font-semibold text-slate-900 text-xs line-clamp-2">{{ rec.opp.title }}</div>
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-teal-50 text-teal-700 border border-teal-200 flex-shrink-0">
+                                {{ rec.fit.score }}% Fit
+                            </span>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>{{ rec.opp.country }}</span>
+                            <span class="font-medium text-slate-700">{{ rec.opp.days_remaining }} days left</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Upcoming Deadlines Card -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h2 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-4 h-4 text-rose-600"></i>
+                    Upcoming Deadlines
+                </h2>
+
+                <div class="space-y-3">
+                    {% for opp in upcoming_deadlines %}
+                    <div class="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <div class="truncate mr-2">
+                            <div class="font-semibold text-slate-800 truncate">{{ opp.title }}</div>
+                            <div class="text-[10px] text-slate-400">{{ opp.deadline|date:"M d, Y" }} ({{ opp.deadline_timezone }})</div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ opp.urgency_badge.color }} flex-shrink-0">
+                            {{ opp.urgency_badge.label }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

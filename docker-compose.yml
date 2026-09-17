@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: scholarflow
+      POSTGRES_USER: scholarflow_user
+      POSTGRES_PASSWORD: scholarflow_secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    restart: always
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py seed_scholarflow_data &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+    volumes:
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=production-secure-key-scholarflow-2026-xyz
+      - DATABASE_URL=postgres://scholarflow_user:scholarflow_secure_password@db:5432/scholarflow
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ALLOWED_HOSTS=localhost,127.0.0.1,web
+      - SECURE_SSL_REDIRECT=False
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build: .
+    restart: always
+    command: celery -A config worker --loglevel=info
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=production-secure-key-scholarflow-2026-xyz
+      - DATABASE_URL=postgres://scholarflow_user:scholarflow_secure_password@db:5432/scholarflow
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:
+  media_data:

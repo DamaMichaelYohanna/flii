@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Applicant Profile Ground Truth | ScholarFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Structured Applicant Profile</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Your verified academic and professional ground truth. The AI uses this data strictly to evaluate eligibility and draft materials.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full text-xs font-bold border border-emerald-200 flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                Ground Truth Active
+            </span>
+        </div>
+    </div>
+
+    <!-- Personal Overview Card -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-teal-600 text-white font-extrabold text-xl flex items-center justify-center shadow-md">
+                    {{ user.first_name|default:user.username|slice:":1"|upper }}
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">{{ profile.full_name }}</h2>
+                    <p class="text-xs text-slate-500">{{ profile.headline|default:"Postgraduate Applicant" }}</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('editPersonalModal').classList.remove('hidden')" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors self-start">
+                Edit Personal Info
+            </button>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Nationality</div>
+                <div class="font-bold text-slate-800 mt-0.5">{{ profile.nationality }}</div>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Country of Origin</div>
+                <div class="font-bold text-slate-800 mt-0.5">{{ profile.country_of_origin }}</div>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Location</div>
+                <div class="font-bold text-slate-800 mt-0.5">{{ profile.current_location|default:"Not specified" }}</div>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Email</div>
+                <div class="font-bold text-slate-800 mt-0.5 truncate">{{ user.email }}</div>
+            </div>
+        </div>
+
+        {% if profile.bio_summary %}
+        <div class="text-xs text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <span class="font-bold text-slate-800">Bio Summary:</span> {{ profile.bio_summary }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Document Vault & Academic Records Card -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Document Vault (CV, Transcripts, Certificates, Passport)</h2>
+                    <p class="text-xs text-slate-500">Upload and verify your core credentials to link them to scholarship applications and ground AI writing.</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('uploadDocModal').classList.remove('hidden')" class="px-4 py-2 text-xs font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition-colors flex items-center gap-1.5 self-start">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                Upload New Document
+            </button>
+        </div>
+
+        {% if documents %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for doc in documents %}
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-teal-300 transition-all flex flex-col justify-between space-y-3">
+                <div class="space-y-1.5">
+                    <div class="flex items-start justify-between gap-2">
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-teal-50 text-teal-800 border border-teal-200">
+                            {{ doc.get_document_type_display }}
+                        </span>
+                        <span class="text-[11px] font-semibold text-emerald-700">✓ Verified</span>
+                    </div>
+                    <h3 class="font-bold text-xs text-slate-900 truncate" title="{{ doc.title }}">{{ doc.title }}</h3>
+                    <p class="text-[11px] text-slate-500">{{ doc.formatted_size }} • Uploaded {{ doc.upload_date|date:"M d, Y" }}</p>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                    {% if doc.file %}
+                    <a href="{% url 'documents:download' doc.id %}" class="font-semibold text-teal-700 hover:underline flex items-center gap-1">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        Download
+                    </a>
+                    {% else %}
+                    <span class="text-slate-400 text-[11px]">Ready on File</span>
+                    {% endif %}
+                    <a href="{% url 'documents:list' %}" class="text-slate-500 hover:text-slate-800 text-[11px]">Manage in Vault →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-6 text-center rounded-xl bg-slate-50 border border-dashed border-slate-200 space-y-2">
+            <i data-lucide="file-up" class="w-8 h-8 text-slate-400 mx-auto"></i>
+            <div class="text-xs font-bold text-slate-700">No documents uploaded yet</div>
+            <p class="text-[11px] text-slate-500 max-w-sm mx-auto">Add your Academic CV, Official Transcript, Statement of Purpose, and Passport to auto-populate workspaces.</p>
+            <button onclick="document.getElementById('uploadDocModal').classList.remove('hidden')" class="px-4 py-1.5 bg-teal-600 text-white text-xs font-bold rounded-lg shadow-sm">Upload Core Documents</button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 2-Column Sections: Education & Goals -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Education History -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
+                    <i data-lucide="graduation-cap" class="w-5 h-5 text-teal-600"></i>
+                    Education Records
+                </h3>
+                <button onclick="document.getElementById('addEduModal').classList.remove('hidden')" class="text-xs font-semibold text-teal-600 hover:text-teal-700">+ Add Degree</button>
+            </div>
+
+            <div class="space-y-3">
+                {% for edu in educations %}
+                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 space-y-1.5 text-xs">
+                    <div class="flex items-start justify-between">
+                        <div class="font-bold text-slate-900 text-sm">{{ edu.field_of_study }}</div>
+                        <span class="px-2 py-0.5 font-bold rounded bg-teal-50 text-teal-700 text-[10px] border border-teal-200">{{ edu.grade_classification }}</span>
+                    </div>
+                    <div class="text-slate-600">{{ edu.institution }} ({{ edu.country }})</div>
+                    {% if edu.cgpa %}
+                    <div class="text-slate-500 font-medium">CGPA: {{ edu.cgpa }} / {{ edu.max_cgpa }}</div>
+                    {% endif %}
+                    {% if edu.relevant_coursework %}
+                    <div class="text-[11px] text-slate-400 pt-1">Coursework: {{ edu.relevant_coursework }}</div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="p-6 text-center text-xs text-slate-400">No education records added yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Target Goals & Preferences -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
+                    <i data-lucide="target" class="w-5 h-5 text-teal-600"></i>
+                    Postgraduate Goals
+                </h3>
+                <button onclick="document.getElementById('editGoalsModal').classList.remove('hidden')" class="text-xs font-semibold text-teal-600 hover:text-teal-700">Edit Goals</button>
+            </div>
+
+            {% if goal %}
+            <div class="space-y-3 text-xs">
+                <div class="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Target Degree & Fields</div>
+                    <div class="font-bold text-slate-800">{{ goal.target_degree }}: {{ goal.target_fields }}</div>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Preferred Countries</div>
+                    <div class="font-bold text-slate-800">{{ goal.target_countries }}</div>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Funding Level</div>
+                    <div class="font-bold text-teal-700">{{ goal.get_funding_preference_display }}</div>
+                </div>
+                {% if goal.career_goals %}
+                <div class="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Career Vision</div>
+                    <div class="text-slate-600">{{ goal.career_goals }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="p-6 text-center text-xs text-slate-400">No study goals configured yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Employment, Projects & Achievements -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Employment -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <i data-lucide="briefcase" class="w-4 h-4 text-teal-600"></i>
+                Employment History
+            </h3>
+            <div class="space-y-3 text-xs">
+                {% for emp in employments %}
+                <div class="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <div class="font-bold text-slate-900">{{ emp.job_title }}</div>
+                    <div class="text-slate-500 font-medium">{{ emp.organization }}</div>
+                    <div class="text-[11px] text-slate-400">{{ emp.responsibilities|truncatechars:100 }}</div>
+                </div>
+                {% empty %}
+                <div class="text-slate-400 text-xs text-center py-4">No employment records.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Projects -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <i data-lucide="code" class="w-4 h-4 text-teal-600"></i>
+                Technical & Research Projects
+            </h3>
+            <div class="space-y-3 text-xs">
+                {% for proj in projects %}
+                <div class="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <div class="font-bold text-slate-900">{{ proj.title }}</div>
+                    <div class="text-slate-600 text-[11px]">{{ proj.description|truncatechars:120 }}</div>
+                    {% if proj.technologies %}
+                    <div class="text-[10px] text-teal-700 font-mono">{{ proj.technologies }}</div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-slate-400 text-xs text-center py-4">No projects listed.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <i data-lucide="award" class="w-4 h-4 text-teal-600"></i>
+                Honors & Certifications
+            </h3>
+            <div class="space-y-3 text-xs">
+                {% for ach in achievements %}
+                <div class="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <div class="font-bold text-slate-900">{{ ach.title }}</div>
+                    <div class="text-slate-500">{{ ach.organization }}</div>
+                </div>
+                {% empty %}
+                <div class="text-slate-400 text-xs text-center py-4">No awards or honors recorded.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Personal Info Modal -->
+    <div id="editPersonalModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900">Edit Personal Information</h3>
+                <button onclick="document.getElementById('editPersonalModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form method="POST" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_personal">
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Headline</label>
+                    <input type="text" name="headline" value="{{ profile.headline }}" class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold uppercase text-slate-600 mb-1">Country</label>
+                        <input type="text" name="country_of_origin" value="{{ profile.country_of_origin }}" class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block font-semibold uppercase text-slate-600 mb-1">Nationality</label>
+                        <input type="text" name="nationality" value="{{ profile.nationality }}" class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Current Location</label>
+                    <input type="text" name="current_location" value="{{ profile.current_location }}" class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                </div>
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Bio Summary</label>
+                    <textarea name="bio_summary" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-300">{{ profile.bio_summary }}</textarea>
+                </div>
+                <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="document.getElementById('editPersonalModal').classList.add('hidden')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-sm">Save Profile</button>
+                </div>
+            </form>
+    <!-- Upload Document Modal -->
+    <div id="uploadDocModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-base text-slate-900">Upload Document to Vault</h3>
+                <button onclick="document.getElementById('uploadDocModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form method="POST" enctype="multipart/form-data" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="upload_document">
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Document Title</label>
+                    <input type="text" name="title" placeholder="e.g. Yohanna Adebayo Academic CV 2026" required class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                </div>
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Document Category</label>
+                    <select name="document_type" class="w-full px-3 py-2 rounded-xl border border-slate-300">
+                        {% for code, label in doc_types %}
+                        <option value="{{ code }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Select File (PDF, DOCX, JPG, PNG)</label>
+                    <input type="file" name="file" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                </div>
+                <div>
+                    <label class="block font-semibold uppercase text-slate-600 mb-1">Notes / Issuing Details (Optional)</label>
+                    <textarea name="notes" rows="2" placeholder="e.g. Issued by Department of Computer Science" class="w-full px-3 py-2 rounded-xl border border-slate-300"></textarea>
+                </div>
+                <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="document.getElementById('uploadDocModal').classList.add('hidden')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-sm">Upload Document</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,9 +1,15 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Flii | AI Scholarship & Postgraduate Application Workspace{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/favicon-192x192.png' %}">
     
     <!-- Shared Flii typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -77,12 +83,7 @@
         <!-- Desktop Sidebar -->
         <aside class="hidden md:flex md:flex-shrink-0 md:w-64 bg-[#0b3558] border-r border-[#16496f] flex-col">
             <div class="flex items-center justify-between h-20 px-6 border-b border-white/10">
-                <a href="{% url 'dashboard:index' %}" class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-[#ef7d37] flex items-center justify-center text-white font-bold shadow-md shadow-orange-950/20">
-                        <i data-lucide="graduation-cap" class="w-5 h-5"></i>
-                    </div>
-                    <span class="text-lg font-bold tracking-tight text-white">Fl<span class="text-orange-300">ii</span></span>
-                </a>
+                {% include "components/logo.html" with theme="dark" %}
             </div>
 
             <!-- Navigation Links -->
@@ -170,12 +171,7 @@
             <!-- Topbar Header -->
             <header class="h-20 bg-white/95 backdrop-blur border-b border-[#dce7e9] flex items-center justify-between px-6 z-10">
                 <div class="flex items-center gap-3 md:hidden">
-                    <a href="{% url 'dashboard:index' %}" class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-xl bg-[#ef7d37] flex items-center justify-center text-white font-bold">
-                            <i data-lucide="graduation-cap" class="w-4 h-4"></i>
-                        </div>
-                        <span class="font-bold text-slate-900">Fl<span class="text-[#ef7d37]">ii</span></span>
-                    </a>
+                    {% include "components/logo.html" with size="sm" %}
                 </div>
 
                 <div class="hidden md:flex items-center gap-2 text-sm text-slate-500">

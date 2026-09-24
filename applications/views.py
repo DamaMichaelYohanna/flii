@@ -7,7 +7,7 @@ from .models import Application, ApplicationRequirement, ApplicationTask
 from opportunities.models import Opportunity
 from documents.models import Document
 from ai_core.service import AIService
-from agent_hub.agent import ScholarFlowAgent
+from agent_hub.agent import FliiAgent
 from .services import AutonomousApplicationAssembler
 
 @login_required
@@ -24,7 +24,7 @@ def application_list(request):
 
 @login_required
 def create_from_opportunity(request, opportunity_id):
-    agent = ScholarFlowAgent(request.user)
+    agent = FliiAgent(request.user)
     result = agent.create_application(opportunity_id)
     messages.success(request, f"Application workspace created for '{result['opportunity']}'!")
     return redirect('applications:detail', pk=result['application_id'])
@@ -121,7 +121,7 @@ def application_detail(request, pk):
             return redirect('applications:detail', pk=application.id)
 
         elif action == 'request_submission_approval':
-            agent = ScholarFlowAgent(user)
+            agent = FliiAgent(user)
             act = agent.request_user_approval(
                 action_type='submit_application',
                 title=f"Submit Application Package: {application.opportunity.title}",

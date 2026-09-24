@@ -52,7 +52,7 @@ class AutonomousApplicationAssembler:
             AIAuditLog.objects.create(
                 user=self.user,
                 action_type="autonomous_dossier_assembly",
-                provider="scholarflow_autonomous_pipeline",
+                provider="flii_autonomous_pipeline",
                 summary=f"Assembled full application package for {self.opportunity.title}: {attached_docs_count} docs linked, {drafted_essays_count} essays drafted.",
                 input_ref=f"Application #{self.application.id}",
                 output_summary=f"Readiness: {self.application.progress_percentage}%. Tasks generated: {tasks_created}.",
@@ -150,7 +150,7 @@ class AutonomousApplicationAssembler:
         standard_tasks = [
             ("Proofread AI-drafted essays & tailor final closing lines", "Review generated Statement of Purpose / Motivation Letter in the Dossier hub."),
             ("Confirm referee email addresses & notify recommenders", "Ensure your academic referees know about this application deadline."),
-            ("Complete official portal submission & paste confirmation ID", "Copy fields from ScholarFlow Dossier into the official university portal.")
+            ("Complete official portal submission & paste confirmation ID", "Copy fields from Flii Dossier into the official university portal.")
         ]
         created_count = 0
         existing_titles = set(self.application.tasks.values_list('title', flat=True))

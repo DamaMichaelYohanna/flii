@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     restart: always
     environment:
-      POSTGRES_DB: scholarflow
-      POSTGRES_USER: scholarflow_user
-      POSTGRES_PASSWORD: scholarflow_secure_password
+      POSTGRES_DB: flii
+      POSTGRES_USER: flii_user
+      POSTGRES_PASSWORD: flii_secure_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -22,7 +22,6 @@ services:
     restart: always
     command: >
       sh -c "python manage.py migrate &&
-             python manage.py seed_scholarflow_data &&
              gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
     volumes:
       - media_data:/app/media
@@ -30,8 +29,8 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=False
-      - SECRET_KEY=production-secure-key-scholarflow-2026-xyz
-      - DATABASE_URL=postgres://scholarflow_user:scholarflow_secure_password@db:5432/scholarflow
+      - SECRET_KEY=production-secure-key-flii-2026-xyz
+      - DATABASE_URL=postgres://flii_user:flii_secure_password@db:5432/flii
       - REDIS_URL=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ALLOWED_HOSTS=localhost,127.0.0.1,web
@@ -46,8 +45,8 @@ services:
     command: celery -A config worker --loglevel=info
     environment:
       - DEBUG=False
-      - SECRET_KEY=production-secure-key-scholarflow-2026-xyz
-      - DATABASE_URL=postgres://scholarflow_user:scholarflow_secure_password@db:5432/scholarflow
+      - SECRET_KEY=production-secure-key-flii-2026-xyz
+      - DATABASE_URL=postgres://flii_user:flii_secure_password@db:5432/flii
       - REDIS_URL=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:

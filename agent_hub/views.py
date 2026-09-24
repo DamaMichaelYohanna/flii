@@ -3,11 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
 from .models import AgentAction, AIAuditLog
-from .agent import ScholarFlowAgent
+from .agent import FliiAgent
 
 @login_required
 def agent_chat_view(request):
-    agent = ScholarFlowAgent(request.user)
+    agent = FliiAgent(request.user)
     recent_logs = request.user.ai_audit_logs.all()[:8]
     context = {
         'recent_logs': recent_logs,
@@ -22,7 +22,7 @@ def ajax_agent_message(request):
         if not message:
             return JsonResponse({'error': 'Empty message'}, status=400)
         
-        agent = ScholarFlowAgent(request.user)
+        agent = FliiAgent(request.user)
         result = agent.process_message(message)
         return JsonResponse(result)
     return JsonResponse({'error': 'Invalid request'}, status=400)

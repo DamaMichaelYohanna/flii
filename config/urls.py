@@ -14,6 +14,7 @@ urlpatterns = [
     path('profile/', include('applicants.urls')),
     path('agent/', include('agent_hub.urls')),
     path('notifications/', include('notifications.urls')),
+    path('blog/', include('blog.urls')),
 ]
 
 if settings.DEBUG:

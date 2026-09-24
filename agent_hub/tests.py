@@ -1,6 +1,6 @@
 from django.test import TestCase
 from accounts.models import User
-from agent_hub.agent import ScholarFlowAgent
+from agent_hub.agent import FliiAgent
 from agent_hub.models import AgentAction
 
 class AgentHubTests(TestCase):
@@ -12,7 +12,7 @@ class AgentHubTests(TestCase):
         )
 
     def test_human_approval_state_machine(self):
-        agent = ScholarFlowAgent(self.user)
+        agent = FliiAgent(self.user)
         action = agent.request_user_approval(
             action_type="submit_application",
             title="Submit Test Application",
@@ -27,7 +27,7 @@ class AgentHubTests(TestCase):
         self.assertIsNotNone(action.resolved_at)
 
     def test_agent_message_processing(self):
-        agent = ScholarFlowAgent(self.user)
+        agent = FliiAgent(self.user)
         res = agent.process_message("Find fully funded MSc in Germany")
         self.assertEqual(res['tool_used'], 'search_opportunities')
         self.assertIn('found', res['response'].lower())

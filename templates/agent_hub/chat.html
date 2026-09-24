@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}ScholarFlow AI Agent Assistant{% endblock %}
+{% block title %}Flii AI Agent Assistant{% endblock %}
 
 {% block content %}
 <div class="max-w-5xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">ScholarFlow AI Assistant</h1>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Flii AI Assistant</h1>
             <p class="text-xs text-slate-500 mt-0.5">Specialized autonomous assistant for opportunity discovery, eligibility checks, and application guidance.</p>
         </div>
         <div class="flex items-center gap-2">
@@ -28,7 +28,7 @@
                 </div>
                 <div class="space-y-1">
                     <div class="bg-white p-4 rounded-2xl rounded-tl-sm border border-slate-200 text-xs text-slate-800 leading-relaxed shadow-sm space-y-2">
-                        <p class="font-semibold text-slate-900">Hello, {{ user.first_name|default:user.username }}! I am your ScholarFlow Application Agent.</p>
+                        <p class="font-semibold text-slate-900">Hello, {{ user.first_name|default:user.username }}! I am your Flii Application Agent.</p>
                         <p>I have access to your verified applicant profile, uploaded documents, and Story Bank records.</p>
                         <div class="pt-2 border-t border-slate-100 font-medium text-slate-700">Try asking:</div>
                         <ul class="space-y-1 text-slate-600 list-disc list-inside">
@@ -37,7 +37,7 @@
                             <li>"Submit my application package for review"</li>
                         </ul>
                     </div>
-                    <span class="text-[10px] text-slate-400 pl-1">ScholarFlow Agent • Grounded in Profile</span>
+                    <span class="text-[10px] text-slate-400 pl-1">Flii Agent • Grounded in Profile</span>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
         <!-- Chat Input Bar -->
         <div class="p-4 bg-white border-t border-slate-200">
             <form id="chatForm" onsubmit="handleChatSubmit(event)" class="flex items-center gap-3">
-                <input type="text" id="chatInput" placeholder="Ask ScholarFlow agent anything (e.g. Find scholarships, check eligibility)..." required class="flex-1 px-4 py-3 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                <input type="text" id="chatInput" placeholder="Ask Flii Agent anything (e.g. Find scholarships, check eligibility)..." required class="flex-1 px-4 py-3 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none">
                 <button type="submit" id="sendBtn" class="px-5 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2">
                     <span>Send</span>
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>

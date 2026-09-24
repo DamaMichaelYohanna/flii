@@ -141,7 +141,7 @@ def opportunity_import(request):
             # Attempt safe HTTP fetch if URL is provided and no text is pasted
             try:
                 import requests
-                resp = requests.get(source_url, timeout=6, headers={'User-Agent': 'ScholarFlow-Discovery/1.0'})
+                resp = requests.get(source_url, timeout=6, headers={'User-Agent': 'Flii-Discovery/1.0'})
                 if resp.status_code == 200:
                     raw_text = resp.text[:10000]
             except Exception as e:
@@ -169,7 +169,7 @@ def opportunity_import(request):
             source_obj, _ = OpportunitySource.objects.get_or_create(
                 name=extracted.provider,
                 defaults={
-                    'source_url': source_url or extracted.official_source_url or 'https://scholarflow.org/sources',
+                    'source_url': source_url or extracted.official_source_url or 'https://flii.app/sources',
                     'source_type': 'university' if 'uni' in extracted.provider.lower() else 'government',
                     'last_verified': timezone.now(),
                     'verification_notes': 'Extracted from official text supplied by applicant/moderator.'
@@ -188,8 +188,8 @@ def opportunity_import(request):
             funding_type=extracted.funding_type,
             funding_details=extracted.funding_details,
             eligibility_summary=extracted.eligibility_summary,
-            application_url=extracted.application_url or source_url or 'https://scholarflow.org',
-            official_source_url=extracted.official_source_url or source_url or 'https://scholarflow.org',
+            application_url=extracted.application_url or source_url or 'https://flii.app',
+            official_source_url=extracted.official_source_url or source_url or 'https://flii.app',
             source=source_obj,
             deadline=deadline,
             language_requirement=extracted.language_requirement,
@@ -201,7 +201,7 @@ def opportunity_import(request):
             verification_status='ai_extracted'
         )
 
-        messages.success(request, f"🎉 Successfully extracted and added '{opp.title}' ({opp.provider}) to ScholarFlow database!")
+        messages.success(request, f"🎉 Successfully extracted and added '{opp.title}' ({opp.provider}) to Flii database!")
         return redirect('opportunities:detail', pk=opp.id)
 
     return render(request, 'opportunities/import.html')

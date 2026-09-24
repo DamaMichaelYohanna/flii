@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}AI Opportunity Extractor & Importer | ScholarFlow{% endblock %}
+{% block title %}AI Opportunity Extractor & Importer | Flii{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-6">
@@ -21,8 +21,8 @@
                 <i data-lucide="sparkles" class="w-3.5 h-3.5 text-teal-600"></i>
                 Zero Hallucination Opportunity Ingestion
             </div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Extract & Add Scholarship to ScholarFlow</h1>
-            <p class="text-xs text-slate-500 mt-1">Found a new scholarship or Master's programme? Paste the official announcement text or source URL below. ScholarFlow AI will structure all eligibility criteria, funding details, and deadlines into your live database.</p>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Extract & Add Scholarship to Flii</h1>
+            <p class="text-xs text-slate-500 mt-1">Found a new scholarship or Master's programme? Paste the official announcement text or source URL below. Flii AI will structure all eligibility criteria, funding details, and deadlines into your live database.</p>
         </div>
 
         <form method="POST" action="{% url 'opportunities:import' %}" class="space-y-5">
@@ -56,7 +56,7 @@ Deadline: 30 November 2026.'" required class="w-full p-4 text-xs rounded-xl bord
                 <div class="space-y-1">
                     <div class="font-bold">What happens next?</div>
                     <div class="text-[11px] text-teal-800 leading-relaxed">
-                        1. ScholarFlow AI extracts fields (funding, degree, requirements, documents, deadline) into structured Pydantic schemas.<br>
+                        1. Flii AI extracts fields (funding, degree, requirements, documents, deadline) into structured Pydantic schemas.<br>
                         2. The opportunity is saved to your live database with timestamp verification.<br>
                         3. You can immediately evaluate your Profile Fit and open an Application Workspace.
                     </div>

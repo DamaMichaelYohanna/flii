@@ -30,7 +30,7 @@ def register_view(request):
             )
             
             login(request, user)
-            messages.success(request, f"Welcome to ScholarFlow, {user.first_name}! Let's build your applicant profile.")
+            messages.success(request, f"Welcome to Flii, {user.first_name}! Let's build your applicant profile.")
             return redirect('accounts:onboarding')
     else:
         form = CustomUserCreationForm()
@@ -51,6 +51,22 @@ def login_view(request):
                 return redirect('accounts:onboarding')
             return redirect('dashboard:index')
         else:
+            from django.conf import settings
+            if getattr(settings, 'DEBUG', False):
+                raw_email = request.POST.get('username', '').strip()
+                from django.contrib.auth import get_user_model
+                U = get_user_model()
+                matched = U.objects.filter(email__iexact=raw_email).first()
+                print("\n" + "=" * 70)
+                print(f"  [FLII DEV LOGIN ATTEMPT FAILED]")
+                print(f"  Submitted email: '{raw_email}'")
+                if matched:
+                    print(f"  Account found: {matched.email} (is_active: {matched.is_active})")
+                    print(f"  Password check: FAILED (The submitted password did not match the stored hash)")
+                else:
+                    print(f"  NO USER FOUND with email matching '{raw_email}'")
+                    print(f"  Existing emails in DB: {[u.email for u in U.objects.all()]}")
+                print("=" * 70 + "\n")
             messages.error(request, "Invalid email or password.")
     else:
         form = CustomAuthenticationForm()
@@ -85,7 +101,7 @@ def google_login_view(request):
             })
             login(request, user)
             if created:
-                messages.success(request, f"Welcome to ScholarFlow, {user.first_name}! (Google Sign-In Demo)")
+                messages.success(request, f"Welcome to Flii, {user.first_name}! (Google Sign-In Demo)")
                 return redirect('accounts:onboarding')
             messages.success(request, f"Signed in with Google as {user.email} (Demo Mode)")
             return redirect('dashboard:index')
@@ -141,7 +157,7 @@ def google_callback_view(request):
         user, created = oauth.get_or_create_user(google_info)
         login(request, user)
         if created:
-            messages.success(request, f"Welcome to ScholarFlow, {user.first_name}! Your Google account is verified.")
+            messages.success(request, f"Welcome to Flii, {user.first_name}! Your Google account is verified.")
             return redirect('accounts:onboarding')
         else:
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 90" fill="none">
+  <defs>
+    <linearGradient id="flii-grad-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b3558" />
+      <stop offset="50%" stop-color="#0e4470" />
+      <stop offset="100%" stop-color="#1261a0" />
+    </linearGradient>
+    <linearGradient id="flii-grad-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef7d37" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <filter id="flii-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.12" />
+    </filter>
+  </defs>
+
+  <!-- Icon Badge (Squircle) -->
+  <rect x="8" y="10" width="70" height="70" rx="20" fill="url(#flii-grad-bg)" filter="url(#flii-shadow)" />
+
+  <!-- Origami Bird Emblem inside Badge -->
+  <g transform="translate(19, 21)">
+    <!-- Cyan facet -->
+    <polygon points="6,24 26,16 20,36" fill="#38bdf8" opacity="0.95" />
+    <!-- Vibrant orange lead wing -->
+    <polygon points="26,16 44,8 32,28" fill="url(#flii-grad-orange)" />
+    <!-- White center body -->
+    <polygon points="20,36 32,28 24,46" fill="#ffffff" />
+    <!-- Warm amber beak & head -->
+    <polygon points="32,28 46,26 36,34" fill="#f59e0b" />
+    <!-- Eye dot -->
+    <circle cx="39" cy="24" r="2" fill="#ffffff" />
+  </g>
+
+  <!-- Typography: 'Flii' -->
+  <text x="96" y="58" font-family="'Plus Jakarta Sans', 'Manrope', -apple-system, sans-serif" font-weight="900" font-size="46" fill="#0b3558" letter-spacing="-1.5">
+    Fl<tspan fill="#ef7d37">ii</tspan>
+  </text>
+  <text x="206" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="14" fill="#1261a0" letter-spacing="0">.com</text>
+
+  <!-- Tagline -->
+  <text x="98" y="74" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="10" fill="#94a3b8" letter-spacing="2.2">GLOBAL SCHOLARSHIPS</text>
+</svg>

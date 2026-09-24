@@ -4,7 +4,7 @@ import datetime
 from accounts.models import User
 from opportunities.models import Opportunity
 from applications.models import Application, ApplicationRequirement
-from agent_hub.agent import ScholarFlowAgent
+from agent_hub.agent import FliiAgent
 
 class ApplicationTests(TestCase):
     def setUp(self):
@@ -32,7 +32,7 @@ class ApplicationTests(TestCase):
         )
 
     def test_create_application_via_agent(self):
-        agent = ScholarFlowAgent(self.user)
+        agent = FliiAgent(self.user)
         result = agent.create_application(self.opp.id)
         self.assertTrue(result['created'])
         app = Application.objects.get(id=result['application_id'])
@@ -59,7 +59,7 @@ class ApplicationTests(TestCase):
             cgpa=4.85
         )
 
-        agent = ScholarFlowAgent(self.user)
+        agent = FliiAgent(self.user)
         res = agent.create_application(self.opp.id)
         app = Application.objects.get(id=res['application_id'])
 

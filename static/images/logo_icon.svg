@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="icon-grad-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b3558" />
+      <stop offset="50%" stop-color="#0e4470" />
+      <stop offset="100%" stop-color="#1261a0" />
+    </linearGradient>
+    <linearGradient id="icon-grad-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef7d37" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <filter id="icon-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-opacity="0.2" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect x="5" y="5" width="90" height="90" rx="26" fill="url(#icon-grad-bg)" filter="url(#icon-shadow)" />
+
+  <!-- Origami Bird -->
+  <g transform="translate(18, 16)">
+    <polygon points="8,32 36,22 28,50" fill="#38bdf8" opacity="0.95" />
+    <polygon points="36,22 62,10 44,38" fill="url(#icon-grad-orange)" />
+    <polygon points="28,50 44,38 34,64" fill="#ffffff" />
+    <polygon points="44,38 64,36 50,48" fill="#f59e0b" />
+    <circle cx="54" cy="33" r="2.5" fill="#ffffff" />
+  </g>
+</svg>

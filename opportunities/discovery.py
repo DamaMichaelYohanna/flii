@@ -193,14 +193,14 @@ class OpportunityDiscoveryService:
                 user=user,
                 notification_type='new_opportunity',
                 title=f"AI Scout Discovery: {new_count} New Scholarships Found",
-                message=f"ScholarFlow Scout scanned official EU, German, and global catalogs and synchronized {new_count} new funded Master's opportunities.",
+                message=f"Flii Scout scanned official EU, German, and global catalogs and synchronized {new_count} new funded Master's opportunities.",
                 action_url="/opportunities/"
             )
 
             AIAuditLog.objects.create(
                 user=user,
                 action_type="autonomous_scout_discovery",
-                provider="scholarflow_scout_engine",
+                provider="flii_scout_engine",
                 summary=f"Automated web discovery completed: {new_count} new opportunities added, {updated_count} verified.",
                 input_ref="Official Portals (Erasmus, DAAD, VLIR-UOS, Rotary)",
                 output_summary=f"Discovered {len(scraped_opportunities)} live opportunities.",
@@ -221,10 +221,10 @@ class OpportunityDiscoveryService:
         source_obj, _ = OpportunitySource.objects.get_or_create(
             name=data["provider"],
             defaults={
-                "source_url": data.get("official_source_url", "https://scholarflow.org"),
+                "source_url": data.get("official_source_url", "https://flii.app"),
                 "source_type": "erasmus" if "erasmus" in data["provider"].lower() else "government",
                 "last_verified": now,
-                "verification_notes": "Scraped from official public catalogue by ScholarFlow Scout."
+                "verification_notes": "Scraped from official public catalogue by Flii Scout."
             }
         )
 
@@ -240,8 +240,8 @@ class OpportunityDiscoveryService:
                 "funding_type": data.get("funding_type", "fully_funded"),
                 "funding_details": data.get("funding_details", "Full tuition waiver and living stipend."),
                 "eligibility_summary": data.get("eligibility_summary", "Open to international candidates."),
-                "application_url": data.get("application_url", "https://scholarflow.org"),
-                "official_source_url": data.get("official_source_url", "https://scholarflow.org"),
+                "application_url": data.get("application_url", "https://flii.app"),
+                "official_source_url": data.get("official_source_url", "https://flii.app"),
                 "source": source_obj,
                 "deadline": deadline,
                 "language_requirement": data.get("language_requirement", "English proficiency required."),

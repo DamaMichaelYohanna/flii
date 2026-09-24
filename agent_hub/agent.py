@@ -12,7 +12,7 @@ from notifications.models import Notification
 
 logger = logging.getLogger(__name__)
 
-class ScholarFlowAgent:
+class FliiAgent:
     """
     Modular AI Agent with specialized tool execution and strict human-in-the-loop controls.
     """
@@ -273,7 +273,7 @@ class ScholarFlowAgent:
             )
             text = (
                 f"⚠️ **Human Approval Required**: I have created an approval request (**Action #{action.id}: {action.title}**). "
-                "In accordance with ScholarFlow safety rules, I will not submit or transmit documents without your explicit review and authorization."
+                "In accordance with Flii safety rules, I will not submit or transmit documents without your explicit review and authorization."
             )
             return {
                 "response": text,
@@ -284,7 +284,7 @@ class ScholarFlowAgent:
         else:
             profile_summary = self.kb.get_summary_text()
             text = (
-                f"Hello! I am your ScholarFlow Application Agent. I have your verified applicant profile loaded:\n\n"
+                f"Hello! I am your Flii Application Agent. I have your verified applicant profile loaded:\n\n"
                 f"*{profile_summary[:180]}...*\n\n"
                 "I can help you:\n"
                 "1. **Discover verified scholarships** (e.g. 'Find fully funded MSc in Germany')\n"

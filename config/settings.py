@@ -12,19 +12,19 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-flii-key-development-2026')
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,testserver,useflii.up.railway.app,.railway.app').split(',') if host.strip()]
-for default_host in ['127.0.0.1', 'localhost', 'testserver', 'useflii.up.railway.app', '.railway.app']:
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,testserver,useflii.up.railway.app,.railway.app,.vercel.app').split(',') if host.strip()]
+for default_host in ['127.0.0.1', 'localhost', 'testserver', 'useflii.up.railway.app', '.railway.app', '.vercel.app']:
     if default_host not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append(default_host)
 
-# CSRF Trusted Origins (Required for HTTPS on Railway / custom domains)
+# CSRF Trusted Origins (Required for HTTPS on Railway / Vercel / custom domains)
 CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in os.environ.get(
         'CSRF_TRUSTED_ORIGINS',
-        'https://useflii.up.railway.app,https://*.railway.app,http://127.0.0.1:8000,http://localhost:8000'
+        'https://useflii.up.railway.app,https://*.railway.app,https://*.vercel.app,http://127.0.0.1:8000,http://localhost:8000'
     ).split(',') if origin.strip()
 ]
-for default_origin in ['https://useflii.up.railway.app', 'https://*.railway.app']:
+for default_origin in ['https://useflii.up.railway.app', 'https://*.railway.app', 'https://*.vercel.app']:
     if default_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(default_origin)
 

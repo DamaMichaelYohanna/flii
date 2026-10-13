@@ -169,7 +169,7 @@ def opportunity_import(request):
             source_obj, _ = OpportunitySource.objects.get_or_create(
                 name=extracted.provider,
                 defaults={
-                    'source_url': source_url or extracted.official_source_url or 'https://flii.app/sources',
+                    'source_url': source_url or extracted.official_source_url or extracted.application_url or '',
                     'source_type': 'university' if 'uni' in extracted.provider.lower() else 'government',
                     'last_verified': timezone.now(),
                     'verification_notes': 'Extracted from official text supplied by applicant/moderator.'
@@ -188,8 +188,8 @@ def opportunity_import(request):
             funding_type=extracted.funding_type,
             funding_details=extracted.funding_details,
             eligibility_summary=extracted.eligibility_summary,
-            application_url=extracted.application_url or source_url or 'https://flii.app',
-            official_source_url=extracted.official_source_url or source_url or 'https://flii.app',
+            application_url=extracted.application_url or source_url or '',
+            official_source_url=extracted.official_source_url or source_url or '',
             source=source_obj,
             deadline=deadline,
             language_requirement=extracted.language_requirement,

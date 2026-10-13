@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}{{ opp.title }} | Flii{% endblock %}
+{% block meta_description %}{{ opp.title }} by {{ opp.provider }}. Coverage: {{ opp.get_funding_type_display }}. Field: {{ opp.field_of_study }}. Location: {{ opp.country }}.{% endblock %}
+{% block og_title %}{{ opp.title }} ({{ opp.provider }}) | Flii{% endblock %}
+{% block og_description %}{{ opp.title }} by {{ opp.provider }}. Coverage: {{ opp.get_funding_type_display }}. Field: {{ opp.field_of_study }}. Apply before {{ opp.deadline|date:"M d, Y" }}.{% endblock %}
+{% block twitter_title %}{{ opp.title }} ({{ opp.provider }}) | Flii{% endblock %}
+{% block twitter_description %}{{ opp.title }} by {{ opp.provider }}. Coverage: {{ opp.get_funding_type_display }}. Field: {{ opp.field_of_study }}. Apply before {{ opp.deadline|date:"M d, Y" }}.{% endblock %}
+
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-8">

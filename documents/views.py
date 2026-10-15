@@ -50,6 +50,25 @@ def document_delete(request, pk):
 @login_required
 def document_download(request, pk):
     doc = get_object_or_404(Document, pk=pk, user=request.user)
-    if not doc.file or not os.path.exists(doc.file.path):
+    if not doc.file:
         raise Http404("Document file does not exist.")
-    return FileResponse(open(doc.file.path, 'rb'), as_attachment=True, filename=os.path.basename(doc.file.name))
+    
+    # Check for remote storage URL (e.g., Cloudinary in production)
+    try:
+        url = doc.file.url
+        if url and (url.startswith('http://') or url.startswith('https://')):
+            return redirect(url)
+    except Exception:
+        pass
+
+    # Fallback to local filesystem storage
+    try:
+        if hasattr(doc.file, 'path') and os.path.exists(doc.file.path):
+            return FileResponse(open(doc.file.path, 'rb'), as_attachment=True, filename=os.path.basename(doc.file.name))
+    except Exception:
+        pass
+
+    try:
+        return redirect(doc.file.url)
+    except Exception:
+        raise Http404("Document file could not be located.")

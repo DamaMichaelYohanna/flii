@@ -7,12 +7,7 @@ from .agent import FliiAgent
 
 @login_required
 def agent_chat_view(request):
-    agent = FliiAgent(request.user)
-    recent_logs = request.user.ai_audit_logs.all()[:8]
-    context = {
-        'recent_logs': recent_logs,
-    }
-    return render(request, 'agent_hub/chat.html', context)
+    return redirect('dashboard:index')
 
 
 @login_required

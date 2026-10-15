@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Dict, Any, Optional
 from django.conf import settings
-from .schemas import EligibilityResult, EssayDraftResult, OpportunityExtractionSchema
+from .schemas import EligibilityResult, EssayDraftResult, OpportunityExtractionSchema, PortalVerificationSchema
 from .providers import GeminiProvider, DeterministicSafeProvider, BaseAIProvider
 from .knowledge_base import PersonalKnowledgeBase
 from agent_hub.models import AIAuditLog
@@ -177,4 +177,51 @@ class AIService:
                 status="warning"
             )
             return fallback_result
+
+    def verify_and_scan_portal(self, url: str, html_or_text: str, title: str = "", http_status: int = 200, user=None) -> PortalVerificationSchema:
+        system_prompt = (
+            "You are the Flii Autonomous Application Intelligence Verifier. "
+            "Analyze the live scholarship portal webpage to determine whether it is active, "
+            "what kind of application system it uses (direct_portal, external_portal, nomination_required, email_submission), "
+            "and whether an AI applicant agent or student can immediately launch and execute an application. "
+            "Rules:\n"
+            "1. Extract any direct application portal URL (if different from general announcement or if a specific apply link exists).\n"
+            "2. Identify the active application cycle name (e.g. 2026/2027 Academic Year).\n"
+            "3. Identify detected opening date (YYYY-MM-DD) and closing deadline (YYYY-MM-DD) if stated in the text.\n"
+            "4. Classify ai_application_readiness as 'ready' (if apply form/button is live), 'requires_login', 'not_yet_open', or 'manual_only'.\n"
+            "5. Return valid JSON matching PortalVerificationSchema."
+        )
+
+        user_prompt = (
+            f"SCHOLARSHIP TITLE: {title}\n"
+            f"PORTAL TARGET URL: {url}\n"
+            f"HTTP RESPONSE STATUS: {http_status}\n\n"
+            f"WEBPAGE EXTRACTED CONTENT:\n"
+            f"{html_or_text[:4000]}"
+        )
+
+        try:
+            result = self.primary_provider.generate_structured(system_prompt, user_prompt, PortalVerificationSchema)
+            self._log_action(
+                user=user,
+                action_type="portal_verification",
+                summary=f"Scanned live portal for {title or url}",
+                input_ref=url,
+                output_summary=f"Active: {result.is_live_and_active}, Readiness: {result.ai_application_readiness}, Type: {result.portal_type}",
+                status="success"
+            )
+            return result
+        except Exception as e:
+            logger.warning(f"Primary provider failed in portal verification, using fallback: {e}")
+            fallback_result = self.fallback_provider.generate_structured(system_prompt, user_prompt, PortalVerificationSchema)
+            self._log_action(
+                user=user,
+                action_type="portal_verification",
+                summary=f"Scanned portal for {title or url} (Fallback)",
+                input_ref=url,
+                output_summary=f"Active: {fallback_result.is_live_and_active}, Readiness: {fallback_result.ai_application_readiness}",
+                status="warning"
+            )
+            return fallback_result
+
 

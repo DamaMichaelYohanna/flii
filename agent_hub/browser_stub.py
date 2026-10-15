@@ -38,12 +38,19 @@ class ApplicationExecutionService:
         self.browser_agent = BrowserAgent()
 
     def prepare_submission_package(self, application) -> Dict[str, Any]:
-        """Compiles all verified documents, essay responses, and referee details into an execution bundle."""
+        """Compiles all verified documents, essay responses, and referee details into an execution bundle with validated portal URL."""
+        opp = application.opportunity
         return {
             "application_id": application.id,
-            "opportunity": application.opportunity.title,
+            "opportunity": opp.title,
             "applicant": application.user.get_full_name(),
+            "target_portal_url": opp.application_url or opp.official_source_url,
+            "portal_type": opp.portal_type,
+            "ai_application_readiness": opp.ai_application_readiness,
+            "portal_http_status": opp.scan_http_status,
+            "last_verified_at": str(opp.last_scanned_at) if opp.last_scanned_at else None,
             "requirements_ready": [r.name for r in application.requirements.filter(status='complete')],
             "requires_human_approval": True,
             "action_type": "submit_application"
         }
+

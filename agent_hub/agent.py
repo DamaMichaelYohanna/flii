@@ -46,6 +46,10 @@ class FliiAgent:
                 "funding_type": opp.get_funding_type_display(),
                 "deadline": opp.deadline.strftime("%Y-%m-%d"),
                 "days_remaining": opp.days_remaining,
+                "application_url": opp.application_url or opp.official_source_url,
+                "portal_type": opp.get_portal_type_display(),
+                "ai_readiness": opp.get_ai_application_readiness_display(),
+                "cycle_badge": opp.cycle_badge,
                 "official_source": opp.official_source_url
             })
         return results
@@ -62,6 +66,11 @@ class FliiAgent:
                 "field_of_study": opp.field_of_study,
                 "funding_details": opp.funding_details,
                 "eligibility_summary": opp.eligibility_summary,
+                "application_url": opp.application_url or opp.official_source_url,
+                "portal_type": opp.get_portal_type_display(),
+                "ai_readiness": opp.get_ai_application_readiness_display(),
+                "cycle_name": opp.cycle_name,
+                "opening_date": opp.opening_date.strftime("%Y-%m-%d") if opp.opening_date else None,
                 "deadline": opp.deadline.strftime("%Y-%m-%d"),
                 "academic_requirement": opp.academic_requirement,
                 "language_requirement": opp.language_requirement,
@@ -76,6 +85,34 @@ class FliiAgent:
         opp = Opportunity.objects.get(id=opportunity_id)
         result = self.ai_service.assess_eligibility(self.user, opp)
         return result.model_dump()
+
+    def verify_portal_for_application(self, opportunity_id: int) -> Dict[str, Any]:
+        """
+        Launches live parallel AI verification on target scholarship portal.
+        Validates URL accessibility and prepares application bundle for AI agent execution.
+        """
+        from opportunities.scanner import ParallelOpportunityScanner
+        opp = Opportunity.objects.get(id=opportunity_id)
+        scanner = ParallelOpportunityScanner(timeout=8)
+        scan_result = scanner.scan_and_verify_single(opp, user=self.user)
+        
+        user_docs = set(self.user.documents.values_list('document_type', flat=True))
+        has_cv = 'cv' in user_docs
+        has_transcript = 'transcript' in user_docs
+
+        return {
+            "opportunity_id": opp.id,
+            "title": opp.title,
+            "application_url": opp.application_url or opp.official_source_url,
+            "is_live": scan_result["is_live"],
+            "status_code": scan_result["status_code"],
+            "portal_type": opp.get_portal_type_display(),
+            "ai_readiness": opp.get_ai_application_readiness_display(),
+            "cycle_badge": opp.cycle_badge,
+            "can_auto_prepare": has_cv and has_transcript,
+            "summary": scan_result["summary"]
+        }
+
 
     def list_missing_documents(self, application_id: Optional[int] = None) -> List[Dict[str, Any]]:
         user_docs = set(self.user.documents.values_list('document_type', flat=True))
@@ -262,6 +299,35 @@ class FliiAgent:
                 "tool_used": "list_missing_documents",
                 "data": missing
             }
+
+        elif "verify" in msg_lower or "portal" in msg_lower or "launch" in msg_lower or ("apply" in msg_lower and any(k in msg_lower for k in ["link", "check", "scan", "active", "where"])):
+            # Find matching opportunity if mentioned in prompt
+            opp = None
+            for o in Opportunity.objects.filter(status='active'):
+                if o.title.lower() in msg_lower or o.provider.lower() in msg_lower or (o.country and o.country.lower() in msg_lower):
+                    opp = o
+                    break
+            if not opp:
+                opp = Opportunity.objects.filter(status='active').first()
+
+            if opp:
+                v_res = self.verify_portal_for_application(opp.id)
+                status_icon = "🟢" if v_res["is_live"] else "🔴"
+                text = (
+                    f"{status_icon} **Live Portal Verification: {opp.title}**\n\n"
+                    f"• **Target Portal**: [{v_res['application_url']}]({v_res['application_url']})\n"
+                    f"• **Live HTTP Status**: `{v_res['status_code']} {'Active & Responding' if v_res['is_live'] else 'Connection Checked'}`\n"
+                    f"• **Portal Type**: {v_res['portal_type']}\n"
+                    f"• **AI Application Readiness**: **{v_res['ai_readiness']}**\n"
+                    f"• **Intake Cycle**: {opp.cycle_name} ({v_res['cycle_badge']['label']})\n\n"
+                    f"**Agent Verification Analysis**:\n{v_res['summary']}\n\n"
+                    f"{'✅ Your Document Vault is ready for autonomous application mapping.' if v_res['can_auto_prepare'] else 'ℹ️ Note: Upload your CV and academic transcripts to the Document Vault to allow the AI agent to map your documents directly into this portal.'}"
+                )
+                return {
+                    "response": text,
+                    "tool_used": "verify_portal_for_application",
+                    "data": v_res
+                }
 
         elif "submit" in msg_lower:
             # Consequential action demonstration: requires human approval!

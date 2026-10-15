@@ -17,8 +17,18 @@
             Back to Opportunities
         </a>
         <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1 text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full font-medium border border-teal-200">
-                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Source Verified ({{ opp.source_last_checked|date:"M d, Y" }})
+            {% if opp.scan_http_status %}
+            <span class="inline-flex items-center gap-1.5 {% if opp.scan_http_status < 400 %}text-emerald-700 bg-emerald-50 border-emerald-200{% else %}text-amber-700 bg-amber-50 border-amber-200{% endif %} px-2.5 py-1 rounded-full text-xs font-semibold border">
+                <span class="w-2 h-2 rounded-full {% if opp.scan_http_status < 400 %}bg-emerald-500 animate-pulse{% else %}bg-amber-500{% endif %}"></span>
+                HTTP {{ opp.scan_http_status }} • {% if opp.scan_http_status < 400 %}Portal Active{% else %}Checked{% endif %}
+            </span>
+            {% endif %}
+            <a href="{% url 'opportunities:scan_portal' opp.id %}" class="inline-flex items-center gap-1 text-slate-700 hover:text-teal-700 bg-white hover:bg-slate-50 px-2.5 py-1 rounded-full text-xs font-semibold border border-slate-200 transition-colors shadow-sm">
+                <i data-lucide="scan-line" class="w-3.5 h-3.5 text-teal-600"></i>
+                <span>Scan Portal (AI)</span>
+            </a>
+            <span class="inline-flex items-center gap-1 text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full font-medium border border-teal-200 text-xs">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Verified ({{ opp.source_last_checked|date:"M d, Y" }})
             </span>
         </div>
     </div>
@@ -60,22 +70,34 @@
         </div>
 
         <!-- Key Meta Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100 text-xs">
-            <div class="p-3.5 bg-slate-50 rounded-xl">
-                <div class="text-slate-500 text-[11px] uppercase font-semibold">Location / Country</div>
-                <div class="font-bold text-slate-900 mt-0.5">{{ opp.country }}</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-4 border-t border-slate-100 text-xs">
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Host Country</div>
+                <div class="font-bold text-slate-900 mt-0.5 truncate">{{ opp.country }}</div>
             </div>
-            <div class="p-3.5 bg-slate-50 rounded-xl">
-                <div class="text-slate-500 text-[11px] uppercase font-semibold">Degree Level</div>
-                <div class="font-bold text-slate-900 mt-0.5">{{ opp.get_degree_level_display }}</div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Degree Level</div>
+                <div class="font-bold text-slate-900 mt-0.5 truncate">{{ opp.get_degree_level_display }}</div>
             </div>
-            <div class="p-3.5 bg-slate-50 rounded-xl">
-                <div class="text-slate-500 text-[11px] uppercase font-semibold">Application Deadline</div>
-                <div class="font-bold text-slate-900 mt-0.5">{{ opp.deadline|date:"M d, Y" }} ({{ opp.days_remaining }}d left)</div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Cycle / Intake</div>
+                <div class="font-bold text-slate-900 mt-0.5 truncate">{{ opp.cycle_name }}</div>
             </div>
-            <div class="p-3.5 bg-slate-50 rounded-xl">
-                <div class="text-slate-500 text-[11px] uppercase font-semibold">Application Fee</div>
-                <div class="font-bold text-slate-900 mt-0.5">{{ opp.application_fee }}</div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Opening Date</div>
+                <div class="font-bold text-slate-900 mt-0.5 truncate">{{ opp.opening_date|date:"M d, Y"|default:"Open Now" }}</div>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Deadline</div>
+                <div class="font-bold text-slate-900 mt-0.5 truncate">{{ opp.deadline|date:"M d, Y" }}</div>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+                <div class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Cycle Status</div>
+                <div class="mt-0.5">
+                    <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded-md border {{ opp.cycle_badge.color }}">
+                        {{ opp.cycle_badge.label }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -200,6 +222,58 @@
 
         <!-- Sidebar: Official Sources & Application Links -->
         <div class="space-y-6">
+            <!-- AI Agent Application Readiness Card -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-6 rounded-2xl border border-slate-800 shadow-md space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-teal-300 flex items-center gap-1.5 uppercase tracking-wider">
+                        <i data-lucide="bot" class="w-4 h-4 text-teal-400"></i>
+                        Autonomous AI Applicant
+                    </span>
+                    {% if opp.scan_http_status %}
+                    <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {% if opp.scan_http_status < 400 %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% else %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% endif %}">
+                        HTTP {{ opp.scan_http_status }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center justify-between py-1 border-b border-slate-800">
+                        <span class="text-slate-400">Portal Type</span>
+                        <span class="font-semibold text-slate-200">{{ opp.get_portal_type_display }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-1 border-b border-slate-800">
+                        <span class="text-slate-400">AI Readiness</span>
+                        <span class="font-bold {% if opp.ai_application_readiness == 'ready' %}text-emerald-400{% elif opp.ai_application_readiness == 'requires_login' %}text-amber-400{% else %}text-slate-300{% endif %}">
+                            {{ opp.get_ai_application_readiness_display }}
+                        </span>
+                    </div>
+                    {% if opp.last_scanned_at %}
+                    <div class="flex items-center justify-between py-1 border-b border-slate-800">
+                        <span class="text-slate-400">Last Scanned</span>
+                        <span class="text-slate-300">{{ opp.last_scanned_at|date:"M d, Y H:i" }} UTC</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    {% if opp.application_url %}
+                    <a href="{{ opp.application_url }}" target="_blank" rel="noopener noreferrer" class="w-full px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs rounded-xl flex items-center justify-between transition-colors shadow-sm">
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                            <span>Launch Application Portal</span>
+                        </span>
+                        <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'opportunities:scan_portal' opp.id %}" class="w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-teal-400"></i>
+                        <span>Re-Scan Live Portal with AI</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Standard Official Sources Card -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <h3 class="font-bold text-slate-900 text-sm">Official Sources</h3>
                 <p class="text-xs text-slate-500">Always verify application instructions directly with the funding agency.</p>
@@ -214,21 +288,11 @@
                         <i data-lucide="external-link" class="w-4 h-4 text-slate-400 group-hover:text-white transition-colors"></i>
                     </a>
                     {% endif %}
-
-                    {% if opp.application_url and opp.application_url != opp.official_source_url %}
-                    <a href="{{ opp.application_url }}" target="_blank" rel="noopener noreferrer" class="w-full px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl flex items-center justify-between transition-colors shadow-sm group">
-                        <span class="flex items-center gap-2">
-                            <i data-lucide="send" class="w-3.5 h-3.5 text-teal-200"></i>
-                            <span>Direct Application Portal</span>
-                        </span>
-                        <i data-lucide="arrow-up-right" class="w-4 h-4 text-teal-200 group-hover:text-white transition-colors"></i>
-                    </a>
-                    {% endif %}
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 text-[11px] text-slate-400 space-y-1">
-                    <div>Source Provider: {{ opp.provider }}</div>
-                    <div>Last Verified: {{ opp.source_last_checked|date:"M d, Y H:i" }} UTC</div>
+                    <div>Provider: {{ opp.provider }}</div>
+                    <div>Source Verified: {{ opp.source_last_checked|date:"M d, Y H:i" }} UTC</div>
                 </div>
             </div>
         </div>

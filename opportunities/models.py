@@ -15,6 +15,10 @@ class OpportunitySource(models.Model):
     name = models.CharField(max_length=255)
     source_url = models.URLField(max_length=500)
     source_type = models.CharField(max_length=50, choices=SOURCE_TYPES, default='government')
+    is_active = models.BooleanField(default=True)
+    last_status = models.CharField(max_length=50, default='idle')
+    last_error = models.TextField(blank=True)
+    items_found_count = models.IntegerField(default=0)
     last_checked = models.DateTimeField(default=timezone.now)
     last_verified = models.DateTimeField(null=True, blank=True)
     verification_notes = models.TextField(blank=True)
@@ -72,8 +76,10 @@ class Opportunity(models.Model):
     official_source_url = models.URLField(max_length=500, help_text="Official scholarship documentation page")
     source = models.ForeignKey(OpportunitySource, on_delete=models.SET_NULL, null=True, blank=True, related_name='opportunities')
     
+    opening_date = models.DateTimeField(null=True, blank=True, help_text="Official opening date of application window")
     deadline = models.DateTimeField(help_text="Official application deadline")
     deadline_timezone = models.CharField(max_length=50, default='UTC', help_text="e.g. CET, GMT, UTC, EST")
+    cycle_name = models.CharField(max_length=100, default="2026/2027 Academic Year", help_text="e.g. 2026/2027 Annual Cycle")
     start_date = models.DateField(null=True, blank=True, help_text="Academic intake start")
     duration = models.CharField(max_length=100, default="24 Months (2 Years)")
     
@@ -86,6 +92,28 @@ class Opportunity(models.Model):
     application_fee = models.CharField(max_length=100, default='Free / No Application Fee')
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='active')
     verification_status = models.CharField(max_length=30, choices=VERIFICATION_STATUSES, default='source_verified')
+    portal_type = models.CharField(
+        max_length=50,
+        default='direct_portal',
+        choices=[
+            ('direct_portal', 'Direct Online Application Portal'),
+            ('external_portal', 'External University / Central System'),
+            ('nomination_required', 'National Agency Nomination Required'),
+            ('email_submission', 'Direct Email Dossier Submission')
+        ]
+    )
+    ai_application_readiness = models.CharField(
+        max_length=50,
+        default='ready',
+        choices=[
+            ('ready', 'Verified Active Apply Portal'),
+            ('requires_login', 'Requires Account Registration First'),
+            ('not_yet_open', 'Application Portal Locked Until Opening Date'),
+            ('manual_only', 'Manual Submission Only')
+        ]
+    )
+    last_scanned_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp of latest parallel AI verification scan")
+    scan_http_status = models.IntegerField(null=True, blank=True, help_text="Latest HTTP response code from live portal")
     source_last_checked = models.DateTimeField(default=timezone.now)
     
     shortlisted_by = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='shortlisted_opportunities')
@@ -105,9 +133,69 @@ class Opportunity(models.Model):
         return timezone.now() > self.deadline
 
     @property
+    def is_upcoming(self):
+        if self.opening_date:
+            return timezone.now() < self.opening_date
+        return False
+
+    @property
+    def is_open(self):
+        now = timezone.now()
+        if self.opening_date and now < self.opening_date:
+            return False
+        return now <= self.deadline
+
+    @property
     def days_remaining(self):
         delta = self.deadline - timezone.now()
         return max(0, delta.days)
+
+    @property
+    def days_until_opening(self):
+        if self.opening_date and timezone.now() < self.opening_date:
+            delta = self.opening_date - timezone.now()
+            return max(0, delta.days)
+        return 0
+
+    @property
+    def cycle_status(self):
+        now = timezone.now()
+        if self.opening_date and now < self.opening_date:
+            return 'upcoming'
+        if now > self.deadline:
+            return 'closed'
+        if self.days_remaining <= 14:
+            return 'closing_soon'
+        return 'open_now'
+
+    @property
+    def cycle_badge(self):
+        status = self.cycle_status
+        if status == 'upcoming':
+            open_str = self.opening_date.strftime("%b %d, %Y") if self.opening_date else "Soon"
+            days = self.days_until_opening
+            return {
+                'label': f'Opens in {days}d ({open_str})' if days > 0 else f'Opens {open_str}',
+                'color': 'bg-blue-50 text-blue-700 border-blue-200',
+                'status': 'upcoming'
+            }
+        elif status == 'closing_soon':
+            return {
+                'label': f'Closes in {self.days_remaining}d',
+                'color': 'bg-red-50 text-red-700 border-red-200 animate-pulse',
+                'status': 'closing_soon'
+            }
+        elif status == 'closed':
+            return {
+                'label': 'Cycle Closed',
+                'color': 'bg-gray-100 text-gray-700 border-gray-300',
+                'status': 'closed'
+            }
+        return {
+            'label': 'Open for Applications',
+            'color': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            'status': 'open_now'
+        }
 
     @property
     def urgency_badge(self):

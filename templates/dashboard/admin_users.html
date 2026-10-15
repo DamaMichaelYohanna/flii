@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}User Management | Flii Admin{% endblock %}
+{% block meta_description %}Manage user accounts, onboarding status, staff privileges, and application progress.{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+    <!-- Breadcrumb & Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
+                <a href="{% url 'dashboard:admin_system_dashboard' %}" class="hover:text-teal-600 transition-colors flex items-center gap-1">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                    Admin Hub
+                </a>
+                <span>/</span>
+                <span class="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md font-bold">User Directory & Roles</span>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                <span>User Account Management</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                    {{ total_users }} Accounts
+                </span>
+            </h1>
+            <p class="text-xs text-slate-600 mt-1">
+                Manage registered applicant accounts, assign staff permissions, and inspect onboarding progression.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'dashboard:admin_system_dashboard' %}" class="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Admin Command Center</span>
+            </a>
+            <a href="/admin/accounts/user/" target="_blank" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                <i data-lucide="database" class="w-4 h-4 text-teal-400"></i>
+                <span>Django User Admin</span>
+                <i data-lucide="arrow-up-right" class="w-3 h-3 text-slate-400"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <form method="GET" action="{% url 'dashboard:admin_users' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="lg:col-span-2 relative">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                <input type="text" name="q" value="{{ query }}" placeholder="Search by name, email, or username..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+            </div>
+            <div>
+                <select name="role" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                    <option value="">All Roles</option>
+                    <option value="applicant" {% if selected_role == 'applicant' %}selected{% endif %}>Applicants Only</option>
+                    <option value="staff" {% if selected_role == 'staff' %}selected{% endif %}>Staff / Admins</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <select name="onboarding" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                    <option value="">All Onboarding Statuses</option>
+                    <option value="completed" {% if selected_onboarding == 'completed' %}selected{% endif %}>Profile Completed</option>
+                    <option value="pending" {% if selected_onboarding == 'pending' %}selected{% endif %}>Onboarding In Progress</option>
+                </select>
+                <button type="submit" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex-shrink-0">
+                    Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Users Table Card -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-100 bg-slate-50/75 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <th class="py-3.5 px-6">User / Applicant</th>
+                        <th class="py-3.5 px-4">Role & Status</th>
+                        <th class="py-3.5 px-4">Onboarding</th>
+                        <th class="py-3.5 px-4 text-center">Applications</th>
+                        <th class="py-3.5 px-4 text-center">Vault Docs</th>
+                        <th class="py-3.5 px-4 text-center">STAR Stories</th>
+                        <th class="py-3.5 px-4">Joined Date</th>
+                        <th class="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs">
+                    {% for u in users_list %}
+                    <tr class="hover:bg-slate-50/70 transition-colors" id="userRow-{{ u.id }}">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-slate-900 text-teal-300 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                                    {{ u.first_name|default:u.username|slice:":1"|upper }}
+                                </div>
+                                <div class="truncate">
+                                    <div class="font-bold text-slate-900 flex items-center gap-2">
+                                        <span>{{ u.get_full_name|default:u.username }}</span>
+                                        {% if u.is_superuser %}
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-purple-100 text-purple-800">Superuser</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-[11px] text-slate-400 font-mono">{{ u.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4">
+                            {% if u.is_staff %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" id="roleBadge-{{ u.id }}">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Staff Admin
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600" id="roleBadge-{{ u.id }}">
+                                Applicant
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-4">
+                            {% if u.onboarding_completed %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+                                <i data-lucide="check-circle-2" class="w-3 h-3"></i> Ready
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                In Progress
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-4 text-center font-bold text-slate-800">
+                            {{ u.apps_count }}
+                        </td>
+                        <td class="py-4 px-4 text-center font-bold text-slate-800">
+                            {{ u.docs_count }}
+                        </td>
+                        <td class="py-4 px-4 text-center font-bold text-slate-800">
+                            {{ u.stories_count }}
+                        </td>
+                        <td class="py-4 px-4 text-slate-400 font-mono text-[11px]">
+                            {{ u.date_joined|date:"M d, Y" }}
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button type="button" onclick="toggleStaffStatus({{ u.id }})" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all {% if u.is_staff %}border-rose-200 text-rose-700 hover:bg-rose-50{% else %}border-emerald-200 text-emerald-700 hover:bg-emerald-50{% endif %}" id="staffBtn-{{ u.id }}">
+                                    {% if u.is_staff %}Revoke Staff{% else %}Make Staff{% endif %}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="py-12 text-center text-slate-400 italic">
+                            No users matched your search criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+async function toggleStaffStatus(userId) {
+    const btn = document.getElementById(`staffBtn-${userId}`);
+    const badge = document.getElementById(`roleBadge-${userId}`);
+    try {
+        const resp = await fetch(`/dashboard/admin/users/${userId}/toggle-staff/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await resp.json();
+        if (data.success) {
+            if (data.is_staff) {
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-200 text-rose-700 hover:bg-rose-50 transition-all";
+                btn.innerText = "Revoke Staff";
+                badge.className = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Staff Admin`;
+            } else {
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-all";
+                btn.innerText = "Make Staff";
+                badge.className = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600";
+                badge.innerText = "Applicant";
+            }
+        } else {
+            alert(data.error || "Unable to update staff status.");
+        }
+    } catch (err) {
+        alert("Network error: " + err.message);
+    }
+}
+</script>
+{% endblock %}

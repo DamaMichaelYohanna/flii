@@ -3,11 +3,8 @@ from django.core.management import call_command
 
 
 def apply_seed_scholarships(apps, schema_editor):
-    try:
-        call_command('seed_scholarships')
-    except Exception as e:
-        # Fallback if any error occurs
-        pass
+    # No-op: scholarships are dynamically scouted via admin scout hub
+    pass
 
 
 def reverse_func(apps, schema_editor):

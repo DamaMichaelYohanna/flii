@@ -18,7 +18,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Bachelor's degree in Computer Science, Math, or Engineering (First Class or 2:1).\n• Open to international applicants worldwide.\n• Strong background in linear algebra and programming.",
         "application_url": "https://emai-master.eu/how-to-apply/",
         "official_source_url": "https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en",
-        "deadline_days": 65,
+        "opening_date_str": "2026-10-01",
+        "deadline_str": "2027-01-31",
+        "cycle_name": "2027/2028 Academic Intake",
+        "portal_type": "direct_portal",
+        "ai_application_readiness": "ready",
         "language_requirement": "IELTS 6.5+ or English medium undergraduate instruction letter.",
         "academic_requirement": "BSc degree with minimum Second Class Upper (2:1) or First Class honours.",
         "nationality_requirement": "Open to all nationalities (Developing nation partner slots available).",
@@ -36,9 +40,13 @@ SCHOLARSHIPS_DATA = [
         "funding_type": "fully_funded",
         "funding_details": "€934 monthly stipend + health insurance + travel subsidies + preparatory German language course + study allowance.",
         "eligibility_summary": "• First degree (Bachelor) completed with above-average results.\n• Citizen of DAC-listed developing countries (Nigeria, Kenya, Ghana, etc.).\n• Demonstrated commitment to public service and social development.",
-        "application_url": "https://www.daad.de/en/study-and-research-in-germany/scholarships/daad-scholarships/helmut-schmidt-programme/",
-        "official_source_url": "https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/?status=3&origin=144&id=50026397",
-        "deadline_days": 75,
+        "application_url": "https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/?status=3&origin=144&id=50026397",
+        "official_source_url": "https://www.daad.de/en/study-and-research-in-germany/scholarships/daad-scholarships/helmut-schmidt-programme/",
+        "opening_date_str": "2027-06-01",
+        "deadline_str": "2027-07-31",
+        "cycle_name": "2027/2028 Master's Intake",
+        "portal_type": "external_portal",
+        "ai_application_readiness": "not_yet_open",
         "language_requirement": "English proficiency (IELTS 6.5 / TOEFL 90) or German depending on program.",
         "academic_requirement": "Bachelor's degree in Political Science, Law, Economics, or Social Sciences.",
         "work_experience_requirement": "Relevant work or volunteer experience in governance/community leadership.",
@@ -57,9 +65,13 @@ SCHOLARSHIPS_DATA = [
         "funding_type": "fully_funded",
         "funding_details": "100% University tuition fees + monthly living allowance + economy return flights to UK + arrival allowance + visa fee reimbursement.",
         "eligibility_summary": "• Citizen of a Chevening-eligible country or territory (including Nigeria).\n• Return to your country of citizenship for minimum 2 years after award.\n• Have completed an undergraduate degree qualifying for UK master's.\n• At least two years (2,800 hours) of work experience.",
-        "application_url": "https://www.chevening.org/apply/",
+        "application_url": "https://www.chevening.org/scholarships/",
         "official_source_url": "https://www.chevening.org/scholarships/guidance/",
-        "deadline_days": 45,
+        "opening_date_str": "2026-08-04",
+        "deadline_str": "2026-11-03",
+        "cycle_name": "2027/2028 Chevening Cohort",
+        "portal_type": "direct_portal",
+        "ai_application_readiness": "ready",
         "language_requirement": "English language proficiency requirements set by chosen UK universities.",
         "academic_requirement": "Undergraduate degree equivalent to at least a UK second-class upper (2:1) honours.",
         "work_experience_requirement": "Minimum 2 years (2,800 hours) of full-time, part-time, or voluntary work experience.",
@@ -80,7 +92,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Citizen of or granted refugee status by an eligible Commonwealth country (Nigeria eligible).\n• Permanently resident in an eligible Commonwealth country.\n• By September 2026, hold a first degree of at least upper second class (2:1) honours.",
         "application_url": "https://cscuk.fcdo.gov.uk/scholarships/commonwealth-shared-scholarships/",
         "official_source_url": "https://cscuk.fcdo.gov.uk/scholarships/",
-        "deadline_days": 55,
+        "opening_date_str": "2026-11-12",
+        "deadline_str": "2026-12-15",
+        "cycle_name": "2027/2028 Commonwealth Cycle",
+        "portal_type": "direct_portal",
+        "ai_application_readiness": "not_yet_open",
         "language_requirement": "University-specific English test waiver or IELTS 6.5+.",
         "academic_requirement": "First Class or Second Class Upper (2:1) Bachelor's degree.",
         "nationality_requirement": "Eligible Commonwealth developing countries (including Nigeria).",
@@ -100,7 +116,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• International applicants of foreign nationality (non-French).\n• Candidates must be aged 25 or under for Master's level.\n• Application must be submitted by a French institution accepting the student.",
         "application_url": "https://www.campusfrance.org/en/france-excellence-eiffel-scholarship-program",
         "official_source_url": "https://www.campusfrance.org/en/eiffel",
-        "deadline_days": 85,
+        "opening_date_str": "2026-10-01",
+        "deadline_str": "2027-01-10",
+        "cycle_name": "2027/2028 Eiffel Session",
+        "portal_type": "nomination_required",
+        "ai_application_readiness": "manual_only",
         "language_requirement": "Dependent on degree language of instruction (English or French).",
         "academic_requirement": "Outstanding academic track record (top 5-10% of graduating class).",
         "nationality_requirement": "Non-French nationality (Global developing and emerging economies prioritised).",
@@ -120,7 +140,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Citizen of an African country.\n• Ordinarily resident in Africa.\n• Applying for an eligible taught Master's course at University of Cambridge.\n• Demonstrated commitment to giving back to your community.",
         "application_url": "https://www.cambridgetrust.org/scholarships/mastercard-foundation-scholars-program/",
         "official_source_url": "https://www.postgraduate.study.cam.ac.uk/funding/funding-opportunities/mastercard-foundation-scholars-program",
-        "deadline_days": 70,
+        "opening_date_str": "2026-09-02",
+        "deadline_str": "2027-01-05",
+        "cycle_name": "2027/2028 Postgraduate Intake",
+        "portal_type": "direct_portal",
+        "ai_application_readiness": "requires_login",
         "language_requirement": "Cambridge language requirement (IELTS 7.5 or equivalent or waiver).",
         "academic_requirement": "First Class Honours undergraduate degree or top 5% equivalent GPA.",
         "nationality_requirement": "African nationals resident in Africa.",
@@ -140,7 +164,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Very good results in their Bachelor's degree (top 10% of Bachelor's programme = Grade A).\n• Open to international applicants.\n• Submission of an innovative pre-proposal for Master's thesis.",
         "application_url": "https://ethz.ch/en/studies/master/financial/excellence-scholarship.html",
         "official_source_url": "https://ethz.ch/students/en/studies/financial/excellence-scholarship.html",
-        "deadline_days": 95,
+        "opening_date_str": "2026-11-01",
+        "deadline_str": "2026-12-15",
+        "cycle_name": "2027/2028 Master's Intake",
+        "portal_type": "direct_portal",
+        "ai_application_readiness": "not_yet_open",
         "language_requirement": "C1 level English (IELTS 7.0+ or TOEFL 100+).",
         "academic_requirement": "Undergraduate degree in STEM with top 10% class rank (Grade A / First Class).",
         "nationality_requirement": "Open to all nationalities worldwide.",
@@ -160,7 +188,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Citizen of any country outside the United Kingdom.\n• Applying to pursue a full-time postgraduate degree at University of Cambridge.\n• Outstanding intellectual ability and leadership potential.",
         "application_url": "https://www.gatescambridge.org/apply/how-to-apply/",
         "official_source_url": "https://www.gatescambridge.org/about/",
-        "deadline_days": 60,
+        "opening_date_str": "2026-09-02",
+        "deadline_str": "2027-01-06",
+        "cycle_name": "2027/2028 Gates Cambridge Round",
+        "portal_type": "direct_portal",
+        "ai_application_readiness": "requires_login",
         "language_requirement": "IELTS 7.5 or TOEFL 110 as required by Cambridge faculties.",
         "academic_requirement": "First Class Honours Bachelor's degree.",
         "nationality_requirement": "Citizens of all countries outside the UK.",
@@ -180,7 +212,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Citizen of an eligible SI country (including Nigeria, Kenya, Ghana, South Africa).\n• Minimum 3,000 hours of documented work experience.\n• Admitted to an eligible Swedish Master's programme.",
         "application_url": "https://si.se/en/apply/scholarships/swedish-institute-scholarships-for-global-professionals/",
         "official_source_url": "https://si.se/en/apply/scholarships/",
-        "deadline_days": 110,
+        "opening_date_str": "2027-02-10",
+        "deadline_str": "2027-02-28",
+        "cycle_name": "2027/2028 SI Scholarship Round",
+        "portal_type": "external_portal",
+        "ai_application_readiness": "not_yet_open",
         "language_requirement": "English 6 / IELTS 6.5 minimum (set by Swedish university admissions).",
         "academic_requirement": "Bachelor's degree equivalent to a Swedish Kandidatexamen.",
         "work_experience_requirement": "Minimum 3,000 hours of verified employment or leadership experience.",
@@ -201,7 +237,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Master's degree or equivalent achieved before July 31, 2026.\n• Endorsement from a Swiss university professor willing to supervise research.\n• High academic achievement and sound research proposal.",
         "application_url": "https://www.sbfi.admin.ch/sbfi/en/home/education/scholarships-and-grants/swiss-government-excellence-scholarships.html",
         "official_source_url": "https://www.sbfi.admin.ch/sbfi/en/home/education/scholarships-and-grants/swiss-government-excellence-scholarships/countries-a-l.html",
-        "deadline_days": 130,
+        "opening_date_str": "2026-08-01",
+        "deadline_str": "2026-11-30",
+        "cycle_name": "2027/2028 Academic Year",
+        "portal_type": "nomination_required",
+        "ai_application_readiness": "manual_only",
         "language_requirement": "Proficiency in the language of research (English, German, French, or Italian).",
         "academic_requirement": "Master's degree completed with high distinction.",
         "nationality_requirement": "Scholars from over 180 countries eligible via respective Swiss embassies.",
@@ -221,7 +261,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• First-class or Upper Second-class Bachelor's degree in Computing or Software Engineering.\n• Proven proficiency in algorithms, operating systems, and computer networks.",
         "application_url": "https://secclo.aalto.fi/apply/",
         "official_source_url": "https://secclo.aalto.fi/",
-        "deadline_days": 80,
+        "opening_date_str": "2026-10-15",
+        "deadline_str": "2027-01-15",
+        "cycle_name": "2027/2028 Intake",
+        "portal_type": "direct_portal",
+        "ai_application_readiness": "ready",
         "language_requirement": "IELTS 6.5 / TOEFL 92 (English medium degree exemption available).",
         "academic_requirement": "Bachelor's degree in Computer Science, Software Engineering, or Telecommunications.",
         "nationality_requirement": "All nationalities eligible (Global scholarship track).",
@@ -239,9 +283,13 @@ SCHOLARSHIPS_DATA = [
         "funding_type": "fully_funded",
         "funding_details": "€934 monthly living stipend + travel ticket reimbursement + health & accident insurance + study allowance.",
         "eligibility_summary": "• Citizen of a developing country (Nigeria / African countries eligible).\n• Bachelor's degree with well above-average results.\n• At least 2 years of professional work experience.",
-        "application_url": "https://www.daad.de/en/study-and-research-in-germany/scholarships/daad-scholarships/development-related-postgraduate-courses-epos/",
-        "official_source_url": "https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/",
-        "deadline_days": 90,
+        "application_url": "https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/",
+        "official_source_url": "https://www.daad.de/en/study-and-research-in-germany/scholarships/daad-scholarships/development-related-postgraduate-courses-epos/",
+        "opening_date_str": "2026-08-01",
+        "deadline_str": "2026-11-30",
+        "cycle_name": "2027/2028 EPOS Intake",
+        "portal_type": "external_portal",
+        "ai_application_readiness": "requires_login",
         "language_requirement": "English (IELTS 6.0+) or German (B2/C1) depending on selected course.",
         "academic_requirement": "Undergraduate degree completed with above-average grades within the last 6 years.",
         "work_experience_requirement": "Minimum 2 years of relevant professional or public service experience.",
@@ -262,7 +310,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Citizen and resident of eligible partner country (including Nigeria, Kenya, Ghana).\n• Age under 35 at the time of application.\n• Strong academic record in relevant discipline.",
         "application_url": "https://www.vlirous.be/en/scholarships/",
         "official_source_url": "https://www.vlirous.be/en/scholarships/master_programmes_icp/",
-        "deadline_days": 105,
+        "opening_date_str": "2026-10-01",
+        "deadline_str": "2027-02-01",
+        "cycle_name": "2027/2028 ICP Master's Cycle",
+        "portal_type": "external_portal",
+        "ai_application_readiness": "ready",
         "language_requirement": "English proficiency (IELTS 6.5 / TOEFL 90 / English Medium Proof).",
         "academic_requirement": "Bachelor's degree with distinction or minimum 2:1 honours.",
         "nationality_requirement": "Nationals of VLIR-UOS partner countries (Nigeria eligible).",
@@ -282,7 +334,11 @@ SCHOLARSHIPS_DATA = [
         "eligibility_summary": "• Minimum 3 years of full-time relevant work or leadership experience in peacebuilding/community development.\n• Bachelor's degree with strong academic standing.\n• Endorsement from local Rotary District.",
         "application_url": "https://www.rotary.org/en/our-programs/peace-fellowships",
         "official_source_url": "https://my.rotary.org/en/peace-fellowship-application",
-        "deadline_days": 120,
+        "opening_date_str": "2027-02-01",
+        "deadline_str": "2027-05-15",
+        "cycle_name": "2028/2029 Fellowship Class",
+        "portal_type": "direct_portal",
+        "ai_application_readiness": "not_yet_open",
         "language_requirement": "Proficiency in English (IELTS 7.0 / TOEFL 100).",
         "academic_requirement": "Bachelor's degree with honours.",
         "work_experience_requirement": "Minimum 3 years documented leadership or civic impact experience.",
@@ -317,6 +373,18 @@ class Command(BaseCommand):
             source_obj.last_verified = now
             source_obj.save()
 
+            # Parse opening and deadline dates
+            opening_date = None
+            if item.get("opening_date_str"):
+                op_dt = datetime.datetime.strptime(item["opening_date_str"], "%Y-%m-%d")
+                opening_date = timezone.make_aware(op_dt)
+
+            if item.get("deadline_str"):
+                dl_dt = datetime.datetime.strptime(item["deadline_str"], "%Y-%m-%d")
+                deadline = timezone.make_aware(dl_dt)
+            else:
+                deadline = now + datetime.timedelta(days=item.get("deadline_days", 60))
+
             # Find by title or similar title
             opp = Opportunity.objects.filter(title__icontains=item["title"][:30]).first()
             if opp:
@@ -332,6 +400,11 @@ class Command(BaseCommand):
                 opp.eligibility_summary = item.get("eligibility_summary", "")
                 opp.application_url = item["application_url"]
                 opp.official_source_url = item["official_source_url"]
+                opp.opening_date = opening_date
+                opp.deadline = deadline
+                opp.cycle_name = item.get("cycle_name", "2026/2027 Academic Year")
+                opp.portal_type = item.get("portal_type", "direct_portal")
+                opp.ai_application_readiness = item.get("ai_application_readiness", "ready")
                 opp.language_requirement = item.get("language_requirement", "")
                 opp.academic_requirement = item.get("academic_requirement", "")
                 opp.work_experience_requirement = item.get("work_experience_requirement", "")
@@ -345,7 +418,6 @@ class Command(BaseCommand):
                 updated_count += 1
                 self.stdout.write(self.style.SUCCESS(f"  [UPDATED] {opp.title[:50]} -> {opp.application_url}"))
             else:
-                deadline = now + datetime.timedelta(days=item.get("deadline_days", 60))
                 opp = Opportunity.objects.create(
                     title=item["title"],
                     provider=item["provider"],
@@ -360,7 +432,11 @@ class Command(BaseCommand):
                     application_url=item["application_url"],
                     official_source_url=item["official_source_url"],
                     source=source_obj,
+                    opening_date=opening_date,
                     deadline=deadline,
+                    cycle_name=item.get("cycle_name", "2026/2027 Academic Year"),
+                    portal_type=item.get("portal_type", "direct_portal"),
+                    ai_application_readiness=item.get("ai_application_readiness", "ready"),
                     language_requirement=item.get("language_requirement", ""),
                     academic_requirement=item.get("academic_requirement", ""),
                     work_experience_requirement=item.get("work_experience_requirement", ""),

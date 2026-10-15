@@ -7,8 +7,6 @@ from applicants.models import ApplicantProfile, Education, StudyGoal, Skill
 from stories.models import Story
 
 def landing_page_view(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard:index')
     return render(request, 'accounts/landing.html', {'hide_app_shell': True})
 
 def register_view(request):

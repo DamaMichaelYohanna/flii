@@ -49,9 +49,42 @@ class OpportunityExtractionSchema(BaseModel):
     eligibility_summary: str = Field(description="Bulleted summary of eligibility criteria")
     application_url: str = Field(default="", description="Direct link to portal")
     official_source_url: str = Field(default="", description="Official documentation link")
+    opening_date_iso: Optional[str] = Field(default=None, description="Application opening date in YYYY-MM-DD format (if specified)")
     deadline_iso: str = Field(default="2026-12-31", description="Application deadline in YYYY-MM-DD format")
+    cycle_name: str = Field(default="2026/2027 Academic Year", description="Academic intake or cycle name")
     language_requirement: str = Field(description="English language test score or waiver details")
     academic_requirement: str = Field(description="Minimum GPA or degree classification")
     nationality_requirement: str = Field(description="Eligible countries or target regions")
     documents_required: str = Field(description="Mandatory documents to submit")
     application_fee: str = Field(default="Free / €0")
+
+
+class PortalVerificationSchema(BaseModel):
+    is_live_and_active: bool = Field(description="Whether the portal page is active, valid, and responding")
+    portal_type: Literal["direct_portal", "external_portal", "nomination_required", "email_submission"] = Field(
+        default="direct_portal",
+        description="Type of submission system: direct form, external portal, nomination, or email"
+    )
+    ai_application_readiness: Literal["ready", "requires_login", "not_yet_open", "manual_only"] = Field(
+        default="ready",
+        description="Whether an AI agent or applicant can immediately apply, must login, or must wait until opening"
+    )
+    direct_apply_url: Optional[str] = Field(
+        default=None,
+        description="Exact direct online application link discovered on the page (if distinct from info page)"
+    )
+    detected_opening_date_iso: Optional[str] = Field(
+        default=None,
+        description="Discovered opening date in YYYY-MM-DD format"
+    )
+    detected_closing_date_iso: Optional[str] = Field(
+        default=None,
+        description="Discovered closing deadline date in YYYY-MM-DD format"
+    )
+    cycle_name: Optional[str] = Field(
+        default="2026/2027 Academic Year",
+        description="Active application cycle name"
+    )
+    verification_summary: str = Field(
+        description="Concise analysis of portal accessibility, submission instructions, and readiness for AI agent"
+    )

@@ -17,9 +17,19 @@
             <p class="text-xs text-slate-500 mt-0.5">Explore verified postgraduate scholarships and funded Master's programmes abroad.</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
+            {% if user.is_staff %}
+            <a href="{% url 'opportunities:admin_scout_hub' %}" class="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 border border-teal-500">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-teal-200"></i>
+                <span>Admin Scout Hub</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'opportunities:scan_all_portals' %}" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5 border border-emerald-600">
+                <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                <span>Scan Portals (Parallel AI)</span>
+            </a>
             <a href="{% url 'opportunities:run_scout' %}" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5 border border-slate-700">
-                <i data-lucide="radar" class="w-3.5 h-3.5 text-teal-400 animate-spin"></i>
-                <span>Run AI Scout (Web Scrape)</span>
+                <i data-lucide="radar" class="w-3.5 h-3.5 text-teal-400"></i>
+                <span>Run AI Scout</span>
             </a>
             <a href="{% url 'opportunities:import' %}" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5">
                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
@@ -77,9 +87,23 @@
             <!-- Card Header -->
             <div class="p-5 space-y-3">
                 <div class="flex items-start justify-between gap-2">
-                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">
-                        {{ opp.get_funding_type_display|truncatechars:24 }}
-                    </span>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">
+                            {{ opp.get_funding_type_display|truncatechars:20 }}
+                        </span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ opp.cycle_badge.color }}">
+                            {{ opp.cycle_badge.label }}
+                        </span>
+                        {% if opp.ai_application_readiness == 'ready' %}
+                        <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1" title="Verified live application link ready for AI agent submission">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> AI Ready
+                        </span>
+                        {% elif opp.ai_application_readiness == 'requires_login' %}
+                        <span class="px-1.5 py-0.5 rounded-md text-[9px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" title="Account login required before applying">
+                            Login Req
+                        </span>
+                        {% endif %}
+                    </div>
                     
                     <!-- Shortlist Button -->
                     <a href="{% url 'opportunities:toggle_shortlist' opp.id %}" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-600 hover:bg-slate-50 transition-colors">
@@ -120,8 +144,16 @@
             <!-- Card Footer -->
             <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div class="flex items-center gap-1.5 font-medium">
+                    {% if opp.is_upcoming %}
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-500"></i>
+                    <span class="text-blue-700 font-semibold">{{ opp.cycle_badge.label }}</span>
+                    {% elif opp.cycle_status == 'closed' %}
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <span class="text-slate-500">Cycle Closed</span>
+                    {% else %}
                     <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
                     <span class="text-slate-600">{{ opp.days_remaining }}d remaining</span>
+                    {% endif %}
                 </div>
 
                 <div class="flex items-center gap-2">

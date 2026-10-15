@@ -86,29 +86,8 @@ def google_login_view(request):
     redirect_uri = request.build_absolute_uri(reverse('accounts:google_callback'))
 
     if not oauth.is_configured:
-        # Development Sandbox mode when client ID is not configured in .env
-        if request.GET.get('sandbox') == '1':
-            demo_email = request.GET.get('email', 'google.applicant@example.com')
-            first_name = request.GET.get('name', 'Google Applicant').split()[0]
-            last_name = request.GET.get('name', 'Google Applicant').split()[-1]
-            user, created = oauth.get_or_create_user({
-                'email': demo_email,
-                'given_name': first_name,
-                'family_name': last_name,
-                'email_verified': True
-            })
-            login(request, user)
-            if created:
-                messages.success(request, f"Welcome to Flii, {user.first_name}! (Google Sign-In Demo)")
-                return redirect('accounts:onboarding')
-            messages.success(request, f"Signed in with Google as {user.email} (Demo Mode)")
-            return redirect('dashboard:index')
-
-        context = {
-            'hide_app_shell': True,
-            'redirect_uri': redirect_uri,
-        }
-        return render(request, 'accounts/google_setup_notice.html', context)
+        messages.info(request, "Google Sign-In is currently being finalized. Please sign in or register with your email.")
+        return redirect('accounts:login')
 
     auth_url = oauth.get_authorization_url(request, redirect_uri)
     return redirect(auth_url)

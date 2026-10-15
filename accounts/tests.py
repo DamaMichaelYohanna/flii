@@ -58,10 +58,10 @@ class AccountTests(TestCase):
         self.assertFalse(created2)
         self.assertEqual(user2.id, user.id)
 
-    def test_google_login_sandbox_flow(self):
-        response = self.client.get(reverse('accounts:google_login') + '?sandbox=1&email=test.google@example.com&name=Test+Google')
+    def test_google_login_unconfigured_redirects_to_login(self):
+        response = self.client.get(reverse('accounts:google_login'))
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(email='test.google@example.com').exists())
+        self.assertRedirects(response, reverse('accounts:login'))
 
     def test_password_reset_views_and_full_flow(self):
         from django.core import mail

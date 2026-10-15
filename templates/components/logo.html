@@ -22,7 +22,9 @@ Usage:
     alt="Flii Icon" 
     class="{% if size == 'xs' %}h-5 w-auto{% elif size == 'sm' %}h-7 w-auto{% elif size == 'lg' %}h-12 w-auto{% elif size == 'xl' %}h-16 w-auto{% else %}h-9 w-auto{% endif %} object-contain group-hover:scale-105 transition-transform duration-200"
     loading="eager"
+    onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden');"
   >
+  <div class="hidden {% if size == 'xs' %}w-5 h-5 text-[10px]{% elif size == 'sm' %}w-7 h-7 text-xs{% elif size == 'lg' %}w-12 h-12 text-lg{% else %}w-9 h-9 text-sm{% endif %} rounded-xl bg-[#0b3558] text-white flex items-center justify-center font-black">F</div>
 {% else %}
   {% if theme == "dark" %}
   <div class="flex items-center gap-2.5">
@@ -31,7 +33,9 @@ Usage:
       alt="Flii Icon" 
       class="{% if size == 'sm' %}h-7 w-auto{% elif size == 'lg' %}h-11 w-auto{% else %}h-9 w-auto{% endif %} object-contain group-hover:scale-105 transition-transform duration-200"
       loading="eager"
+      onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden');"
     >
+    <div class="hidden w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center font-black text-white text-sm">F</div>
     <div class="flex flex-col">
       <span class="font-black tracking-tight {% if size == 'sm' %}text-lg{% elif size == 'lg' %}text-2xl{% else %}text-xl{% endif %} text-white leading-none">
         Fl<span class="text-[#38bdf8]">i</span><span class="text-[#ef7d37]">i</span>
@@ -42,12 +46,26 @@ Usage:
     </div>
   </div>
   {% else %}
-  <img 
-    src="{% static 'images/logo.png' %}" 
-    alt="Flii Logo" 
-    class="{% if size == 'xs' %}h-5 w-auto{% elif size == 'sm' %}h-7 w-auto{% elif size == 'lg' %}h-12 w-auto{% elif size == 'xl' %}h-16 w-auto{% else %}h-9 w-auto{% endif %} object-contain group-hover:scale-102 transition-transform duration-200"
-    loading="eager"
-  >
+  <div class="inline-flex items-center gap-2.5">
+    <img 
+      src="{% static 'images/logo.png' %}" 
+      alt="Flii Logo" 
+      class="{% if size == 'xs' %}h-5 w-auto{% elif size == 'sm' %}h-7 w-auto{% elif size == 'lg' %}h-12 w-auto{% elif size == 'xl' %}h-16 w-auto{% else %}h-9 w-auto{% endif %} object-contain group-hover:scale-102 transition-transform duration-200"
+      loading="eager"
+      onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden');"
+    >
+    <div class="hidden items-center gap-2">
+      <div class="{% if size == 'sm' %}w-7 h-7 text-xs{% elif size == 'lg' %}w-11 h-11 text-lg{% else %}w-8 h-8 text-sm{% endif %} rounded-xl bg-[#0b3558] flex items-center justify-center font-black text-white">F</div>
+      <div class="flex flex-col">
+        <span class="font-black tracking-tight {% if size == 'sm' %}text-lg{% elif size == 'lg' %}text-2xl{% else %}text-xl{% endif %} text-[#0b3558] leading-none">
+          Fl<span class="text-[#1261a0]">i</span><span class="text-[#ef7d37]">i</span>
+        </span>
+        <span class="text-[8px] font-bold tracking-widest text-slate-400 uppercase -mt-0.5">
+          Scholarships
+        </span>
+      </div>
+    </div>
+  </div>
   {% endif %}
 {% endif %}
 

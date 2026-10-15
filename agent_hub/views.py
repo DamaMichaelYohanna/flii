@@ -5,22 +5,10 @@ from django.contrib import messages
 from .models import AgentAction, AIAuditLog
 from .agent import FliiAgent
 
+
 @login_required
 def agent_chat_view(request):
     return redirect('dashboard:index')
-
-
-@login_required
-def ajax_agent_message(request):
-    if request.method == 'POST':
-        message = request.POST.get('message', '').strip()
-        if not message:
-            return JsonResponse({'error': 'Empty message'}, status=400)
-        
-        agent = FliiAgent(request.user)
-        result = agent.process_message(message)
-        return JsonResponse(result)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 @login_required

@@ -50,14 +50,17 @@
                     </select>
                 </form>
 
-                <form method="POST">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="request_submission_approval">
-                    <button type="submit" class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
-                        <i data-lucide="shield-check" class="w-4 h-4"></i>
-                        Request Submission Approval
-                    </button>
-                </form>
+                {% if application.opportunity.application_url %}
+                <a href="{{ application.opportunity.application_url }}" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    Apply on Official Portal
+                </a>
+                {% elif application.opportunity.official_source_url %}
+                <a href="{{ application.opportunity.official_source_url }}" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    Official Portal
+                </a>
+                {% endif %}
             </div>
         </div>
 

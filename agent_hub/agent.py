@@ -330,21 +330,14 @@ class FliiAgent:
                 }
 
         elif "submit" in msg_lower:
-            # Consequential action demonstration: requires human approval!
-            action = self.request_user_approval(
-                action_type="submit_application",
-                title="Submit Application Package for Review",
-                description="The AI has compiled your verified documents and essays. Confirming this action will finalize the package for portal transmission.",
-                payload={"simulated": True, "timestamp": str(timezone.now())}
-            )
             text = (
-                f"⚠️ **Human Approval Required**: I have created an approval request (**Action #{action.id}: {action.title}**). "
-                "In accordance with Flii safety rules, I will not submit or transmit documents without your explicit review and authorization."
+                "To submit your application, open your **Application Workspace** and access the **Fast Portal Dossier (Copy Hub)**. "
+                "From there, use the **Apply on Official Portal** link to upload your verified documents and submit directly to the institution."
             )
             return {
                 "response": text,
-                "tool_used": "request_user_approval",
-                "action_id": action.id
+                "tool_used": "guidance_submission",
+                "data": {}
             }
 
         else:

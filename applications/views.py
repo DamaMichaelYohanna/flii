@@ -120,16 +120,6 @@ def application_detail(request, pk):
                 messages.success(request, f"Attached '{doc.title}' to '{req.name}'.")
             return redirect('applications:detail', pk=application.id)
 
-        elif action == 'request_submission_approval':
-            agent = FliiAgent(user)
-            act = agent.request_user_approval(
-                action_type='submit_application',
-                title=f"Submit Application Package: {application.opportunity.title}",
-                description=f"AI has bundled your verified documents ({application.requirements.filter(status='complete').count()} ready) for transmission.",
-                payload={'application_id': application.id, 'opportunity': application.opportunity.title}
-            )
-            messages.info(request, f"Created Human Approval request #{act.id}. Review and confirm to proceed.")
-            return redirect('agent_hub:action_detail', pk=act.id)
 
     essay_requirements = [r for r in requirements if r.is_essay]
     first_essay_req = essay_requirements[0] if essay_requirements else requirements.first()

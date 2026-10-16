@@ -25,32 +25,6 @@
         </div>
     </div>
 
-    <!-- Human Approvals Alert (if any pending) -->
-    {% if pending_actions %}
-    <div class="p-5 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm">
-        <div class="flex items-start justify-between gap-4">
-            <div class="flex items-start gap-3">
-                <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-700">
-                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <h3 class="text-sm font-bold text-amber-900">Human Approval Required ({{ pending_actions.count }} Pending)</h3>
-                    <p class="text-xs text-amber-800 mt-0.5">The AI requires your explicit confirmation before executing consequential actions.</p>
-                    <div class="mt-3 space-y-2">
-                        {% for act in pending_actions %}
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-white border border-amber-200 text-xs gap-2">
-                            <span class="font-semibold text-slate-800">{{ act.title }}</span>
-                            <div class="flex items-center gap-2">
-                                <a href="{% url 'agent_hub:action_detail' act.id %}" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-md">Review & Authorize</a>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
     <!-- 5 Overview Metric Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">

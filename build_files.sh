@@ -1,8 +1,16 @@
 #!/bin/bash
 set -e
 
+export PIP_BREAK_SYSTEM_PACKAGES=1
+
 echo "==> Installing Python dependencies..."
-python3 -m pip install -r requirements.txt
+if command -v uv &> /dev/null; then
+    echo "==> Installing dependencies with uv..."
+    uv pip install -r requirements.txt --system || python3 -m pip install -r requirements.txt --break-system-packages
+else
+    echo "==> Installing dependencies with pip..."
+    python3 -m pip install -r requirements.txt --break-system-packages || python3 -m pip install -r requirements.txt
+fi
 
 echo "==> Collecting static assets into staticfiles_build/static..."
 python3 manage.py collectstatic --noinput --clear

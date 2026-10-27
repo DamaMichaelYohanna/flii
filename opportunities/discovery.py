@@ -371,11 +371,13 @@ class OpportunityDiscoveryService:
                 status="success" if failed_count == 0 else "warning"
             )
 
+        total_scraped = new_count + updated_count
         return {
             "total_sources_scanned": len(sources),
             "new_count": new_count,
             "updated_count": updated_count,
             "failed_count": failed_count,
+            "total_scraped": total_scraped,
             "results": results
         }
 

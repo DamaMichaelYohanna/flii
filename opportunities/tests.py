@@ -93,11 +93,41 @@ class OpportunityTests(TestCase):
         ]
 
         self.client.force_login(self.user)
-        with patch.object(ErasmusCatalogProvider, 'discover', return_value=mock_discovered):
+        with patch.object(ErasmusCatalogProvider, 'discover', return_value=mock_discovered), \
+             patch('opportunities.discovery.OpportunityDiscoveryService.scout_single_source') as mock_scout:
+            mock_scout.return_value = {
+                "source_id": 1,
+                "source_name": "Test Portal",
+                "success": True,
+                "status_code": 200,
+                "created": 0,
+                "updated": 0,
+                "error": None
+            }
             response = self.client.get(reverse('opportunities:run_scout'), follow=True)
             self.assertEqual(response.status_code, 200)
             self.assertGreater(Opportunity.objects.count(), 1)
             self.assertTrue(self.user.notifications.filter(notification_type='new_opportunity').exists())
+
+    def test_autonomous_scout_discovery_zero_new(self):
+        from unittest.mock import patch
+        from opportunities.discovery import ErasmusCatalogProvider
+
+        self.client.force_login(self.user)
+        with patch.object(ErasmusCatalogProvider, 'discover', return_value=[]), \
+             patch('opportunities.discovery.OpportunityDiscoveryService.scout_single_source') as mock_scout:
+            mock_scout.return_value = {
+                "source_id": 1,
+                "source_name": "Test Portal",
+                "success": True,
+                "status_code": 200,
+                "created": 0,
+                "updated": 0,
+                "error": None
+            }
+            response = self.client.get(reverse('opportunities:run_scout'), follow=True)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "verified and up to date")
 
     def test_parallel_scanner_execution(self):
         from unittest.mock import patch

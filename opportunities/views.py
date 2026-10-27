@@ -218,15 +218,27 @@ def run_scout_discovery(request):
     scout = OpportunityDiscoveryService()
     result = scout.run_automated_scraping_and_sync(user=request.user)
 
-    if result['new_count'] > 0:
+    new_count = result.get('new_count', 0)
+    updated_count = result.get('updated_count', 0)
+    total_sources = result.get('total_sources_scanned', 0)
+    total_scraped = result.get('total_scraped', new_count + updated_count)
+
+    if new_count > 0:
         messages.success(
             request,
-            f"🔍 AI Scout complete: Discovered and synced {result['new_count']} new scholarships from official European & global portals!"
+            f"🔍 AI Scout complete: Discovered and synced {new_count} new scholarships from official European & global portals!"
         )
-    else:
+    elif updated_count > 0:
         messages.info(
             request,
-            f"🔍 AI Scout checked official catalogues. All {result['total_scraped']} opportunities are verified and up to date."
+            f"🔍 AI Scout checked {total_sources} official catalogues. {updated_count} existing opportunities were verified and updated."
+        )
+    else:
+        catalog_count = Opportunity.objects.count()
+        count_display = total_scraped if total_scraped > 0 else catalog_count
+        messages.info(
+            request,
+            f"🔍 AI Scout checked official catalogues. All {count_display} opportunities are verified and up to date."
         )
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -358,11 +370,12 @@ def admin_trigger_scout_api(request):
     result = scout.run_scout_batch(user=request.user)
     return JsonResponse({
         'success': True,
-        'new_count': result['new_count'],
-        'updated_count': result['updated_count'],
-        'failed_count': result['failed_count'],
-        'total_sources': result['total_sources_scanned'],
-        'results': result['results']
+        'new_count': result.get('new_count', 0),
+        'updated_count': result.get('updated_count', 0),
+        'failed_count': result.get('failed_count', 0),
+        'total_sources': result.get('total_sources_scanned', 0),
+        'total_scraped': result.get('total_scraped', 0),
+        'results': result.get('results', [])
     })
 
 

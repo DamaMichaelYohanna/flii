@@ -77,20 +77,13 @@ from .oauth import GoogleOAuthService
 def google_login_view(request):
     """
     Redirects the applicant to Google's OAuth2 consent screen.
-    If keys are not configured in development, provides a sandbox 1-click test flow.
+    Currently paused (coming soon).
     """
     if request.user.is_authenticated:
         return redirect('dashboard:index')
 
-    oauth = GoogleOAuthService()
-    redirect_uri = request.build_absolute_uri(reverse('accounts:google_callback'))
-
-    if not oauth.is_configured:
-        messages.info(request, "Google Sign-In is currently being finalized. Please sign in or register with your email.")
-        return redirect('accounts:login')
-
-    auth_url = oauth.get_authorization_url(request, redirect_uri)
-    return redirect(auth_url)
+    messages.info(request, "Google Sign-In is coming soon! Please sign in or register with your email.")
+    return redirect('accounts:login')
 
 
 def google_callback_view(request):

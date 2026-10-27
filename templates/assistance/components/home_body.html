@@ -1,0 +1,162 @@
+<div class="space-y-8 pb-12">
+    <!-- Hero Banner -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b3558] via-[#0b4e84] to-[#1261a0] text-white p-8 sm:p-12 shadow-xl border border-white/10">
+        <div class="relative z-10 max-w-3xl space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-orange-200 text-xs font-bold uppercase tracking-wider backdrop-blur-sm border border-white/10">
+                <i data-lucide="award" class="w-3.5 h-3.5 text-orange-400"></i>
+                Human-Led Expert Assistance
+            </div>
+            <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                Admissions-grade guidance from platform mentors.
+            </h1>
+            <p class="text-sm sm:text-base text-blue-100 leading-relaxed max-w-2xl">
+                Move beyond automated drafts. Get personalized line-by-line editorial audits, simulated scholarship interview panels, and strategic profile positioning from senior scholars who have won Erasmus Mundus, DAAD, and Chevening scholarships.
+            </p>
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+                <a href="#packages" class="px-6 py-3 bg-[#ef7d37] hover:bg-[#df6d2b] text-white font-bold text-sm rounded-xl shadow-lg transition-all hover:shadow-orange-500/25 flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Browse Assistance Packages
+                </a>
+                {% if user.is_authenticated and user_bookings_count > 0 %}
+                <a href="{% url 'assistance:my_bookings' %}" class="px-5 py-3 bg-white/15 hover:bg-white/20 text-white font-bold text-sm rounded-xl backdrop-blur transition-all flex items-center gap-2 border border-white/20">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    My Bookings ({{ user_bookings_count }})
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Decorative Pattern Background -->
+        <div class="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-gradient-to-tl from-teal-400/20 to-orange-400/10 blur-3xl pointer-events-none"></div>
+    </div>
+
+    <!-- Value Proposition Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+            <div class="w-10 h-10 rounded-xl bg-orange-50 text-[#ef7d37] flex items-center justify-center font-bold">
+                <i data-lucide="file-check-2" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base">Selection Rubric Alignment</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                We review your Statement of Purpose and essays directly against official scholarship committee evaluation criteria and scoring rubrics.
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+            <div class="w-10 h-10 rounded-xl bg-teal-50 text-[#1261a0] flex items-center justify-center font-bold">
+                <i data-lucide="video" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base">1-on-1 Video Advisory</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Meet live on Google Meet / Zoom to unpack your unique trajectory, clarify confusing application prompts, and refine your academic narrative.
+            </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#0f766e] flex items-center justify-center font-bold">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base">Authentic & Uncopied</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                We never ghostwrite or fabricate. Our mentors sharpen your authentic voice so your real accomplishments stand out powerfully to evaluators.
+            </p>
+        </div>
+    </div>
+
+    <!-- Packages Section -->
+    <div id="packages" class="space-y-6 pt-4">
+        <div class="text-center max-w-2xl mx-auto space-y-2">
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Available Assistance Packages</h2>
+            <p class="text-xs sm:text-sm text-slate-600">Select the tier that best fits your current application milestone. Transparent pricing with guaranteed turnaround times.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for package in packages %}
+            <div class="bg-white rounded-3xl border border-slate-200 p-7 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group {% if package.badge == 'All-Inclusive' %}ring-2 ring-[#0b3558]{% endif %}">
+                {% if package.badge %}
+                <div class="absolute top-5 right-5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {% if package.badge == 'Popular' %}bg-orange-100 text-[#df6d2b]{% elif package.badge == 'Live Advisory' %}bg-blue-100 text-[#0b4e84]{% elif package.badge == 'All-Inclusive' %}bg-slate-900 text-white{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                    {{ package.badge }}
+                </div>
+                {% endif %}
+
+                <div class="space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0b3558] group-hover:scale-105 transition-transform">
+                        <i data-lucide="{{ package.icon }}" class="w-6 h-6"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900 tracking-tight">{{ package.name }}</h3>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ package.tagline }}</p>
+                    </div>
+
+                    <div class="flex items-baseline gap-2 py-2 border-y border-slate-100">
+                        <span class="text-3xl font-black text-slate-900">${{ package.price|floatformat:0 }}</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ package.currency }}</span>
+                        <span class="text-xs text-slate-400 ml-auto font-medium flex items-center gap-1">
+                            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                            {{ package.turnaround_days }} Days Turnaround
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        {{ package.description }}
+                    </p>
+
+                    <div class="space-y-2 pt-2">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">What's included:</div>
+                        <ul class="space-y-2 text-xs text-slate-700">
+                            {% for feature in package.features %}
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                                <span>{{ feature }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="pt-6 mt-6 border-t border-slate-100">
+                    <a href="{% url 'assistance:book_package' package.slug %}" class="w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm {% if package.badge == 'All-Inclusive' %}bg-[#0b3558] hover:bg-[#1261a0] text-white{% else %}bg-[#ef7d37] hover:bg-[#df6d2b] text-white{% endif %}">
+                        <span>Book This Package</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="bg-slate-50 p-8 sm:p-10 rounded-3xl border border-slate-200/80 space-y-6">
+        <div class="text-center max-w-xl mx-auto space-y-1.5">
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900">How Paid Assistance Works</h2>
+            <p class="text-xs text-slate-500">Transparent, structured, and committed to your scholarship timeline.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-center sm:text-left">
+                <span class="w-7 h-7 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center mx-auto sm:mx-0">1</span>
+                <h4 class="font-bold text-sm text-slate-900">Submit Booking</h4>
+                <p class="text-xs text-slate-500">Pick your package, select your target scholarship, and attach your current drafts or questions.</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-center sm:text-left">
+                <span class="w-7 h-7 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center mx-auto sm:mx-0">2</span>
+                <h4 class="font-bold text-sm text-slate-900">Confirm Payment</h4>
+                <p class="text-xs text-slate-500">Submit transaction reference or proof of payment. Our admin team validates and queues your slot.</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-center sm:text-left">
+                <span class="w-7 h-7 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center mx-auto sm:mx-0">3</span>
+                <h4 class="font-bold text-sm text-slate-900">Review or Live Call</h4>
+                <p class="text-xs text-slate-500">Senior mentor conducts in-depth line-by-line markup or meets you on Google Meet/Zoom.</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-center sm:text-left">
+                <span class="w-7 h-7 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center mx-auto sm:mx-0">4</span>
+                <h4 class="font-bold text-sm text-slate-900">Delivered & Ready</h4>
+                <p class="text-xs text-slate-500">Download your annotated deliverable, strategic action notes, and submit with total confidence.</p>
+            </div>
+        </div>
+    </div>
+</div>

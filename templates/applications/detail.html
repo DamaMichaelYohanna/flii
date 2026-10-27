@@ -40,6 +40,11 @@
                     📋 Fast Portal Dossier (Copy Hub)
                 </a>
 
+                <a href="{% url 'assistance:book' %}?app_id={{ application.id }}" class="px-4 py-2.5 bg-[#ef7d37] hover:bg-[#df6d2b] text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-orange-200"></i>
+                    <span>Request Expert Review</span>
+                </a>
+
                 <form method="POST" class="flex items-center gap-2">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="update_status">

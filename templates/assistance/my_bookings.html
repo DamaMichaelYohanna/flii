@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}My Assistance Bookings | Flii{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6 pb-12">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <nav class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+                <a href="{% url 'assistance:home' %}" class="hover:text-slate-800">Assistance Packages</a>
+                <span>/</span>
+                <span class="text-slate-900 font-semibold">My Bookings</span>
+            </nav>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">My Assistance Bookings</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Track your 1-on-1 mentorship sessions, live call links, and reviewed deliverables.</p>
+        </div>
+        <a href="{% url 'assistance:book' %}" class="px-4 py-2 bg-[#ef7d37] hover:bg-[#df6d2b] text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-1.5 self-start">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Book New Assistance</span>
+        </a>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <a href="{% url 'assistance:my_bookings' %}?status=all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors {% if current_filter == 'all' %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            All ({{ total_count }})
+        </a>
+        <a href="{% url 'assistance:my_bookings' %}?status=active" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors {% if current_filter == 'active' %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            In Progress / Scheduled
+        </a>
+        <a href="{% url 'assistance:my_bookings' %}?status=completed" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors {% if current_filter == 'completed' %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+            Completed
+        </a>
+    </div>
+
+    <!-- Bookings List -->
+    {% if bookings %}
+    <div class="grid grid-cols-1 gap-4">
+        {% for b in bookings %}
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm hover:shadow transition-shadow flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div class="space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
+                        {% if b.status == 'completed' %}bg-emerald-100 text-emerald-800 border border-emerald-200
+                        {% elif b.status == 'scheduled' %}bg-blue-100 text-blue-800 border border-blue-200
+                        {% elif b.status == 'in_review' %}bg-purple-100 text-purple-800 border border-purple-200
+                        {% elif b.status == 'confirmed' %}bg-teal-100 text-teal-800 border border-teal-200
+                        {% elif b.status == 'cancelled' %}bg-rose-100 text-rose-800 border border-rose-200
+                        {% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">
+                        {{ b.get_status_display }}
+                    </span>
+
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-500 bg-slate-100">
+                        {{ b.get_payment_status_display }}
+                    </span>
+
+                    <span class="text-xs text-slate-400">•</span>
+                    <span class="text-xs text-slate-400 font-medium">Ref #{{ b.id }}</span>
+                </div>
+
+                <div>
+                    <h3 class="text-base font-black text-slate-900">{{ b.package_title }}</h3>
+                    <p class="text-xs text-slate-600 font-medium mt-0.5">
+                        Target: <strong class="text-slate-800">{{ b.effective_scholarship_title }}</strong>
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1">
+                    <span class="flex items-center gap-1 font-semibold text-slate-700">
+                        <i data-lucide="tag" class="w-3.5 h-3.5 text-slate-400"></i>
+                        ${{ b.price }} {{ b.currency }}
+                    </span>
+
+                    <span class="flex items-center gap-1">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                        Booked {{ b.created_at|date:"M d, Y" }}
+                    </span>
+
+                    {% if b.scheduled_at %}
+                    <span class="flex items-center gap-1 font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200">
+                        <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                        Call: {{ b.scheduled_at|date:"M d, Y H:i" }} UTC
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap sm:flex-col items-stretch gap-2.5 sm:min-w-[160px] border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-5">
+                {% if b.meeting_link and b.status == 'scheduled' %}
+                <a href="{{ b.meeting_link }}" target="_blank" rel="noopener noreferrer" class="py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm transition-colors">
+                    <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                    <span>Join Meeting</span>
+                </a>
+                {% endif %}
+
+                {% if b.deliverable_file %}
+                <a href="{{ b.deliverable_file.url }}" download class="py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm transition-colors">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <span>Download Review</span>
+                </a>
+                {% endif %}
+
+                <a href="{% url 'assistance:booking_detail' b.id %}" class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold text-center transition-colors">
+                    View Details &rarr;
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4 shadow-sm">
+        <div class="w-16 h-16 rounded-2xl bg-orange-50 text-[#ef7d37] flex items-center justify-center mx-auto">
+            <i data-lucide="calendar-check" class="w-8 h-8"></i>
+        </div>
+        <div class="space-y-1 max-w-md mx-auto">
+            <h3 class="font-black text-slate-900 text-lg">No assistance bookings found</h3>
+            <p class="text-xs text-slate-500">Need personalized guidance on your Statement of Purpose or a mock interview with platform admins?</p>
+        </div>
+        <div class="pt-2">
+            <a href="{% url 'assistance:home' %}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#ef7d37] hover:bg-[#df6d2b] text-white text-xs font-bold rounded-xl shadow-md transition-colors">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                Browse Assistance Packages
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

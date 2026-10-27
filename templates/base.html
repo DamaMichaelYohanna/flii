@@ -156,6 +156,13 @@
                         <i data-lucide="book-open" class="w-4 h-4"></i>
                         Story Bank (STAR)
                     </a>
+                    <a href="{% url 'assistance:home' %}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {% if request.resolver_match.app_name == 'assistance' and request.resolver_match.url_name != 'admin_hub' and request.resolver_match.url_name != 'admin_booking_detail' %}bg-[#ef7d37] text-white font-semibold shadow-sm{% else %}text-blue-100 hover:bg-white/10 hover:text-white{% endif %}">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-orange-300"></i>
+                            <span>Expert Assistance</span>
+                        </div>
+                        <span class="text-[9px] font-black uppercase tracking-wider bg-orange-400/20 text-orange-200 px-1.5 py-0.5 rounded-md border border-orange-400/30">1-on-1</span>
+                    </a>
 
                     <div class="pt-3 pb-1 px-3.5 text-[10px] font-semibold uppercase tracking-[.14em] text-blue-200">AI Governance</div>
                     <a href="{% url 'agent_hub:audit_log' %}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {% if request.resolver_match.url_name == 'audit_log' %}bg-[#ef7d37] text-white font-semibold shadow-sm{% else %}text-blue-100 hover:bg-white/10 hover:text-white{% endif %}">
@@ -168,6 +175,10 @@
                     <a href="{% url 'dashboard:admin_system_dashboard' %}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {% if request.resolver_match.url_name == 'admin_system_dashboard' %}bg-emerald-600 text-white font-semibold shadow-sm{% else %}text-emerald-100 hover:bg-white/10 hover:text-white{% endif %}">
                         <i data-lucide="layout-grid" class="w-4 h-4 text-emerald-300"></i>
                         System Admin
+                    </a>
+                    <a href="{% url 'assistance:admin_hub' %}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {% if request.resolver_match.url_name == 'admin_hub' or request.resolver_match.url_name == 'admin_booking_detail' %}bg-emerald-600 text-white font-semibold shadow-sm{% else %}text-emerald-100 hover:bg-white/10 hover:text-white{% endif %}">
+                        <i data-lucide="life-buoy" class="w-4 h-4 text-emerald-300"></i>
+                        Assistance Bookings
                     </a>
                     <a href="{% url 'dashboard:admin_users' %}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {% if request.resolver_match.url_name == 'admin_users' %}bg-emerald-600 text-white font-semibold shadow-sm{% else %}text-emerald-100 hover:bg-white/10 hover:text-white{% endif %}">
                         <i data-lucide="users" class="w-4 h-4 text-emerald-300"></i>

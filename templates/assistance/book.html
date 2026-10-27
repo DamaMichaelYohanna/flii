@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Book Expert Assistance | Flii{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6 pb-12">
+    <!-- Breadcrumb & Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+            <nav class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+                <a href="{% url 'assistance:home' %}" class="hover:text-slate-800">Assistance Packages</a>
+                <span>/</span>
+                <span class="text-slate-900 font-semibold">Book Assistance</span>
+            </nav>
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Request Paid Admin Assistance</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Fill out your goals and materials below. Our platform mentors will review and coordinate your session.</p>
+        </div>
+        <a href="{% url 'assistance:my_bookings' %}" class="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 self-start shadow-sm">
+            <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i>
+            <span>My Bookings</span>
+        </a>
+    </div>
+
+    <!-- Booking Form Container -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-6" id="bookingForm">
+        {% csrf_token %}
+
+        <!-- STEP 1: Select Package -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">1</div>
+                <div>
+                    <h3 class="font-black text-slate-900 text-base">Select Assistance Package</h3>
+                    <p class="text-xs text-slate-500">Choose the depth of review or session you need.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                {% for pkg in packages %}
+                <label class="relative flex flex-col justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all hover:border-[#1261a0] package-card {% if selected_package and selected_package.id == pkg.id %}border-[#1261a0] bg-blue-50/40{% else %}border-slate-200 bg-white{% endif %}">
+                    <input type="radio" name="package_id" value="{{ pkg.id }}" class="sr-only" data-base-price="{{ pkg.price }}" {% if selected_package and selected_package.id == pkg.id or forloop.first and not selected_package %}checked{% endif %} onchange="updateSelectedPackage(this)">
+                    <div>
+                        <div class="flex items-start justify-between gap-2">
+                            <span class="font-black text-sm text-slate-900">{{ pkg.name }}</span>
+                            <span class="text-xs font-black text-[#1261a0] whitespace-nowrap">${{ pkg.price|floatformat:0 }}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1 leading-snug">{{ pkg.tagline }}</p>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-slate-400 font-semibold mt-3 pt-2 border-t border-slate-100">
+                        <span class="flex items-center gap-1">
+                            <i data-lucide="clock" class="w-3 h-3"></i>
+                            {{ pkg.turnaround_days }} Days
+                        </span>
+                        <span class="text-emerald-700 font-bold">{{ pkg.badge|default:"Verified" }}</span>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- STEP 2: Scholarship & Target Milestone -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">2</div>
+                <div>
+                    <h3 class="font-black text-slate-900 text-base">Target Scholarship & Application</h3>
+                    <p class="text-xs text-slate-500">Optionally link this assistance directly to an active application in your workspace.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Link from My Applications (Optional)</label>
+                    <select name="application_id" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none" onchange="autoFillScholarship(this)">
+                        <option value="">-- None (Enter custom scholarship below) --</option>
+                        {% for app in user_applications %}
+                        <option value="{{ app.id }}" data-title="{{ app.opportunity.title }}" data-uni="{{ app.opportunity.university }}" {% if selected_app_id == app.id|stringformat:"s" %}selected{% endif %}>
+                            {{ app.opportunity.title|truncatechars:45 }} ({{ app.opportunity.country }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Target Scholarship Name *</label>
+                    <input type="text" name="target_scholarship" id="target_scholarship" required placeholder="e.g. Erasmus Mundus BDMA, DAAD EPOS, Chevening" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Target University / Consortium (Optional)</label>
+                    <input type="text" name="target_university" id="target_university" placeholder="e.g. Technical University of Munich, Oxford, University of Paris" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: Urgency & Turnaround Speed -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">3</div>
+                <div>
+                    <h3 class="font-black text-slate-900 text-base">Turnaround Urgency</h3>
+                    <p class="text-xs text-slate-500">How quickly do you need this review or live session?</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <label class="p-3.5 rounded-2xl border-2 border-slate-200 cursor-pointer hover:border-[#1261a0] transition-colors urgency-label bg-white flex flex-col justify-between">
+                    <input type="radio" name="urgency" value="standard" checked class="sr-only" data-multiplier="1.0" onchange="updateUrgency(this)">
+                    <div>
+                        <span class="font-bold text-xs text-slate-900 block">Standard (3-5 Days)</span>
+                        <span class="text-[11px] text-slate-500">Regular turnaround queue</span>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700 mt-2 block">Included</span>
+                </label>
+
+                <label class="p-3.5 rounded-2xl border-2 border-slate-200 cursor-pointer hover:border-[#1261a0] transition-colors urgency-label bg-white flex flex-col justify-between">
+                    <input type="radio" name="urgency" value="priority" class="sr-only" data-multiplier="1.25" onchange="updateUrgency(this)">
+                    <div>
+                        <span class="font-bold text-xs text-slate-900 block">Priority (48 Hours)</span>
+                        <span class="text-[11px] text-slate-500">Jump ahead in the queue</span>
+                    </div>
+                    <span class="text-xs font-bold text-amber-600 mt-2 block">+25% speed fee</span>
+                </label>
+
+                <label class="p-3.5 rounded-2xl border-2 border-slate-200 cursor-pointer hover:border-[#1261a0] transition-colors urgency-label bg-white flex flex-col justify-between">
+                    <input type="radio" name="urgency" value="rush" class="sr-only" data-multiplier="1.50" onchange="updateUrgency(this)">
+                    <div>
+                        <span class="font-bold text-xs text-slate-900 block">Rush (24 Hours)</span>
+                        <span class="text-[11px] text-slate-500">Urgent deadline intervention</span>
+                    </div>
+                    <span class="text-xs font-bold text-rose-600 mt-2 block">+50% speed fee</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- STEP 4: Goals, Notes & Documents -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">4</div>
+                <div>
+                    <h3 class="font-black text-slate-900 text-base">Your Notes & Documents</h3>
+                    <p class="text-xs text-slate-500">Tell the reviewer what to focus on and provide your drafts.</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 pt-1">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Specific Goals, Prompts & Questions *</label>
+                    <textarea name="applicant_notes" required rows="4" placeholder="e.g. Reviewing my SOP for Erasmus Mundus BDMA. Prompt asks why this consortium fits my career goals. Please check if my leadership paragraph is compelling and if my technical background is framed effectively." class="w-full text-xs rounded-xl border border-slate-200 p-3 focus:ring-2 focus:ring-[#1261a0] focus:outline-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Attach Draft Document (PDF, Word, TXT)</label>
+                        <input type="file" name="attached_document" accept=".pdf,.doc,.docx,.txt" class="w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 border border-slate-200 rounded-xl p-1.5">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Or Link from Document Vault</label>
+                        <select name="document_vault_ref" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                            <option value="">-- Select from your Document Vault --</option>
+                            {% for doc in user_documents %}
+                            <option value="{{ doc.id }}">{{ doc.title }} ({{ doc.get_document_type_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 5: Scheduling & Contact -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">5</div>
+                <div>
+                    <h3 class="font-black text-slate-900 text-base">Scheduling & Communication Preferences</h3>
+                    <p class="text-xs text-slate-500">Provide preferred times for advisory calls and your preferred contact channel.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Preferred Date (For Calls)</label>
+                    <input type="date" name="preferred_date" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Preferred Time Slot</label>
+                    <select name="preferred_time_slot" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                        <option value="afternoon" selected>Afternoon (13:00 - 17:00 UTC)</option>
+                        <option value="morning">Morning (09:00 - 12:00 UTC)</option>
+                        <option value="evening">Evening (18:00 - 21:00 UTC)</option>
+                        <option value="flexible">Flexible / Any Time</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Meeting / Review Channel</label>
+                    <select name="preferred_contact_method" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                        <option value="google_meet" selected>Google Meet</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="whatsapp">WhatsApp Audio / Chat</option>
+                        <option value="email">Email Only (Written Markup)</option>
+                    </select>
+                </div>
+
+                <div class="sm:col-span-3">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">WhatsApp / Phone with Country Code (Optional)</label>
+                    <input type="text" name="contact_phone" placeholder="e.g. +44 7911 123456 or +234 801 234 5678" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout / Summary Bar -->
+        <div class="bg-gradient-to-r from-slate-900 to-[#0b3558] text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 border border-white/10">
+            <div class="space-y-1">
+                <div class="text-xs uppercase tracking-wider text-blue-200 font-bold">Estimated Total</div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl sm:text-4xl font-black text-white" id="displayTotal">$49.00</span>
+                    <span class="text-xs font-bold text-blue-200 uppercase" id="displayCurrency">USD</span>
+                </div>
+                <p class="text-[11px] text-blue-200/80">Includes rubric audit, annotated deliverables, and direct mentor Q&A.</p>
+            </div>
+
+            <button type="submit" class="px-8 py-3.5 bg-[#ef7d37] hover:bg-[#df6d2b] text-white font-bold text-sm rounded-xl shadow-lg transition-all hover:shadow-orange-500/25 flex items-center justify-center gap-2 self-stretch sm:self-center">
+                <span>Confirm & Proceed to Payment</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let currentBasePrice = 49.0;
+    let currentMultiplier = 1.0;
+
+    function updateSelectedPackage(radio) {
+        document.querySelectorAll('.package-card').forEach(card => {
+            card.classList.remove('border-[#1261a0]', 'bg-blue-50/40');
+            card.classList.add('border-slate-200', 'bg-white');
+        });
+        const parentCard = radio.closest('.package-card');
+        if (parentCard) {
+            parentCard.classList.remove('border-slate-200', 'bg-white');
+            parentCard.classList.add('border-[#1261a0]', 'bg-blue-50/40');
+        }
+        currentBasePrice = parseFloat(radio.dataset.basePrice) || 49.0;
+        recalculateTotal();
+    }
+
+    function updateUrgency(radio) {
+        document.querySelectorAll('.urgency-label').forEach(label => {
+            label.classList.remove('border-[#1261a0]', 'bg-blue-50/30');
+            label.classList.add('border-slate-200', 'bg-white');
+        });
+        const parentLabel = radio.closest('.urgency-label');
+        if (parentLabel) {
+            parentLabel.classList.remove('border-slate-200', 'bg-white');
+            parentLabel.classList.add('border-[#1261a0]', 'bg-blue-50/30');
+        }
+        currentMultiplier = parseFloat(radio.dataset.multiplier) || 1.0;
+        recalculateTotal();
+    }
+
+    function recalculateTotal() {
+        const total = (currentBasePrice * currentMultiplier).toFixed(2);
+        document.getElementById('displayTotal').innerText = '$' + total;
+    }
+
+    function autoFillScholarship(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const title = selectedOption.dataset.title;
+            const uni = selectedOption.dataset.uni;
+            if (title) document.getElementById('target_scholarship').value = title;
+            if (uni) document.getElementById('target_university').value = uni;
+        }
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkedPkg = document.querySelector('input[name="package_id"]:checked');
+        if (checkedPkg) {
+            currentBasePrice = parseFloat(checkedPkg.dataset.basePrice) || 49.0;
+        }
+        const checkedUrgency = document.querySelector('input[name="urgency"]:checked');
+        if (checkedUrgency) {
+            currentMultiplier = parseFloat(checkedUrgency.dataset.multiplier) || 1.0;
+            const parentLabel = checkedUrgency.closest('.urgency-label');
+            if (parentLabel) {
+                parentLabel.classList.add('border-[#1261a0]', 'bg-blue-50/30');
+            }
+        }
+        recalculateTotal();
+    });
+</script>
+{% endblock %}

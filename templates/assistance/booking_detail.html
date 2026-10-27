@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Booking #{{ booking.id }} - {{ booking.package_title }} | Flii{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6 pb-12">
+    <!-- Breadcrumb & Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+            <nav class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+                <a href="{% url 'assistance:home' %}" class="hover:text-slate-800">Assistance Packages</a>
+                <span>/</span>
+                <a href="{% url 'assistance:my_bookings' %}" class="hover:text-slate-800">My Bookings</a>
+                <span>/</span>
+                <span class="text-slate-900 font-semibold">Booking #{{ booking.id }}</span>
+            </nav>
+            <div class="flex flex-wrap items-center gap-3">
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ booking.package_title }}</h1>
+                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider
+                    {% if booking.status == 'completed' %}bg-emerald-100 text-emerald-800 border border-emerald-200
+                    {% elif booking.status == 'scheduled' %}bg-blue-100 text-blue-800 border border-blue-200
+                    {% elif booking.status == 'in_review' %}bg-purple-100 text-purple-800 border border-purple-200
+                    {% elif booking.status == 'confirmed' %}bg-teal-100 text-teal-800 border border-teal-200
+                    {% elif booking.status == 'cancelled' %}bg-rose-100 text-rose-800 border border-rose-200
+                    {% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">
+                    {{ booking.get_status_display }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Booked on {{ booking.created_at|date:"F d, Y \a\\t H:i" }} UTC</p>
+        </div>
+
+        {% if user.is_staff %}
+        <a href="{% url 'assistance:admin_booking_detail' booking.id %}" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5 self-start border border-slate-700">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-teal-400"></i>
+            <span>Admin Fulfillment Workbench &rarr;</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Live Scheduled Meeting Callout (if scheduled) -->
+    {% if booking.status == 'scheduled' and booking.meeting_link %}
+    <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 sm:p-7 rounded-3xl shadow-lg border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+        <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-200 text-[11px] font-bold uppercase tracking-wider">
+                <i data-lucide="video" class="w-3.5 h-3.5 text-blue-400"></i>
+                Live Advisory Session Confirmed
+            </div>
+            <h3 class="text-xl font-black text-white">Your session link is ready!</h3>
+            <p class="text-xs text-blue-200">
+                Scheduled for: <strong class="text-white">{{ booking.scheduled_at|date:"l, F d, Y \a\\t H:i" }} UTC</strong>
+                via {{ booking.get_preferred_contact_method_display }}.
+            </p>
+        </div>
+        <a href="{{ booking.meeting_link }}" target="_blank" rel="noopener noreferrer" class="px-6 py-3.5 bg-blue-500 hover:bg-blue-400 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 self-stretch sm:self-center">
+            <i data-lucide="video" class="w-4 h-4"></i>
+            <span>Join Meeting Now</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Completed Deliverables Callout (if completed) -->
+    {% if booking.status == 'completed' %}
+    <div class="bg-emerald-50 border-2 border-emerald-300 p-6 sm:p-8 rounded-3xl shadow-sm space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
+                    <i data-lucide="check-circle" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-emerald-950">Expert Review Complete & Delivered!</h3>
+                    <p class="text-xs text-emerald-700">Delivered on {{ booking.completed_at|date:"F d, Y"|default:"Recently" }}.</p>
+                </div>
+            </div>
+
+            {% if booking.deliverable_file %}
+            <a href="{{ booking.deliverable_file.url }}" download class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Download Reviewed Deliverable</span>
+            </a>
+            {% endif %}
+        </div>
+
+        {% if booking.deliverable_feedback %}
+        <div class="bg-white p-5 rounded-2xl border border-emerald-200 text-xs text-slate-800 space-y-2">
+            <h4 class="font-bold text-emerald-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                Reviewer Evaluation & Feedback Notes:
+            </h4>
+            <div class="whitespace-pre-line leading-relaxed text-slate-700 font-sans text-xs">
+                {{ booking.deliverable_feedback }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Main Grid: Booking Details & Payment Status -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left: Details (2 Cols) -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+                <h3 class="font-black text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4 text-[#1261a0]"></i>
+                    Assistance Overview
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <span class="text-slate-400 block font-semibold uppercase tracking-wider text-[10px]">Target Scholarship</span>
+                        <span class="font-bold text-slate-900 text-sm mt-0.5 block">{{ booking.effective_scholarship_title }}</span>
+                    </div>
+
+                    <div>
+                        <span class="text-slate-400 block font-semibold uppercase tracking-wider text-[10px]">Service Tier</span>
+                        <span class="font-bold text-slate-900 text-sm mt-0.5 block">{{ booking.package_title }}</span>
+                    </div>
+
+                    <div>
+                        <span class="text-slate-400 block font-semibold uppercase tracking-wider text-[10px]">Urgency / Turnaround</span>
+                        <span class="font-medium text-slate-800 mt-0.5 block">{{ booking.get_urgency_display }}</span>
+                    </div>
+
+                    <div>
+                        <span class="text-slate-400 block font-semibold uppercase tracking-wider text-[10px]">Preferred Contact Channel</span>
+                        <span class="font-medium text-slate-800 mt-0.5 block">{{ booking.get_preferred_contact_method_display }}</span>
+                    </div>
+
+                    {% if booking.preferred_date %}
+                    <div>
+                        <span class="text-slate-400 block font-semibold uppercase tracking-wider text-[10px]">Requested Date</span>
+                        <span class="font-medium text-slate-800 mt-0.5 block">{{ booking.preferred_date|date:"M d, Y" }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <span class="text-slate-400 block font-semibold uppercase tracking-wider text-[10px]">Preferred Time Slot</span>
+                        <span class="font-medium text-slate-800 mt-0.5 block">{{ booking.get_preferred_time_slot_display }}</span>
+                    </div>
+                </div>
+
+                <!-- Notes from applicant -->
+                <div class="pt-3 border-t border-slate-100 space-y-1.5">
+                    <span class="text-slate-400 block font-semibold uppercase tracking-wider text-[10px]">Your Notes & Focus Areas</span>
+                    <div class="bg-slate-50 p-4 rounded-xl text-xs text-slate-700 whitespace-pre-line leading-relaxed border border-slate-100">
+                        {{ booking.applicant_notes }}
+                    </div>
+                </div>
+
+                <!-- Attached materials -->
+                <div class="pt-3 border-t border-slate-100 space-y-2">
+                    <span class="text-slate-400 block font-semibold uppercase tracking-wider text-[10px]">Attached Draft Documents</span>
+                    <div class="flex flex-wrap items-center gap-3">
+                        {% if booking.attached_document %}
+                        <a href="{{ booking.attached_document.url }}" download class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-2 transition-colors">
+                            <i data-lucide="paperclip" class="w-3.5 h-3.5 text-slate-500"></i>
+                            <span>Download Attached Draft</span>
+                        </a>
+                        {% endif %}
+
+                        {% if booking.document_vault_ref %}
+                        <div class="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-800 text-xs font-semibold flex items-center gap-2">
+                            <i data-lucide="folder" class="w-3.5 h-3.5 text-[#1261a0]"></i>
+                            <span>Vault Ref: {{ booking.document_vault_ref.title }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if not booking.attached_document and not booking.document_vault_ref %}
+                        <span class="text-xs text-slate-400 italic">No document attached. Discussion-based advisory session.</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Payment & Summary (1 Col) -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-black text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <span>Payment Status</span>
+                    <span class="text-xs font-black px-2.5 py-0.5 rounded-full
+                        {% if booking.payment_status == 'paid' %}bg-emerald-100 text-emerald-800
+                        {% elif booking.payment_status == 'pending_verification' %}bg-amber-100 text-amber-800
+                        {% else %}bg-slate-100 text-slate-700{% endif %}">
+                        {{ booking.get_payment_status_display }}
+                    </span>
+                </h3>
+
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-500">Service Fee:</span>
+                        <span class="font-black text-base text-slate-900">${{ booking.price }} {{ booking.currency }}</span>
+                    </div>
+                    {% if booking.payment_reference %}
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <span class="text-slate-500">Payment Reference:</span>
+                        <span class="font-mono font-semibold text-slate-800 text-[11px]">{{ booking.payment_reference }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if booking.payment_status != 'paid' %}
+                <!-- Payment Instructions -->
+                <div class="bg-blue-50/70 p-4 rounded-2xl border border-blue-100 space-y-2 text-xs text-slate-700">
+                    <div class="font-bold text-[#0b4e84] flex items-center gap-1.5 text-xs">
+                        <i data-lucide="credit-card" class="w-4 h-4"></i>
+                        <span>How to complete payment</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 leading-relaxed">
+                        To activate this booking, please transfer <strong class="text-slate-900">${{ booking.price }} {{ booking.currency }}</strong> via wire transfer, PayPal, or card to Flii Global Mentorship, and enter your reference ID below.
+                    </p>
+                    <div class="text-[10px] text-slate-500 bg-white/80 p-2 rounded-lg font-mono">
+                        Bank / Account: Flii Academic Services<br>
+                        Ref format: FLII-{{ booking.id }}-{{ user.username|upper }}
+                    </div>
+                </div>
+
+                <!-- Submit / Update Payment Reference Form -->
+                <form method="POST" action="{% url 'assistance:booking_payment_submit' booking.id %}" enctype="multipart/form-data" class="space-y-3 pt-2">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Transaction Ref / Confirmation ID *</label>
+                        <input type="text" name="payment_reference" value="{{ booking.payment_reference }}" required placeholder="e.g. TXN-98432198 or Bank Ref" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Upload Receipt / Screenshot (Optional)</label>
+                        <input type="file" name="payment_proof" accept="image/*,.pdf" class="w-full text-xs file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 border border-slate-200 rounded-xl p-1">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-3 bg-[#0b3558] hover:bg-[#1261a0] text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                        <span>Submit Payment Proof</span>
+                    </button>
+                </form>
+                {% else %}
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 flex-shrink-0"></i>
+                    <span>Payment verified. Your booking is queued with senior platform mentors.</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Need Help Box -->
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-1.5">
+                <span class="font-bold text-slate-900 block">Questions about your booking?</span>
+                <p class="text-[11px] leading-relaxed">
+                    Have an urgent update or rescheduled deadline? Contact the administrator team at <strong class="text-slate-800">mentors@flii.org</strong> or reply to your confirmation notification.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -15,6 +15,7 @@ urlpatterns = [
     path('agent/', include('agent_hub.urls')),
     path('notifications/', include('notifications.urls')),
     path('blog/', include('blog.urls')),
+    path('assistance/', include('assistance.urls')),
 ]
 
 if settings.DEBUG:

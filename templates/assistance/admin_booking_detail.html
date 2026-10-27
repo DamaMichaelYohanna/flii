@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Workbench - Booking #{{ booking.id }} | Flii{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6 pb-12">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <nav class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+                <a href="{% url 'assistance:admin_hub' %}" class="hover:text-slate-800">Assistance Admin Hub</a>
+                <span>/</span>
+                <span class="text-slate-900 font-semibold">Fulfill Booking #{{ booking.id }}</span>
+            </nav>
+            <div class="flex flex-wrap items-center gap-3">
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Fulfill Booking #{{ booking.id }}</h1>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold
+                    {% if booking.status == 'completed' %}bg-emerald-100 text-emerald-800
+                    {% elif booking.status == 'scheduled' %}bg-blue-100 text-blue-800
+                    {% elif booking.status == 'in_review' %}bg-purple-100 text-purple-800
+                    {% else %}bg-amber-100 text-amber-800{% endif %}">
+                    {{ booking.get_status_display }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Applicant: <strong>{{ booking.user.get_full_name|default:booking.user.username }}</strong> ({{ booking.user.email }})</p>
+        </div>
+        <a href="{% url 'assistance:admin_hub' %}" class="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 self-start shadow-sm">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to Admin Hub</span>
+        </a>
+    </div>
+
+    <!-- Applicant Request Summary -->
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2.5 flex items-center gap-2">
+            <i data-lucide="user" class="w-4 h-4 text-[#1261a0]"></i>
+            Applicant & Service Details
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+            <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase">Service Tier</span>
+                <span class="font-bold text-slate-900 text-sm block mt-0.5">{{ booking.package_title }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase">Target Scholarship</span>
+                <span class="font-bold text-slate-900 text-sm block mt-0.5">{{ booking.effective_scholarship_title }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase">Agreed Fee</span>
+                <span class="font-black text-slate-900 text-sm block mt-0.5">${{ booking.price }} {{ booking.currency }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase">Urgency</span>
+                <span class="font-bold text-slate-800 block mt-0.5">{{ booking.get_urgency_display }}</span>
+            </div>
+
+            <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase">Requested Date</span>
+                <span class="font-medium text-slate-800 block mt-0.5">{{ booking.preferred_date|date:"M d, Y"|default:"Not specified" }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase">Time Slot</span>
+                <span class="font-medium text-slate-800 block mt-0.5">{{ booking.get_preferred_time_slot_display }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase">Contact Preference</span>
+                <span class="font-medium text-slate-800 block mt-0.5">{{ booking.get_preferred_contact_method_display }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase">WhatsApp / Phone</span>
+                <span class="font-mono text-slate-800 block mt-0.5">{{ booking.contact_phone|default:"None provided" }}</span>
+            </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 space-y-1.5">
+            <span class="text-slate-400 block font-semibold text-[10px] uppercase">Applicant Submitted Goals / Prompts</span>
+            <div class="bg-slate-50 p-4 rounded-xl text-xs text-slate-700 whitespace-pre-line leading-relaxed border border-slate-100">
+                {{ booking.applicant_notes }}
+            </div>
+        </div>
+
+        <!-- Materials & Payment Proof -->
+        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-4 text-xs">
+            {% if booking.attached_document %}
+            <a href="{{ booking.attached_document.url }}" download class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold flex items-center gap-2">
+                <i data-lucide="download" class="w-3.5 h-3.5 text-slate-500"></i>
+                <span>Download Applicant's Draft Document</span>
+            </a>
+            {% endif %}
+
+            {% if booking.payment_proof %}
+            <a href="{{ booking.payment_proof.url }}" target="_blank" class="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-semibold flex items-center gap-2">
+                <i data-lucide="receipt" class="w-3.5 h-3.5 text-amber-600"></i>
+                <span>View Payment Receipt / Proof</span>
+            </a>
+            {% endif %}
+
+            {% if booking.payment_reference %}
+            <div class="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-mono text-xs">
+                Ref: <strong>{{ booking.payment_reference }}</strong>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Fulfillment Form -->
+    <form method="POST" enctype="multipart/form-data" class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        {% csrf_token %}
+
+        <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+                <i data-lucide="check-square" class="w-4 h-4 text-emerald-600"></i>
+                Admin Fulfillment Workbench
+            </h3>
+            <span class="text-xs text-slate-400">Saving automatically sends in-app notifications to the applicant</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Booking Status *</label>
+                <select name="status" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                    <option value="pending_payment" {% if booking.status == 'pending_payment' %}selected{% endif %}>Pending Confirmation / Payment</option>
+                    <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Confirmed & Queued</option>
+                    <option value="in_review" {% if booking.status == 'in_review' %}selected{% endif %}>Under Expert Review</option>
+                    <option value="scheduled" {% if booking.status == 'scheduled' %}selected{% endif %}>Session Scheduled</option>
+                    <option value="completed" {% if booking.status == 'completed' %}selected{% endif %}>Completed & Delivered</option>
+                    <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Payment Status *</label>
+                <select name="payment_status" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+                    <option value="unpaid" {% if booking.payment_status == 'unpaid' %}selected{% endif %}>Unpaid</option>
+                    <option value="pending_verification" {% if booking.payment_status == 'pending_verification' %}selected{% endif %}>Pending Verification</option>
+                    <option value="paid" {% if booking.payment_status == 'paid' %}selected{% endif %}>Paid & Verified</option>
+                    <option value="waived" {% if booking.payment_status == 'waived' %}selected{% endif %}>Waived / Scholarship</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Meeting Link (Google Meet / Zoom URL)</label>
+                <input type="url" name="meeting_link" value="{{ booking.meeting_link }}" placeholder="https://meet.google.com/abc-defg-hij" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Confirmed Call Schedule (Date & Time UTC)</label>
+                <input type="datetime-local" name="scheduled_at" value="{{ booking.scheduled_at|date:'Y-m-d\TH:i' }}" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
+            </div>
+        </div>
+
+        <div class="space-y-4 pt-3 border-t border-slate-100">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Deliverable Feedback / Reviewer Evaluation (Visible to Applicant)</label>
+                <textarea name="deliverable_feedback" rows="6" placeholder="Write comprehensive feedback, rubric evaluation notes, strengths, and recommended improvements for the applicant..." class="w-full text-xs rounded-xl border border-slate-200 p-3 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">{{ booking.deliverable_feedback }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Upload Reviewed Document / Audit Report Deliverable</label>
+                {% if booking.deliverable_file %}
+                <div class="flex items-center gap-2 mb-2 text-xs text-emerald-700 font-semibold">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Currently uploaded: <a href="{{ booking.deliverable_file.url }}" download class="underline font-bold">Download current deliverable</a></span>
+                </div>
+                {% endif %}
+                <input type="file" name="deliverable_file" accept=".pdf,.doc,.docx,.zip,.txt" class="w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 border border-slate-200 rounded-xl p-1.5">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Internal Admin Notes (Private to Staff)</label>
+                <textarea name="admin_notes" rows="2" placeholder="Private internal notes regarding reviewer assignments or payment tracking..." class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">{{ booking.admin_notes }}</textarea>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+            <a href="{% url 'assistance:admin_hub' %}" class="text-xs font-bold text-slate-500 hover:text-slate-800">Cancel</a>
+            <button type="submit" class="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>Save Changes & Notify Applicant</span>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

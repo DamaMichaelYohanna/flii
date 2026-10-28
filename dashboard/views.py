@@ -183,8 +183,141 @@ def admin_system_dashboard(request):
 @login_required
 def admin_users_view(request):
     """
-    User Management Console:
-    View, filter, search, and manage user accounts and staff privileges.
+    Comprehensive User Management Console:
+    View, filter, search, inspect, export, and manage applicant accounts and privileges.
+    """
+    if not request.user.is_staff:
+        from django.contrib import messages
+        from django.shortcuts import redirect
+        messages.warning(request, "Staff privileges required to access User Management.")
+        return redirect('dashboard:index')
+
+    import datetime
+    from django.utils import timezone
+    from django.core.paginator import Paginator
+    from django.db.models import Count, Q
+    from accounts.models import User
+
+    now = timezone.now()
+    q = request.GET.get('q', '').strip()
+    role = request.GET.get('role', '')
+    onboarding = request.GET.get('onboarding', '')
+    status = request.GET.get('status', '')
+    activity = request.GET.get('activity', '')
+    sort_by = request.GET.get('sort', 'newest')
+
+    # Overall System Metrics
+    total_users_count = User.objects.count()
+    total_applicants_count = User.objects.filter(is_staff=False).count()
+    total_staff_count = User.objects.filter(is_staff=True).count()
+    onboarding_completed_count = User.objects.filter(onboarding_completed=True).count()
+    email_verified_count = User.objects.filter(is_email_verified=True).count()
+    active_users_count = User.objects.filter(is_active=True).count()
+    inactive_users_count = User.objects.filter(is_active=False).count()
+    new_this_week = User.objects.filter(date_joined__gte=now - datetime.timedelta(days=7)).count()
+
+    # Base Queryset with rich annotations
+    users_qs = User.objects.annotate(
+        apps_count=Count('applications', distinct=True),
+        docs_count=Count('documents', distinct=True),
+        stories_count=Count('stories', distinct=True),
+        bookings_count=Count('assistance_bookings', distinct=True)
+    ).select_related('applicant_profile')
+
+    # Search filter
+    if q:
+        users_qs = users_qs.filter(
+            Q(email__icontains=q) |
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(username__icontains=q) |
+            Q(applicant_profile__nationality__icontains=q) |
+            Q(applicant_profile__country_of_origin__icontains=q) |
+            Q(applicant_profile__phone__icontains=q) |
+            Q(applicant_profile__headline__icontains=q)
+        )
+
+    # Role filter
+    if role == 'staff':
+        users_qs = users_qs.filter(is_staff=True)
+    elif role == 'applicant':
+        users_qs = users_qs.filter(is_staff=False)
+    elif role == 'superuser':
+        users_qs = users_qs.filter(is_superuser=True)
+
+    # Onboarding filter
+    if onboarding == 'completed':
+        users_qs = users_qs.filter(onboarding_completed=True)
+    elif onboarding == 'pending':
+        users_qs = users_qs.filter(onboarding_completed=False)
+
+    # Account status filter
+    if status == 'active':
+        users_qs = users_qs.filter(is_active=True)
+    elif status == 'inactive':
+        users_qs = users_qs.filter(is_active=False)
+    elif status == 'verified':
+        users_qs = users_qs.filter(is_email_verified=True)
+    elif status == 'unverified':
+        users_qs = users_qs.filter(is_email_verified=False)
+
+    # Activity filter
+    if activity == 'has_apps':
+        users_qs = users_qs.filter(apps_count__gt=0)
+    elif activity == 'no_apps':
+        users_qs = users_qs.filter(apps_count=0)
+    elif activity == 'has_docs':
+        users_qs = users_qs.filter(docs_count__gt=0)
+    elif activity == 'has_bookings':
+        users_qs = users_qs.filter(bookings_count__gt=0)
+
+    # Sorting
+    if sort_by == 'oldest':
+        users_qs = users_qs.order_by('date_joined')
+    elif sort_by == 'last_login':
+        users_qs = users_qs.order_by('-last_login')
+    elif sort_by == 'apps':
+        users_qs = users_qs.order_by('-apps_count', '-date_joined')
+    elif sort_by == 'docs':
+        users_qs = users_qs.order_by('-docs_count', '-date_joined')
+    elif sort_by == 'name':
+        users_qs = users_qs.order_by('first_name', 'last_name')
+    else:  # newest
+        users_qs = users_qs.order_by('-date_joined')
+
+    # Pagination
+    paginator = Paginator(users_qs, 15)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'users_list': page_obj.object_list,
+        'total_filtered': users_qs.count(),
+        'total_users_count': total_users_count,
+        'total_applicants_count': total_applicants_count,
+        'total_staff_count': total_staff_count,
+        'onboarding_completed_count': onboarding_completed_count,
+        'email_verified_count': email_verified_count,
+        'active_users_count': active_users_count,
+        'inactive_users_count': inactive_users_count,
+        'new_this_week': new_this_week,
+        'query': q,
+        'selected_role': role,
+        'selected_onboarding': onboarding,
+        'selected_status': status,
+        'selected_activity': activity,
+        'selected_sort': sort_by,
+    }
+    return render(request, 'dashboard/admin_users.html', context)
+
+
+@login_required
+def admin_user_detail_view(request, user_id):
+    """
+    360° Inspection View for a single user account:
+    Displays complete profile, applications, vault documents, STAR stories,
+    assistance bookings, and administrative control actions.
     """
     if not request.user.is_staff:
         from django.contrib import messages
@@ -192,51 +325,57 @@ def admin_users_view(request):
         messages.warning(request, "Staff privileges required.")
         return redirect('dashboard:index')
 
+    from django.shortcuts import get_object_or_404
     from accounts.models import User
-    from django.db.models import Count, Q
 
-    q = request.GET.get('q', '').strip()
-    role = request.GET.get('role', '')
-    onboarding = request.GET.get('onboarding', '')
+    target_user = get_object_or_404(User, id=user_id)
+    profile = getattr(target_user, 'applicant_profile', None)
 
-    users_qs = User.objects.annotate(
-        apps_count=Count('applications', distinct=True),
-        docs_count=Count('documents', distinct=True),
-        stories_count=Count('stories', distinct=True)
-    ).order_by('-date_joined')
+    educations = profile.educations.all() if profile else []
+    employments = profile.employments.all() if profile else []
+    skills = profile.skills.all() if profile else []
+    projects = profile.projects.all() if profile else []
+    achievements = profile.achievements.all() if profile else []
+    certifications = profile.certifications.all() if profile else []
+    languages = profile.languages.all() if profile else []
+    study_goal = getattr(profile, 'study_goal', None) if profile else None
+    research_profile = getattr(profile, 'research_profile', None) if profile else None
 
-    if q:
-        users_qs = users_qs.filter(
-            Q(email__icontains=q) |
-            Q(first_name__icontains=q) |
-            Q(last_name__icontains=q) |
-            Q(username__icontains=q)
-        )
-
-    if role == 'staff':
-        users_qs = users_qs.filter(is_staff=True)
-    elif role == 'applicant':
-        users_qs = users_qs.filter(is_staff=False)
-
-    if onboarding == 'completed':
-        users_qs = users_qs.filter(onboarding_completed=True)
-    elif onboarding == 'pending':
-        users_qs = users_qs.filter(onboarding_completed=False)
+    applications = target_user.applications.select_related('opportunity').order_by('-updated_at')
+    documents = target_user.documents.order_by('-upload_date')
+    stories = target_user.stories.order_by('-created_at')
+    assistance_bookings = target_user.assistance_bookings.select_related('package').order_by('-created_at')
+    notifications = target_user.notifications.order_by('-created_at')[:15]
 
     context = {
-        'users_list': users_qs,
-        'total_users': users_qs.count(),
-        'query': q,
-        'selected_role': role,
-        'selected_onboarding': onboarding,
+        'target_user': target_user,
+        'profile': profile,
+        'educations': educations,
+        'employments': employments,
+        'skills': skills,
+        'projects': projects,
+        'achievements': achievements,
+        'certifications': certifications,
+        'languages': languages,
+        'study_goal': study_goal,
+        'research_profile': research_profile,
+        'applications': applications,
+        'documents': documents,
+        'stories': stories,
+        'assistance_bookings': assistance_bookings,
+        'notifications': notifications,
+        'apps_count': applications.count(),
+        'docs_count': documents.count(),
+        'stories_count': stories.count(),
+        'bookings_count': assistance_bookings.count(),
     }
-    return render(request, 'dashboard/admin_users.html', context)
+    return render(request, 'dashboard/admin_user_detail.html', context)
 
 
 @login_required
 def admin_toggle_user_staff(request, user_id):
     """
-    Toggles a user's staff/admin status.
+    Toggles a user's staff/admin status with safety checks.
     """
     if not request.user.is_staff:
         from django.http import JsonResponse
@@ -267,7 +406,186 @@ def admin_toggle_user_staff(request, user_id):
         })
 
     messages.success(request, f"Successfully {state_str} {target_user.email}.")
-    return redirect('dashboard:admin_users')
+    return redirect(request.META.get('HTTP_REFERER') or 'dashboard:admin_users')
+
+
+@login_required
+def admin_toggle_user_active(request, user_id):
+    """
+    Toggles a user's active status (suspend or reactivate account).
+    """
+    if not request.user.is_staff:
+        from django.http import JsonResponse
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    from accounts.models import User
+    from django.shortcuts import get_object_or_404, redirect
+    from django.contrib import messages
+    from django.http import JsonResponse
+
+    target_user = get_object_or_404(User, id=user_id)
+
+    if target_user == request.user:
+        messages.warning(request, "You cannot deactivate your own account.")
+        return redirect('dashboard:admin_users')
+
+    target_user.is_active = not target_user.is_active
+    target_user.save(update_fields=['is_active'])
+
+    state_str = "activated" if target_user.is_active else "suspended / deactivated"
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'user_id': target_user.id,
+            'is_active': target_user.is_active,
+            'message': f"Successfully {state_str} {target_user.email}."
+        })
+
+    messages.success(request, f"Successfully {state_str} {target_user.email}.")
+    return redirect(request.META.get('HTTP_REFERER') or 'dashboard:admin_users')
+
+
+@login_required
+def admin_toggle_user_verified(request, user_id):
+    """
+    Toggles a user's email verification status.
+    """
+    if not request.user.is_staff:
+        from django.http import JsonResponse
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    from accounts.models import User
+    from django.shortcuts import get_object_or_404, redirect
+    from django.contrib import messages
+    from django.http import JsonResponse
+
+    target_user = get_object_or_404(User, id=user_id)
+    target_user.is_email_verified = not target_user.is_email_verified
+    target_user.save(update_fields=['is_email_verified'])
+
+    state_str = "marked email as verified for" if target_user.is_email_verified else "marked email as unverified for"
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'user_id': target_user.id,
+            'is_email_verified': target_user.is_email_verified,
+            'message': f"Successfully {state_str} {target_user.email}."
+        })
+
+    messages.success(request, f"Successfully {state_str} {target_user.email}.")
+    return redirect(request.META.get('HTTP_REFERER') or 'dashboard:admin_users')
+
+
+@login_required
+def admin_send_user_notification(request, user_id):
+    """
+    Sends a direct in-app notification to a user.
+    """
+    if not request.user.is_staff:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("Unauthorized")
+
+    from django.shortcuts import get_object_or_404, redirect
+    from django.contrib import messages
+    from accounts.models import User
+    from notifications.models import Notification
+
+    target_user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        message = request.POST.get('message', '').strip()
+        action_url = request.POST.get('action_url', '').strip()
+
+        if not title or not message:
+            messages.error(request, "Notification title and message are required.")
+            return redirect('dashboard:admin_user_detail', user_id=target_user.id)
+
+        Notification.objects.create(
+            user=target_user,
+            title=title,
+            message=message,
+            action_url=action_url,
+            notification_type='system'
+        )
+
+        messages.success(request, f"✉️ Notification sent to {target_user.email}.")
+
+    return redirect('dashboard:admin_user_detail', user_id=target_user.id)
+
+
+@login_required
+def admin_users_export_csv(request):
+    """
+    Exports filtered or complete user directory as a downloadable CSV.
+    """
+    if not request.user.is_staff:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("Unauthorized")
+
+    import csv
+    from django.http import HttpResponse
+    from django.utils import timezone
+    from accounts.models import User
+    from django.db.models import Count
+
+    users = User.objects.annotate(
+        apps_count=Count('applications', distinct=True),
+        docs_count=Count('documents', distinct=True),
+        stories_count=Count('stories', distinct=True),
+        bookings_count=Count('assistance_bookings', distinct=True)
+    ).select_related('applicant_profile').order_by('-date_joined')
+
+    response = HttpResponse(content_type='text/csv')
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M')
+    response['Content-Disposition'] = f'attachment; filename="flii_users_export_{timestamp}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'User ID',
+        'Email',
+        'First Name',
+        'Last Name',
+        'Username',
+        'Role',
+        'Is Active',
+        'Email Verified',
+        'Onboarding Completed',
+        'Nationality',
+        'Country of Origin',
+        'Phone',
+        'Applications Count',
+        'Documents Count',
+        'STAR Stories Count',
+        'Assistance Bookings Count',
+        'Date Joined',
+        'Last Login'
+    ])
+
+    for u in users:
+        prof = getattr(u, 'applicant_profile', None)
+        writer.writerow([
+            u.id,
+            u.email,
+            u.first_name,
+            u.last_name,
+            u.username,
+            'Superuser' if u.is_superuser else ('Staff' if u.is_staff else 'Applicant'),
+            'Yes' if u.is_active else 'No',
+            'Yes' if u.is_email_verified else 'No',
+            'Yes' if u.onboarding_completed else 'No',
+            prof.nationality if prof else '',
+            prof.country_of_origin if prof else '',
+            prof.phone if prof else '',
+            u.apps_count,
+            u.docs_count,
+            u.stories_count,
+            u.bookings_count,
+            u.date_joined.strftime('%Y-%m-%d %H:%M') if u.date_joined else '',
+            u.last_login.strftime('%Y-%m-%d %H:%M') if u.last_login else 'Never'
+        ])
+
+    return response
 
 
 @login_required

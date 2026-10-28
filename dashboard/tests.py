@@ -102,3 +102,68 @@ class DashboardTests(TestCase):
         self.assertContains(resp, "Global Applications Pipeline")
         self.assertContains(resp, "German Research Grant")
         self.assertContains(resp, "applicant@example.com")
+
+    def test_admin_user_detail_view(self):
+        self.client.force_login(self.staff_user)
+        resp = self.client.get(reverse('dashboard:admin_user_detail', kwargs={'user_id': self.user.id}))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "User Dossier")
+        self.assertContains(resp, self.user.email)
+        self.assertContains(resp, "German Research Grant")
+
+    def test_admin_toggle_user_active(self):
+        self.client.force_login(self.staff_user)
+        self.assertTrue(self.user.is_active)
+
+        resp = self.client.get(
+            reverse('dashboard:admin_toggle_user_active', kwargs={'user_id': self.user.id}),
+            follow=True
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+
+        # Toggle back
+        resp2 = self.client.get(
+            reverse('dashboard:admin_toggle_user_active', kwargs={'user_id': self.user.id}),
+            follow=True
+        )
+        self.assertEqual(resp2.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+
+    def test_admin_toggle_user_verified(self):
+        self.client.force_login(self.staff_user)
+        self.assertFalse(self.user.is_email_verified)
+
+        resp = self.client.get(
+            reverse('dashboard:admin_toggle_user_verified', kwargs={'user_id': self.user.id}),
+            follow=True
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_email_verified)
+
+    def test_admin_send_user_notification(self):
+        self.client.force_login(self.staff_user)
+        resp = self.client.post(
+            reverse('dashboard:admin_send_user_notification', kwargs={'user_id': self.user.id}),
+            {'title': 'Important Update', 'message': 'Please review your transcript.', 'action_url': '/vault/'},
+            follow=True
+        )
+        self.assertEqual(resp.status_code, 200)
+        from notifications.models import Notification
+        notif = Notification.objects.filter(user=self.user, title='Important Update').first()
+        self.assertIsNotNone(notif)
+        self.assertEqual(notif.message, 'Please review your transcript.')
+        self.assertEqual(notif.action_url, '/vault/')
+
+    def test_admin_users_export_csv(self):
+        self.client.force_login(self.staff_user)
+        resp = self.client.get(reverse('dashboard:admin_users_export'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Content-Type'], 'text/csv')
+        self.assertIn('attachment; filename="flii_users_export_', resp['Content-Disposition'])
+        content = resp.content.decode('utf-8')
+        self.assertIn('applicant@example.com', content)
+        self.assertIn('admin@example.com', content)

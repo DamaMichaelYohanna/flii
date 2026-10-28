@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}User Management | Flii Admin{% endblock %}
-{% block meta_description %}Manage user accounts, onboarding status, staff privileges, and application progress.{% endblock %}
+{% block title %}User Management & Directory | Flii Admin{% endblock %}
+{% block meta_description %}Manage user accounts, inspect applicant dossiers, assign staff permissions, and monitor platform engagement.{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-6 pb-12">
+<div class="max-w-7xl mx-auto space-y-6 pb-16">
     <!-- Breadcrumb & Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -14,55 +14,204 @@
                     Admin Hub
                 </a>
                 <span>/</span>
-                <span class="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md font-bold">User Directory & Roles</span>
+                <span class="text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md font-bold">User Management & 360° Directory</span>
             </div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                <span>User Account Management</span>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
-                    {{ total_users }} Accounts
+                <span>User Account Console</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800 border border-teal-200">
+                    {{ total_users_count }} Total Accounts
                 </span>
             </h1>
-            <p class="text-xs text-slate-600 mt-1">
-                Manage registered applicant accounts, assign staff permissions, and inspect onboarding progression.
+            <p class="text-sm text-slate-600 mt-1">
+                Monitor applicant pipelines, inspect complete dossiers, toggle account privileges, and direct-message users.
             </p>
         </div>
 
-        <div class="flex items-center gap-3">
-            <a href="{% url 'dashboard:admin_system_dashboard' %}" class="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                <span>Admin Command Center</span>
+        <div class="flex flex-wrap items-center gap-2.5">
+            <a href="{% url 'dashboard:admin_users_export' %}" class="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2">
+                <i data-lucide="download" class="w-4 h-4 text-emerald-600"></i>
+                <span>Export CSV</span>
             </a>
-            <a href="/admin/accounts/user/" target="_blank" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5">
+            <a href="{% url 'assistance:admin_hub' %}" class="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4 text-amber-600"></i>
+                <span>Paid Assistance</span>
+            </a>
+            <a href="{% url 'dashboard:admin_applications' %}" class="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2">
+                <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
+                <span>All Applications</span>
+            </a>
+            <a href="/admin/accounts/user/" target="_blank" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 border border-slate-700">
                 <i data-lucide="database" class="w-4 h-4 text-teal-400"></i>
-                <span>Django User Admin</span>
+                <span>Django DB Admin</span>
                 <i data-lucide="arrow-up-right" class="w-3 h-3 text-slate-400"></i>
             </a>
         </div>
     </div>
 
-    <!-- Filter & Search Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        <form method="GET" action="{% url 'dashboard:admin_users' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div class="lg:col-span-2 relative">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
-                <input type="text" name="q" value="{{ query }}" placeholder="Search by name, email, or username..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+    <!-- KPI Metric Cards Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <!-- 1. Total Accounts -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-500 mb-1">
+                <span class="text-[11px] font-bold uppercase tracking-wider">Total Users</span>
+                <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                </div>
             </div>
             <div>
-                <select name="role" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
-                    <option value="">All Roles</option>
-                    <option value="applicant" {% if selected_role == 'applicant' %}selected{% endif %}>Applicants Only</option>
-                    <option value="staff" {% if selected_role == 'staff' %}selected{% endif %}>Staff / Admins</option>
-                </select>
+                <p class="text-2xl font-black text-slate-900">{{ total_users_count }}</p>
+                <p class="text-[11px] text-teal-600 font-medium mt-0.5">+{{ new_this_week }} this week</p>
             </div>
-            <div class="flex items-center gap-2">
-                <select name="onboarding" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
-                    <option value="">All Onboarding Statuses</option>
-                    <option value="completed" {% if selected_onboarding == 'completed' %}selected{% endif %}>Profile Completed</option>
-                    <option value="pending" {% if selected_onboarding == 'pending' %}selected{% endif %}>Onboarding In Progress</option>
-                </select>
-                <button type="submit" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex-shrink-0">
-                    Filter
-                </button>
+        </div>
+
+        <!-- 2. Applicants -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-500 mb-1">
+                <span class="text-[11px] font-bold uppercase tracking-wider">Applicants</span>
+                <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-slate-900">{{ total_applicants_count }}</p>
+                <p class="text-[11px] text-slate-500 font-medium mt-0.5">Active candidates</p>
+            </div>
+        </div>
+
+        <!-- 3. Staff & Admins -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-500 mb-1">
+                <span class="text-[11px] font-bold uppercase tracking-wider">Staff / Admins</span>
+                <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-slate-900">{{ total_staff_count }}</p>
+                <p class="text-[11px] text-emerald-700 font-medium mt-0.5">Privileged staff</p>
+            </div>
+        </div>
+
+        <!-- 4. Onboarding Ready -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-500 mb-1">
+                <span class="text-[11px] font-bold uppercase tracking-wider">Profile Ready</span>
+                <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-slate-900">{{ onboarding_completed_count }}</p>
+                <p class="text-[11px] text-slate-500 font-medium mt-0.5">Onboarding done</p>
+            </div>
+        </div>
+
+        <!-- 5. Email Verified -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-500 mb-1">
+                <span class="text-[11px] font-bold uppercase tracking-wider">Verified Emails</span>
+                <div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <i data-lucide="mail-check" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-slate-900">{{ email_verified_count }}</p>
+                <p class="text-[11px] text-sky-700 font-medium mt-0.5">Confirmed emails</p>
+            </div>
+        </div>
+
+        <!-- 6. Account Status -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-500 mb-1">
+                <span class="text-[11px] font-bold uppercase tracking-wider">Active vs Susp</span>
+                <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i data-lucide="user-x" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div>
+                <p class="text-2xl font-black text-slate-900">{{ active_users_count }} <span class="text-xs font-normal text-slate-400">/ {{ inactive_users_count }}</span></p>
+                <p class="text-[11px] text-slate-500 font-medium mt-0.5">{{ inactive_users_count }} suspended</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Multi-Filter Console -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <form method="GET" action="{% url 'dashboard:admin_users' %}" class="space-y-3.5">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                <!-- Search -->
+                <div class="md:col-span-5 relative">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Search by name, email, username, nationality, phone..." class="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all">
+                </div>
+
+                <!-- Role Filter -->
+                <div class="md:col-span-2">
+                    <select name="role" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white">
+                        <option value="">All Roles</option>
+                        <option value="applicant" {% if selected_role == 'applicant' %}selected{% endif %}>Applicants Only</option>
+                        <option value="staff" {% if selected_role == 'staff' %}selected{% endif %}>Staff & Admins</option>
+                        <option value="superuser" {% if selected_role == 'superuser' %}selected{% endif %}>Superusers</option>
+                    </select>
+                </div>
+
+                <!-- Onboarding Filter -->
+                <div class="md:col-span-2">
+                    <select name="onboarding" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white">
+                        <option value="">All Onboarding</option>
+                        <option value="completed" {% if selected_onboarding == 'completed' %}selected{% endif %}>Profile Complete</option>
+                        <option value="pending" {% if selected_onboarding == 'pending' %}selected{% endif %}>Profile In Progress</option>
+                    </select>
+                </div>
+
+                <!-- Account Status Filter -->
+                <div class="md:col-span-3">
+                    <select name="status" class="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white">
+                        <option value="">All Account Statuses</option>
+                        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active Accounts</option>
+                        <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Suspended / Inactive</option>
+                        <option value="verified" {% if selected_status == 'verified' %}selected{% endif %}>Verified Emails</option>
+                        <option value="unverified" {% if selected_status == 'unverified' %}selected{% endif %}>Unverified Emails</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Second Row Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1 border-t border-slate-100 items-center">
+                <div class="md:col-span-4 flex items-center gap-2">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex-shrink-0">Activity:</label>
+                    <select name="activity" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white">
+                        <option value="">All Activities</option>
+                        <option value="has_apps" {% if selected_activity == 'has_apps' %}selected{% endif %}>Has Applications (>0)</option>
+                        <option value="no_apps" {% if selected_activity == 'no_apps' %}selected{% endif %}>Zero Applications (0)</option>
+                        <option value="has_docs" {% if selected_activity == 'has_docs' %}selected{% endif %}>Has Vault Documents</option>
+                        <option value="has_bookings" {% if selected_activity == 'has_bookings' %}selected{% endif %}>Has Paid Assistance</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-4 flex items-center gap-2">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex-shrink-0">Sort By:</label>
+                    <select name="sort" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white">
+                        <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest Registered</option>
+                        <option value="oldest" {% if selected_sort == 'oldest' %}selected{% endif %}>Oldest Registered</option>
+                        <option value="last_login" {% if selected_sort == 'last_login' %}selected{% endif %}>Recently Active (Last Login)</option>
+                        <option value="apps" {% if selected_sort == 'apps' %}selected{% endif %}>Most Applications</option>
+                        <option value="docs" {% if selected_sort == 'docs' %}selected{% endif %}>Most Documents</option>
+                        <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-4 flex items-center justify-end gap-2.5">
+                    {% if query or selected_role or selected_onboarding or selected_status or selected_activity or selected_sort != 'newest' %}
+                    <a href="{% url 'dashboard:admin_users' %}" class="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+                        Clear All
+                    </a>
+                    {% endif %}
+                    <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5">
+                        <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+                        <span>Apply Filters ({{ total_filtered }})</span>
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -72,117 +221,357 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-slate-100 bg-slate-50/75 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <tr class="border-b border-slate-100 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         <th class="py-3.5 px-6">User / Applicant</th>
                         <th class="py-3.5 px-4">Role & Status</th>
-                        <th class="py-3.5 px-4">Onboarding</th>
+                        <th class="py-3.5 px-4">Verification & Onboarding</th>
                         <th class="py-3.5 px-4 text-center">Applications</th>
                         <th class="py-3.5 px-4 text-center">Vault Docs</th>
-                        <th class="py-3.5 px-4 text-center">STAR Stories</th>
-                        <th class="py-3.5 px-4">Joined Date</th>
+                        <th class="py-3.5 px-4 text-center">Stories</th>
+                        <th class="py-3.5 px-4 text-center">Assistance</th>
+                        <th class="py-3.5 px-4">Joined / Last Seen</th>
                         <th class="py-3.5 px-6 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-xs">
                     {% for u in users_list %}
                     <tr class="hover:bg-slate-50/70 transition-colors" id="userRow-{{ u.id }}">
+                        <!-- 1. Identity & Origin -->
                         <td class="py-4 px-6">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-slate-900 text-teal-300 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-900 to-teal-800 text-teal-300 font-black text-xs flex items-center justify-center flex-shrink-0 shadow-sm border border-slate-700">
                                     {{ u.first_name|default:u.username|slice:":1"|upper }}
                                 </div>
-                                <div class="truncate">
-                                    <div class="font-bold text-slate-900 flex items-center gap-2">
-                                        <span>{{ u.get_full_name|default:u.username }}</span>
+                                <div class="min-w-0 max-w-xs">
+                                    <div class="font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                                        <a href="{% url 'dashboard:admin_user_detail' user_id=u.id %}" class="hover:text-teal-600 transition-colors truncate">
+                                            {{ u.get_full_name|default:u.username }}
+                                        </a>
                                         {% if u.is_superuser %}
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-purple-100 text-purple-800">Superuser</span>
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-purple-100 text-purple-800 border border-purple-200 flex-shrink-0">Superuser</span>
                                         {% endif %}
                                     </div>
-                                    <div class="text-[11px] text-slate-400 font-mono">{{ u.email }}</div>
+                                    <div class="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                                        <span class="truncate">{{ u.email }}</span>
+                                    </div>
+                                    {% if u.applicant_profile %}
+                                    <div class="text-[10px] text-slate-400 mt-0.5 truncate">
+                                        {{ u.applicant_profile.nationality|default:"Global" }}
+                                        {% if u.applicant_profile.phone %} • {{ u.applicant_profile.phone }}{% endif %}
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </td>
-                        <td class="py-4 px-4">
-                            {% if u.is_staff %}
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" id="roleBadge-{{ u.id }}">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Staff Admin
+
+                        <!-- 2. Role & Active Status -->
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <div class="space-y-1">
+                                <div>
+                                    {% if u.is_staff %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" id="roleBadge-{{ u.id }}">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Staff Admin
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600" id="roleBadge-{{ u.id }}">
+                                        Applicant
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if u.is_active %}
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700" id="activeBadge-{{ u.id }}">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600" id="activeBadge-{{ u.id }}">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Suspended
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- 3. Verification & Onboarding -->
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <div class="space-y-1">
+                                <div>
+                                    {% if u.is_email_verified %}
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200" id="verifiedBadge-{{ u.id }}">
+                                        <i data-lucide="check" class="w-3 h-3 text-teal-600"></i> Verified
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" id="verifiedBadge-{{ u.id }}">
+                                        <i data-lucide="alert-circle" class="w-3 h-3 text-amber-500"></i> Unverified
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if u.onboarding_completed %}
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700">
+                                        <i data-lucide="sparkles" class="w-3 h-3 text-teal-600"></i> Onboarded
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400">
+                                        Pending Onboarding
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- 4. Applications Count -->
+                        <td class="py-4 px-4 text-center">
+                            {% if u.apps_count > 0 %}
+                            <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-black bg-blue-50 text-blue-800 border border-blue-200">
+                                {{ u.apps_count }}
                             </span>
                             {% else %}
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600" id="roleBadge-{{ u.id }}">
-                                Applicant
-                            </span>
+                            <span class="text-slate-300 font-mono text-xs">0</span>
                             {% endif %}
                         </td>
-                        <td class="py-4 px-4">
-                            {% if u.onboarding_completed %}
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
-                                <i data-lucide="check-circle-2" class="w-3 h-3"></i> Ready
+
+                        <!-- 5. Documents Count -->
+                        <td class="py-4 px-4 text-center">
+                            {% if u.docs_count > 0 %}
+                            <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                                {{ u.docs_count }}
                             </span>
                             {% else %}
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                In Progress
-                            </span>
+                            <span class="text-slate-300 font-mono text-xs">0</span>
                             {% endif %}
                         </td>
-                        <td class="py-4 px-4 text-center font-bold text-slate-800">
-                            {{ u.apps_count }}
+
+                        <!-- 6. STAR Stories Count -->
+                        <td class="py-4 px-4 text-center">
+                            {% if u.stories_count > 0 %}
+                            <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-800 border border-purple-200">
+                                {{ u.stories_count }}
+                            </span>
+                            {% else %}
+                            <span class="text-slate-300 font-mono text-xs">0</span>
+                            {% endif %}
                         </td>
-                        <td class="py-4 px-4 text-center font-bold text-slate-800">
-                            {{ u.docs_count }}
+
+                        <!-- 7. Paid Assistance Bookings Count -->
+                        <td class="py-4 px-4 text-center">
+                            {% if u.bookings_count > 0 %}
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
+                                <i data-lucide="badge-dollar-sign" class="w-3 h-3 text-amber-700"></i>
+                                {{ u.bookings_count }}
+                            </span>
+                            {% else %}
+                            <span class="text-slate-300 font-mono text-xs">—</span>
+                            {% endif %}
                         </td>
-                        <td class="py-4 px-4 text-center font-bold text-slate-800">
-                            {{ u.stories_count }}
+
+                        <!-- 8. Timestamps -->
+                        <td class="py-4 px-4 text-slate-500 text-[11px] whitespace-nowrap">
+                            <div class="font-medium text-slate-700">{{ u.date_joined|date:"M d, Y" }}</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                {% if u.last_login %}
+                                Seen {{ u.last_login|date:"M d, H:i" }}
+                                {% else %}
+                                Never logged in
+                                {% endif %}
+                            </div>
                         </td>
-                        <td class="py-4 px-4 text-slate-400 font-mono text-[11px]">
-                            {{ u.date_joined|date:"M d, Y" }}
-                        </td>
-                        <td class="py-4 px-6 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <button type="button" onclick="toggleStaffStatus({{ u.id }})" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all {% if u.is_staff %}border-rose-200 text-rose-700 hover:bg-rose-50{% else %}border-emerald-200 text-emerald-700 hover:bg-emerald-50{% endif %}" id="staffBtn-{{ u.id }}">
-                                    {% if u.is_staff %}Revoke Staff{% else %}Make Staff{% endif %}
-                                </button>
+
+                        <!-- 9. Quick Actions & 360° Inspector Link -->
+                        <td class="py-4 px-6 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <!-- 360 Inspect Button -->
+                                <a href="{% url 'dashboard:admin_user_detail' user_id=u.id %}" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200 transition-all flex items-center gap-1" title="Inspect 360° Profile & Applications">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    <span>Inspect</span>
+                                </a>
+
+                                <!-- More Quick Actions Dropdown / Toggles -->
+                                <div class="relative inline-block text-left" x-data="{ open: false }">
+                                    <button @click="open = !open" @click.away="open = false" type="button" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+                                        <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                    </button>
+                                    <div x-show="open" x-cloak class="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-slate-100 z-50 text-left">
+                                        <div class="p-1.5 space-y-1">
+                                            <!-- Toggle Staff -->
+                                            <button type="button" onclick="toggleUserStaff({{ u.id }})" class="w-full text-left px-3 py-1.5 text-xs rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-700" id="staffMenuBtn-{{ u.id }}">
+                                                <i data-lucide="shield" class="w-3.5 h-3.5 text-slate-400"></i>
+                                                <span>{% if u.is_staff %}Revoke Staff{% else %}Make Staff{% endif %}</span>
+                                            </button>
+
+                                            <!-- Toggle Active / Suspend -->
+                                            <button type="button" onclick="toggleUserActive({{ u.id }})" class="w-full text-left px-3 py-1.5 text-xs rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium {% if u.is_active %}text-rose-600{% else %}text-emerald-600{% endif %}" id="activeMenuBtn-{{ u.id }}">
+                                                <i data-lucide="power" class="w-3.5 h-3.5"></i>
+                                                <span>{% if u.is_active %}Suspend Account{% else %}Activate Account{% endif %}</span>
+                                            </button>
+
+                                            <!-- Toggle Verified -->
+                                            <button type="button" onclick="toggleUserVerified({{ u.id }})" class="w-full text-left px-3 py-1.5 text-xs rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-700" id="verifiedMenuBtn-{{ u.id }}">
+                                                <i data-lucide="check-check" class="w-3.5 h-3.5 text-teal-500"></i>
+                                                <span>{% if u.is_email_verified %}Mark Unverified{% else %}Mark Verified{% endif %}</span>
+                                            </button>
+                                        </div>
+                                        <div class="p-1.5">
+                                            <a href="{% url 'dashboard:admin_user_detail' user_id=u.id %}#notifySection" class="w-full text-left px-3 py-1.5 text-xs rounded-lg flex items-center gap-2 hover:bg-teal-50 text-teal-700 font-medium">
+                                                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                                                <span>Direct Message</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="py-12 text-center text-slate-400 italic">
-                            No users matched your search criteria.
+                        <td colspan="9" class="py-16 text-center">
+                            <div class="max-w-md mx-auto space-y-3">
+                                <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                                    <i data-lucide="user-x" class="w-6 h-6"></i>
+                                </div>
+                                <h3 class="text-sm font-bold text-slate-800">No users found</h3>
+                                <p class="text-xs text-slate-500">
+                                    No accounts matched your search keywords or filter criteria.
+                                </p>
+                                <a href="{% url 'dashboard:admin_users' %}" class="inline-flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700">
+                                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset All Filters
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination Controls -->
+        {% if page_obj.has_other_pages %}
+        <div class="px-6 py-4 bg-slate-50/75 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <div>
+                Showing <span class="font-bold text-slate-800">{{ page_obj.start_index }}</span> to <span class="font-bold text-slate-800">{{ page_obj.end_index }}</span> of <span class="font-bold text-slate-800">{{ total_filtered }}</span> registered accounts
+            </div>
+            <div class="flex items-center gap-1.5">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_role %}&role={{ selected_role }}{% endif %}{% if selected_onboarding %}&onboarding={{ selected_onboarding }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_activity %}&activity={{ selected_activity }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 font-bold transition-colors flex items-center gap-1">
+                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Prev
+                </a>
+                {% endif %}
+
+                <span class="px-3 py-1.5 rounded-lg bg-teal-600 text-white font-bold">
+                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_role %}&role={{ selected_role }}{% endif %}{% if selected_onboarding %}&onboarding={{ selected_onboarding }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_activity %}&activity={{ selected_activity }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 font-bold transition-colors flex items-center gap-1">
+                    Next <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
+<!-- AJAX Action Handlers -->
 <script>
-async function toggleStaffStatus(userId) {
-    const btn = document.getElementById(`staffBtn-${userId}`);
-    const badge = document.getElementById(`roleBadge-${userId}`);
+// Toggle Staff
+async function toggleUserStaff(userId) {
     try {
         const resp = await fetch(`/dashboard/admin/users/${userId}/toggle-staff/`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         const data = await resp.json();
         if (data.success) {
+            const badge = document.getElementById(`roleBadge-${userId}`);
+            const menuBtn = document.getElementById(`staffMenuBtn-${userId}`);
             if (data.is_staff) {
-                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-200 text-rose-700 hover:bg-rose-50 transition-all";
-                btn.innerText = "Revoke Staff";
-                badge.className = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
-                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Staff Admin`;
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
+                    badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Staff Admin`;
+                }
+                if (menuBtn) menuBtn.querySelector('span').innerText = "Revoke Staff";
             } else {
-                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-all";
-                btn.innerText = "Make Staff";
-                badge.className = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600";
-                badge.innerText = "Applicant";
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600";
+                    badge.innerText = "Applicant";
+                }
+                if (menuBtn) menuBtn.querySelector('span').innerText = "Make Staff";
             }
         } else {
             alert(data.error || "Unable to update staff status.");
         }
     } catch (err) {
-        alert("Network error: " + err.message);
+        alert("Error: " + err.message);
+    }
+}
+
+// Toggle Active / Suspend
+async function toggleUserActive(userId) {
+    if (!confirm("Are you sure you want to change this account's active status?")) return;
+    try {
+        const resp = await fetch(`/dashboard/admin/users/${userId}/toggle-active/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await resp.json();
+        if (data.success) {
+            const badge = document.getElementById(`activeBadge-${userId}`);
+            const menuBtn = document.getElementById(`activeMenuBtn-${userId}`);
+            if (data.is_active) {
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700";
+                    badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active`;
+                }
+                if (menuBtn) {
+                    menuBtn.className = "w-full text-left px-3 py-1.5 text-xs rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-rose-600";
+                    menuBtn.querySelector('span').innerText = "Suspend Account";
+                }
+            } else {
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1 text-[11px] font-bold text-rose-600";
+                    badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Suspended`;
+                }
+                if (menuBtn) {
+                    menuBtn.className = "w-full text-left px-3 py-1.5 text-xs rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-emerald-600";
+                    menuBtn.querySelector('span').innerText = "Activate Account";
+                }
+            }
+        } else {
+            alert(data.error || "Unable to update account active status.");
+        }
+    } catch (err) {
+        alert("Error: " + err.message);
+    }
+}
+
+// Toggle Email Verified
+async function toggleUserVerified(userId) {
+    try {
+        const resp = await fetch(`/dashboard/admin/users/${userId}/toggle-verified/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await resp.json();
+        if (data.success) {
+            const badge = document.getElementById(`verifiedBadge-${userId}`);
+            const menuBtn = document.getElementById(`verifiedMenuBtn-${userId}`);
+            if (data.is_email_verified) {
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200";
+                    badge.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-teal-600"></i> Verified`;
+                }
+                if (menuBtn) menuBtn.querySelector('span').innerText = "Mark Unverified";
+            } else {
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200";
+                    badge.innerHTML = `<i data-lucide="alert-circle" class="w-3 h-3 text-amber-500"></i> Unverified`;
+                }
+                if (menuBtn) menuBtn.querySelector('span').innerText = "Mark Verified";
+            }
+            if (window.lucide) window.lucide.createIcons();
+        } else {
+            alert(data.error || "Unable to toggle verification.");
+        }
+    } catch (err) {
+        alert("Error: " + err.message);
     }
 }
 </script>

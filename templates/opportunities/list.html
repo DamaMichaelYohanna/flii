@@ -11,33 +11,21 @@
 {% block content %}
 <div class="max-w-7xl mx-auto space-y-6">
     <!-- Header & Search -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-black text-slate-900 tracking-tight">Discover Opportunities</h1>
             <p class="text-xs text-slate-500 mt-0.5">Explore verified postgraduate scholarships and funded Master's programmes abroad.</p>
         </div>
-        <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2.5">
             {% if user.is_staff %}
-            <a href="{% url 'opportunities:admin_scout_hub' %}" class="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 border border-teal-500">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-teal-200"></i>
+            <a href="{% url 'opportunities:admin_scout_hub' %}" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-teal-300 font-semibold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5 border border-slate-700">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-teal-400"></i>
                 <span>Admin Scout Hub</span>
             </a>
             {% endif %}
-            <a href="{% url 'opportunities:scan_all_portals' %}" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5 border border-emerald-600">
-                <i data-lucide="activity" class="w-3.5 h-3.5"></i>
-                <span>Scan Portals (Parallel AI)</span>
-            </a>
-            <a href="{% url 'opportunities:run_scout' %}" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5 border border-slate-700">
-                <i data-lucide="radar" class="w-3.5 h-3.5 text-teal-400"></i>
-                <span>Run AI Scout</span>
-            </a>
-            <a href="{% url 'opportunities:import' %}" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                <span>Extract Announcement</span>
-            </a>
-            <a href="?shortlisted=1" class="px-3.5 py-2 text-xs font-semibold rounded-xl border {% if only_shortlisted %}bg-slate-900 text-white border-slate-900{% else %}bg-white text-slate-700 border-slate-200 hover:bg-slate-50{% endif %} transition-colors flex items-center gap-1.5 shadow-sm">
-                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
-                <span>Shortlisted Only</span>
+            <a href="{% if only_shortlisted %}{% url 'opportunities:list' %}{% else %}?shortlisted=1{% endif %}" class="px-3.5 py-2 text-xs font-semibold rounded-xl border {% if only_shortlisted %}bg-slate-900 text-white border-slate-900{% else %}bg-white text-slate-700 border-slate-200 hover:bg-slate-50{% endif %} transition-colors flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5 {% if only_shortlisted %}fill-white text-white{% endif %}"></i>
+                <span>{% if only_shortlisted %}Showing Shortlisted{% else %}Shortlisted Only{% endif %}</span>
             </a>
         </div>
     </div>
@@ -80,103 +68,150 @@
 
     <!-- Opportunities Grid -->
     {% if page_obj %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for item in page_obj %}
-        {% with opp=item.opportunity fit=item.fit is_shortlisted=item.is_shortlisted is_applied=item.is_applied %}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-teal-300 transition-all flex flex-col justify-between overflow-hidden">
-            <!-- Card Header -->
-            <div class="p-5 space-y-3">
-                <div class="flex items-start justify-between gap-2">
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">
-                            {{ opp.get_funding_type_display|truncatechars:20 }}
+
+    <!-- Opportunities Grid Container with Free-Tier Gradient Blur -->
+    <div class="relative">
+        {% if page_obj %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for item in page_obj %}
+            {% with opp=item.opportunity fit=item.fit is_shortlisted=item.is_shortlisted is_applied=item.is_applied %}
+            <div class="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow transition-all flex flex-col justify-between overflow-hidden relative group {% if not is_premium %}{% if page_obj.number > 1 or forloop.counter0 >= 3 %}filter blur-[10px] opacity-15 select-none pointer-events-none{% elif forloop.counter0 == 2 %}filter blur-[6px] opacity-40 select-none pointer-events-none{% elif forloop.counter0 == 1 %}filter blur-[3px] opacity-75 select-none pointer-events-none{% elif opp.id != allowed_opp_id %}filter blur-[10px] opacity-15 select-none pointer-events-none{% endif %}{% endif %}">
+                <!-- Card Body -->
+                <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    <!-- Top Row: Category, Verification & Fit -->
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold {% if opp.funding_type == 'fully_funded' %}bg-slate-900 text-white{% else %}bg-slate-100 text-slate-700{% endif %}">
+                                {% if opp.funding_type == 'fully_funded' %}Fully Funded{% elif opp.funding_type == 'tuition_waiver' %}Tuition Waiver{% elif opp.funding_type == 'stipend_only' %}Stipend Only{% else %}Partial Funding{% endif %}
+                            </span>
+                            {% if opp.verification_status == 'source_verified' %}
+                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full" title="Official Source Verified">
+                                <i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i>
+                                <span>Verified</span>
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            {% if fit and fit.score %}
+                            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#0b3558] border border-blue-100" title="Profile Fit: {{ fit.label }}">
+                                {{ fit.score }}% Fit
+                            </span>
+                            {% endif %}
+                            <a href="{% url 'opportunities:toggle_shortlist' opp.id %}" title="Save opportunity" class="p-1 rounded-lg text-slate-300 hover:text-slate-700 transition-colors">
+                                <i data-lucide="bookmark" class="w-4 h-4 {% if is_shortlisted %}fill-[#0b3558] text-[#0b3558]{% endif %}"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Provider & Title -->
+                    <div>
+                        <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider truncate mb-1">
+                            {{ opp.provider }}
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base leading-snug line-clamp-2 group-hover:text-[#0b3558] transition-colors">
+                            <a href="{% url 'opportunities:detail' opp.id %}">{{ opp.title }}</a>
+                        </h3>
+                    </div>
+
+                    <!-- Metadata: Country & Field of Study -->
+                    <div class="flex items-center gap-2 text-xs text-slate-500 pt-0.5 min-w-0">
+                        <span class="inline-flex items-center gap-1 font-medium text-slate-600 flex-shrink-0">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <span>{{ opp.country }}</span>
                         </span>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ opp.cycle_badge.color }}">
-                            {{ opp.cycle_badge.label }}
-                        </span>
-                        {% if opp.ai_application_readiness == 'ready' %}
-                        <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1" title="Verified live application link ready for AI agent submission">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> AI Ready
-                        </span>
-                        {% elif opp.ai_application_readiness == 'requires_login' %}
-                        <span class="px-1.5 py-0.5 rounded-md text-[9px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" title="Account login required before applying">
-                            Login Req
+                        {% if opp.field_of_study %}
+                        <span class="text-slate-300 flex-shrink-0">•</span>
+                        <span class="truncate text-slate-500 min-w-0" title="{{ opp.field_of_study }}">
+                            {{ opp.field_of_study }}
                         </span>
                         {% endif %}
                     </div>
-                    
-                    <!-- Shortlist Button -->
-                    <a href="{% url 'opportunities:toggle_shortlist' opp.id %}" class="p-1.5 rounded-lg text-slate-400 hover:text-teal-600 hover:bg-slate-50 transition-colors">
-                        <i data-lucide="bookmark" class="w-4 h-4 {% if is_shortlisted %}fill-teal-600 text-teal-600{% endif %}"></i>
-                    </a>
                 </div>
 
-                <div>
-                    <div class="text-[11px] font-medium text-slate-500">{{ opp.provider }}</div>
-                    <h3 class="font-bold text-slate-900 text-base leading-snug mt-0.5 line-clamp-2">
-                        <a href="{% url 'opportunities:detail' opp.id %}" class="hover:text-teal-600">{{ opp.title }}</a>
-                    </h3>
-                </div>
+                <!-- Minimalist Card Footer -->
+                <div class="px-5 py-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <!-- Deadline / Cycle Status -->
+                    <div class="flex items-center gap-1.5 font-medium text-slate-500">
+                        {% if opp.is_upcoming %}
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-500"></i>
+                        <span class="text-blue-700 font-medium">Opens {{ opp.opening_date|date:"M d" }}</span>
+                        {% elif opp.cycle_status == 'closed' %}
+                        <span class="text-slate-400">Closed</span>
+                        {% else %}
+                        <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span class="{% if opp.days_remaining <= 7 %}text-rose-600 font-semibold{% else %}text-slate-600{% endif %}">
+                            {{ opp.days_remaining }}d remaining
+                        </span>
+                        {% endif %}
+                    </div>
 
-                <div class="space-y-1.5 text-xs text-slate-600 pt-1">
+                    <!-- Action Link -->
                     <div class="flex items-center gap-2">
-                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                        <span class="truncate">{{ opp.country }}</span>
+                        {% if is_applied %}
+                        <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">Applied</span>
+                        {% endif %}
+                        <a href="{% url 'opportunities:detail' opp.id %}" class="px-3.5 py-1.5 bg-slate-900 hover:bg-[#0b3558] text-white font-medium rounded-xl text-xs transition-colors shadow-sm">
+                            View Details
+                        </a>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="book-open" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                        <span class="truncate">{{ opp.field_of_study }}</span>
-                    </div>
-                </div>
-
-                <!-- Profile Fit Badge (Transparent Labeling) -->
-                <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-teal-500"></span>
-                        <span class="text-[11px] font-semibold text-slate-700">Profile Fit:</span>
-                    </div>
-                    <span class="text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
-                        {{ fit.score }}% ({{ fit.label }})
-                    </span>
                 </div>
             </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+        {% endif %}
 
-            <!-- Card Footer -->
-            <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-                <div class="flex items-center gap-1.5 font-medium">
-                    {% if opp.is_upcoming %}
-                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-500"></i>
-                    <span class="text-blue-700 font-semibold">{{ opp.cycle_badge.label }}</span>
-                    {% elif opp.cycle_status == 'closed' %}
-                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-slate-400"></i>
-                    <span class="text-slate-500">Cycle Closed</span>
-                    {% else %}
-                    <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
-                    <span class="text-slate-600">{{ opp.days_remaining }}d remaining</span>
-                    {% endif %}
+        <!-- Floating Premium Paywall Overlay for Free Users -->
+        {% if not is_premium %}
+        <div class="absolute inset-x-0 bottom-0 top-[280px] md:top-[320px] z-20 flex items-center justify-center pointer-events-none p-4">
+            <div class="pointer-events-auto max-w-xl w-full bg-white/95 backdrop-blur-xl border border-teal-500/40 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
+                <div class="w-14 h-14 bg-gradient-to-tr from-teal-500 to-[#ef7d37] rounded-2xl flex items-center justify-center mx-auto text-white shadow-lg shadow-orange-500/20">
+                    <i data-lucide="lock" class="w-7 h-7"></i>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    {% if is_applied %}
-                    <span class="text-[11px] font-semibold text-teal-700 px-2 py-1 rounded bg-teal-100/60">Applied</span>
-                    {% endif %}
-                    {% if opp.application_url or opp.official_source_url %}
-                    <a href="{{ opp.application_url|default:opp.official_source_url }}" target="_blank" rel="noopener noreferrer" title="Official Scholarship Site" class="p-1.5 bg-white border border-slate-200 hover:border-teal-400 hover:text-teal-600 text-slate-500 rounded-lg text-xs transition-colors flex items-center gap-1">
-                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                <div class="space-y-2">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-[#ef7d37] text-xs font-bold uppercase tracking-wider">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Free Tier Limit Reached
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Unlock Unlimited Verified Scholarships</h3>
+                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed max-w-md mx-auto">
+                        Free accounts can view <strong>1 scholarship opportunity</strong>. The rest are blurred.
+                        Upgrade to Premium to discover unlimited global opportunities, access AI essay drafting, and track your applications.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                    <div class="flex items-center gap-2 text-slate-700">
+                        <i data-lucide="check" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                        <span>Unlimited discovery</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-700">
+                        <i data-lucide="check" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                        <span>AI drafting assistant</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-700">
+                        <i data-lucide="check" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                        <span>Unlimited tracking</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                    <a href="{% url 'subscriptions:pricing' %}" class="w-full sm:w-auto px-6 py-3 bg-[#0b3558] hover:bg-teal-700 text-white font-bold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                        <span>Upgrade to Premium (₦3,000/mo)</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
-                    {% endif %}
-                    <a href="{% url 'opportunities:detail' opp.id %}" class="px-3 py-1.5 bg-slate-900 hover:bg-teal-600 text-white font-medium rounded-lg text-xs transition-colors">
-                        View Details
+                    <a href="{% url 'subscriptions:pricing' %}" class="w-full sm:w-auto px-4 py-3 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl border border-slate-300 transition-colors">
+                        View 3-Month & Annual Plans
                     </a>
                 </div>
             </div>
         </div>
-        {% endwith %}
-        {% endfor %}
+        {% endif %}
     </div>
 
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
+    <!-- Pagination (Premium Feature) -->
+    {% if is_premium and page_obj.has_other_pages %}
     <div class="flex items-center justify-center gap-2 pt-6">
         {% if page_obj.has_previous %}
         <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">← Previous</a>

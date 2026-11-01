@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'dashboard',
     'blog',
     'assistance',
+    'subscriptions',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +81,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'notifications.context_processors.unread_notifications',
+                'subscriptions.context_processors.subscription_context',
             ],
         },
     },
@@ -92,16 +94,26 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Database configuration (Neon PostgreSQL or SQLite fallback via dj-database-url)
+import sys
 import dj_database_url
 
 default_db_url = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL') or default_db_url,
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL') or default_db_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+
 
 # Production Security Hardening (Activated automatically when DEBUG is False)
 if not DEBUG:
@@ -110,7 +122,7 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
     SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', 31536000))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -165,7 +177,16 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
 }
 
-if os.environ.get('CLOUDINARY_CLOUD_NAME') or os.environ.get('CLOUDINARY_URL'):
+if 'test' in sys.argv:
+    STORAGES = {
+        'default': {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
+elif os.environ.get('CLOUDINARY_CLOUD_NAME') or os.environ.get('CLOUDINARY_URL'):
     STORAGES = {
         'default': {
             'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
@@ -221,4 +242,9 @@ else:
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Flii Application Assistant <no-reply@flii.app>')
+
+# Payment Gateway Configuration (Paystack & Test Sandbox)
+PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', '')
+PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY', '')
+PAYSTACK_MOCK_MODE = os.environ.get('PAYSTACK_MOCK_MODE', 'False').lower() in ('true', '1', 't')
 

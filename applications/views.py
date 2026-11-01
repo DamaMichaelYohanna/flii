@@ -9,21 +9,37 @@ from documents.models import Document
 from ai_core.service import AIService
 from agent_hub.agent import FliiAgent
 from .services import AutonomousApplicationAssembler
+from subscriptions.entitlements import EntitlementService
 
 @login_required
 def application_list(request):
     user = request.user
     applications = user.applications.all().order_by('-updated_at')
+    can_track, current_count, limit = EntitlementService.can_track_application(user)
+    is_premium = EntitlementService.has_active_subscription(user)
     
     context = {
         'applications': applications,
         'total_count': applications.count(),
+        'can_track': can_track,
+        'current_count': current_count,
+        'tracking_limit': limit,
+        'is_premium': is_premium,
     }
     return render(request, 'applications/list.html', context)
 
 
 @login_required
 def create_from_opportunity(request, opportunity_id):
+    can_track, current_count, limit = EntitlementService.can_track_application(request.user)
+    if not can_track:
+        messages.warning(
+            request,
+            f"🔒 Free accounts can track a maximum of {limit} applications. "
+            "Upgrade to Premium for unlimited active application tracking, advanced deadline management, and AI assistance."
+        )
+        return redirect('subscriptions:pricing')
+
     agent = FliiAgent(request.user)
     result = agent.create_application(opportunity_id)
     messages.success(request, f"Application workspace created for '{result['opportunity']}'!")

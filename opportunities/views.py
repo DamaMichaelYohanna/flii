@@ -7,6 +7,7 @@ from django.contrib import messages
 from .models import Opportunity, OpportunitySource
 from matching.engine import MatchingEngine
 from ai_core.service import AIService
+from subscriptions.entitlements import EntitlementService
 
 @login_required
 def opportunity_list(request):
@@ -60,8 +61,38 @@ def opportunity_list(request):
             'is_applied': is_applied
         })
 
+    is_premium = EntitlementService.has_active_subscription(user)
+
+    # Intercept pagination requests for Free tier users
+    page_param = request.GET.get('page')
+    if not is_premium and page_param and str(page_param).strip() not in ('', '1'):
+        messages.info(
+            request,
+            "Free accounts can view 1 scholarship opportunity. Upgrade to Premium for full catalog access and pagination."
+        )
+        return redirect('opportunities:list')
+
+    # Free tier: anchor the single visible opportunity to ensure consistency
+    allowed_opp_id = None
+    if not is_premium:
+        viewed_key = 'free_viewed_opportunity_id'
+        allowed_opp_id = request.session.get(viewed_key)
+        if not allowed_opp_id:
+            # Anchor to the first available opportunity in default catalog
+            first_opp = Opportunity.objects.filter(status='active').order_by('deadline').first()
+            if first_opp:
+                allowed_opp_id = first_opp.id
+                request.session[viewed_key] = allowed_opp_id
+
+        # Place the single allowed opportunity at position 0 so it remains the visible one
+        if allowed_opp_id and opportunity_items:
+            match_idx = next((i for i, item in enumerate(opportunity_items) if item['opportunity'].id == allowed_opp_id), None)
+            if match_idx is not None and match_idx > 0:
+                allowed_item = opportunity_items.pop(match_idx)
+                opportunity_items.insert(0, allowed_item)
+
     paginator = Paginator(opportunity_items, 9)
-    page_number = request.GET.get('page', 1)
+    page_number = 1 if not is_premium else request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
     # Filter dropdown choices
@@ -76,7 +107,9 @@ def opportunity_list(request):
         'sort_by': sort_by,
         'only_shortlisted': only_shortlisted,
         'countries': countries,
-        'total_count': len(opportunity_items)
+        'total_count': len(opportunity_items),
+        'is_premium': is_premium,
+        'allowed_opp_id': allowed_opp_id,
     }
     return render(request, 'opportunities/list.html', context)
 
@@ -85,18 +118,30 @@ def opportunity_list(request):
 def opportunity_detail(request, pk):
     user = request.user
     opp = get_object_or_404(Opportunity, pk=pk)
+
+    # Enforce single opportunity view limit for Free users
+    can_view, reason = EntitlementService.can_view_opportunity(user, opp.id, request)
+    if not can_view:
+        messages.warning(
+            request,
+            reason or "Free accounts can view 1 verified scholarship. Upgrade to Premium for unlimited discovery."
+        )
+        return redirect('subscriptions:pricing')
+
     matching_engine = MatchingEngine(user)
     
     # Calculate fit and quick breakdown
     fit = matching_engine.calculate_deterministic_fit(opp)
     is_shortlisted = user.shortlisted_opportunities.filter(id=opp.id).exists()
     application = user.applications.filter(opportunity=opp).first()
+    is_premium = EntitlementService.has_active_subscription(user)
 
     context = {
         'opp': opp,
         'fit': fit,
         'is_shortlisted': is_shortlisted,
         'application': application,
+        'is_premium': is_premium,
     }
     return render(request, 'opportunities/detail.html', context)
 

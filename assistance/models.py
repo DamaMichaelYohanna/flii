@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -5,8 +6,29 @@ from django.utils import timezone
 
 class AssistancePackage(models.Model):
     """
-    Preset paid assistance offerings provided by platform administrators/mentors.
+    Pay-per-application service catalogue item.
+    Configurable via Django Admin. Supports both human-led and AI-assisted workflows.
     """
+    CATEGORY_CHOICES = [
+        ('eligibility_assessment', 'Scholarship Eligibility and Requirements Assessment'),
+        ('cv_review', 'CV Review and Improvement'),
+        ('motivation_letter', 'Motivation Letter Review'),
+        ('personal_statement', 'Personal Statement Review'),
+        ('research_proposal', 'Research Proposal Review'),
+        ('full_application_review', 'Full Application Document Review'),
+        ('prep_support', 'Application Preparation Support'),
+        ('advisory_call', '1-on-1 Scholarship Strategy & Advisory Call'),
+        ('mock_interview', 'Scholarship Mock Interview Preparation'),
+        ('custom', 'Custom Mentorship & Dedicated Support'),
+    ]
+
+    DELIVERY_TYPE_CHOICES = [
+        ('human_review', 'Human Professional Review'),
+        ('ai_assisted', 'AI-Assisted Assessment'),
+        ('hybrid', 'Hybrid (AI Initial Draft + Human Professional Polish)'),
+        ('live_consultation', 'Live 1-on-1 Strategy Session'),
+    ]
+
     SERVICE_TYPE_CHOICES = [
         ('essay_review', 'SOP & Motivation Letter Expert Review'),
         ('advisory_call', '1-on-1 Scholarship Strategy & Advisory Call'),
@@ -17,14 +39,21 @@ class AssistancePackage(models.Model):
 
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True)
+    category = models.CharField(max_length=60, choices=CATEGORY_CHOICES, default='motivation_letter')
     service_type = models.CharField(max_length=50, choices=SERVICE_TYPE_CHOICES, default='essay_review')
+    delivery_type = models.CharField(max_length=40, choices=DELIVERY_TYPE_CHOICES, default='human_review')
+    requires_human_review = models.BooleanField(default=True, help_text="True if a qualified human reviewer is required.")
     tagline = models.CharField(max_length=255, blank=True)
     description = models.TextField()
-    price = models.DecimalField(max_digits=8, decimal_places=2, default=49.00)
-    currency = models.CharField(max_length=10, default='USD')
-    turnaround_days = models.PositiveIntegerField(default=3, help_text="Estimated turnaround in days")
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=5000.00, help_text="Configurable price in NGN")
+    price_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Optional upper price limit for range display (e.g. ₦5,000–₦8,000)")
+    currency = models.CharField(max_length=10, default='NGN')
+    estimated_delivery_time = models.CharField(max_length=100, default="3 business days", help_text="e.g. 48 hours, 3 business days")
+    turnaround_days = models.PositiveIntegerField(default=3, help_text="Estimated turnaround in calendar days")
+    service_instructions = models.TextField(blank=True, help_text="Clear instructions for the applicant prior to purchase.")
+    document_requirements = models.TextField(blank=True, help_text="Optional document requirements (e.g. Draft CV, Transcript, Essay draft).")
     features = models.JSONField(default=list, help_text="List of bullet points included in package")
-    badge = models.CharField(max_length=50, blank=True, help_text="e.g. Most Popular, High Impact")
+    badge = models.CharField(max_length=50, blank=True, help_text="e.g. Most Popular, High Impact, Admissions Grade")
     icon = models.CharField(max_length=50, default='file-check', help_text="Lucide icon name")
     is_active = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)
@@ -32,24 +61,45 @@ class AssistancePackage(models.Model):
 
     class Meta:
         ordering = ['order', 'price']
-        verbose_name = 'Assistance Package'
-        verbose_name_plural = 'Assistance Packages'
+        verbose_name = 'Service Catalogue Item'
+        verbose_name_plural = 'Service Catalogue Items'
 
     def __str__(self):
-        return f"{self.name} (${self.price} {self.currency})"
+        if self.price_max and self.price_max > self.price:
+            return f"{self.name} (₦{self.price:,.0f}–₦{self.price_max:,.0f} {self.currency})"
+        return f"{self.name} (₦{self.price:,.0f} {self.currency})"
+
+    @property
+    def formatted_price(self):
+        if self.price_max and self.price_max > self.price:
+            return f"₦{self.price:,.0f}–₦{self.price_max:,.0f}"
+        return f"₦{self.price:,.0f}"
+
+
+# Model Alias for conceptual symmetry
+ServiceCatalogItem = AssistancePackage
 
 
 class AssistanceBooking(models.Model):
     """
-    Paid assistance booking submitted by an applicant to the platform administrator.
+    Pay-per-application service order submitted by an applicant.
+    Adheres strictly to required workflow statuses and reviewer data isolation.
     """
     STATUS_CHOICES = [
-        ('pending_payment', 'Pending Confirmation / Payment'),
+        ('pending_payment', 'Pending Payment'),
+        ('paid', 'Paid'),
+        ('awaiting_assignment', 'Awaiting Assignment'),
+        ('assigned', 'Assigned'),
+        ('in_progress', 'In Progress'),
+        ('awaiting_user_info', 'Awaiting User Information'),
+        ('ready_for_review', 'Ready for Review'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('refunded', 'Refunded'),
+        # Legacy status compatibility
         ('confirmed', 'Confirmed & Queued'),
         ('in_review', 'Under Expert Review'),
         ('scheduled', 'Session Scheduled'),
-        ('completed', 'Completed & Delivered'),
-        ('cancelled', 'Cancelled'),
     ]
 
     PAYMENT_STATUS_CHOICES = [
@@ -79,6 +129,7 @@ class AssistanceBooking(models.Model):
         ('email', 'Email Only (Async Written Review)'),
     ]
 
+    order_number = models.CharField(max_length=50, unique=True, blank=True, db_index=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -110,8 +161,8 @@ class AssistanceBooking(models.Model):
     target_university = models.CharField(max_length=255, blank=True)
 
     # Pricing & Urgency
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    currency = models.CharField(max_length=10, default='USD')
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default='NGN')
     urgency = models.CharField(max_length=30, choices=URGENCY_CHOICES, default='standard')
 
     # Scheduling preferences
@@ -120,7 +171,7 @@ class AssistanceBooking(models.Model):
 
     # Requirements & Documents
     applicant_notes = models.TextField(
-        help_text="Please describe your background, current status, and specific questions or goals for the admin team."
+        help_text="Please describe your background, current status, and specific questions or goals for the reviewer."
     )
     attached_document = models.FileField(
         upload_to='assistance/submissions/%Y/%m/',
@@ -143,7 +194,7 @@ class AssistanceBooking(models.Model):
     preferred_contact_method = models.CharField(
         max_length=30,
         choices=CONTACT_METHOD_CHOICES,
-        default='google_meet'
+        default='email'
     )
 
     # Workflow & Payment
@@ -152,7 +203,14 @@ class AssistanceBooking(models.Model):
     payment_reference = models.CharField(
         max_length=150,
         blank=True,
-        help_text="Transaction reference, bank transfer ID, or payment confirmation code"
+        help_text="Payment transaction reference"
+    )
+    payment_transaction = models.ForeignKey(
+        'subscriptions.PaymentTransaction',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='service_orders'
     )
     payment_proof = models.FileField(
         upload_to='assistance/payments/%Y/%m/',
@@ -161,7 +219,15 @@ class AssistanceBooking(models.Model):
         help_text="Receipt or proof of payment screenshot"
     )
 
-    # Admin Fulfillment
+    # Reviewer Management & Fulfillment
+    assigned_reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_service_orders'
+    )
+    # Legacy alias
     assigned_admin = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -169,10 +235,16 @@ class AssistanceBooking(models.Model):
         blank=True,
         related_name='assigned_assistance_bookings'
     )
-    admin_notes = models.TextField(blank=True, help_text="Internal notes for administrators")
-    meeting_link = models.URLField(blank=True, help_text="Live Google Meet or Zoom URL assigned by admin")
+    admin_notes = models.TextField(blank=True, help_text="Internal confidential notes for administrators and reviewers")
+    meeting_link = models.URLField(blank=True, help_text="Live Google Meet or Zoom URL assigned by reviewer")
     scheduled_at = models.DateTimeField(null=True, blank=True, help_text="Confirmed call date & time")
-    deliverable_feedback = models.TextField(blank=True, help_text="Review feedback and strategic notes for the applicant")
+    
+    # Information requests from reviewer
+    additional_docs_requested = models.BooleanField(default=False)
+    additional_docs_notes = models.TextField(blank=True, help_text="Specific additional details or files requested from applicant")
+
+    # Deliverables
+    deliverable_feedback = models.TextField(blank=True, help_text="Review feedback, annotations, and strategic notes for applicant")
     deliverable_file = models.FileField(
         upload_to='assistance/deliverables/%Y/%m/',
         blank=True,
@@ -186,11 +258,20 @@ class AssistanceBooking(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = 'Assistance Booking'
-        verbose_name_plural = 'Assistance Bookings'
+        verbose_name = 'Service Order'
+        verbose_name_plural = 'Service Orders'
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            self.order_number = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+        if self.assigned_reviewer and not self.assigned_admin:
+            self.assigned_admin = self.assigned_reviewer
+        elif self.assigned_admin and not self.assigned_reviewer:
+            self.assigned_reviewer = self.assigned_admin
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"[{self.get_status_display()}] {self.package_title} - {self.user.email}"
+        return f"[{self.get_status_display()}] #{self.order_number} {self.package_title} - {self.user.email}"
 
     @property
     def is_call_service(self):
@@ -201,3 +282,11 @@ class AssistanceBooking(models.Model):
         if self.application and self.application.opportunity:
             return self.application.opportunity.title
         return self.target_scholarship or "General Postgraduate Application"
+
+    @property
+    def formatted_price(self):
+        return f"₦{self.price:,.0f}"
+
+
+# Model Alias for conceptual symmetry
+ServiceOrder = AssistanceBooking

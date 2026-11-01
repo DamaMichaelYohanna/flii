@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Plans & Pricing | Flii{% endblock %}
+{% block meta_description %}Simple, transparent pricing for scholarship applicants. Unlimited opportunity discovery, profile matching, and grounded AI assistance.{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-12 py-6">
+    <!-- Minimalist Header -->
+    <div class="text-center max-w-xl mx-auto space-y-3">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Plans & Pricing
+        </h1>
+        <p class="text-slate-500 text-sm">
+            Predictable, transparent pricing for your scholarship applications. Upgrade or cancel anytime.
+        </p>
+    </div>
+
+    <!-- Pricing Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {% for plan in plans %}
+        <div class="bg-white rounded-2xl border {% if plan.is_popular %}border-[#0b3558] shadow-md ring-1 ring-[#0b3558]{% elif current_plan_code == plan.plan_code %}border-slate-800 shadow-sm{% else %}border-slate-200 hover:border-slate-300{% endif %} transition-all flex flex-col justify-between overflow-hidden">
+            
+            <div class="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                    <!-- Plan Tier & Badge -->
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">{{ plan.get_tier_display }}</span>
+                        {% if plan.is_popular %}
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full">
+                            Popular
+                        </span>
+                        {% elif current_plan_code == plan.plan_code %}
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            Current
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="text-lg font-bold text-slate-900">{{ plan.name }}</h3>
+                    <p class="text-xs text-slate-500 mt-0.5 min-h-[32px]">{{ plan.tagline }}</p>
+
+                    <!-- Price Display -->
+                    <div class="mt-4 pb-4 border-b border-slate-100">
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ plan.formatted_price }}</span>
+                            {% if plan.price > 0 %}
+                            <span class="text-xs text-slate-500 font-medium">
+                                / {% if plan.billing_cycle == 'monthly' %}mo{% elif plan.billing_cycle == 'three_month' %}3 mos{% elif plan.billing_cycle == 'annual' %}yr{% else %}term{% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if plan.plan_code == 'three_month' %}
+                        <div class="text-[11px] font-semibold text-teal-700 mt-1">Save 17% vs. monthly</div>
+                        {% elif plan.plan_code == 'annual' %}
+                        <div class="text-[11px] font-semibold text-teal-700 mt-1">Save 44% vs. monthly</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Concise Features List -->
+                    <ul class="mt-5 space-y-2.5 text-xs text-slate-600">
+                        {% for feat in plan.features_list %}
+                        <li class="flex items-start gap-2.5">
+                            <i data-lucide="check" class="w-4 h-4 text-slate-900 flex-shrink-0 mt-0.5"></i>
+                            <span class="leading-snug">{{ feat }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- CTA Button -->
+                <div class="pt-6 mt-6 border-t border-slate-100">
+                    {% if current_plan_code == plan.plan_code %}
+                    <a href="{% url 'subscriptions:manage' %}" class="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5">
+                        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                        <span>Manage Plan</span>
+                    </a>
+                    {% elif plan.is_free %}
+                    <button disabled class="w-full py-2.5 px-3 bg-slate-50 text-slate-400 font-medium text-xs rounded-xl border border-slate-200/60 cursor-default">
+                        Included by Default
+                    </button>
+                    {% else %}
+                    <a href="{% url 'subscriptions:checkout' plan.id %}" class="w-full py-2.5 px-3 {% if plan.is_popular %}bg-[#0b3558] hover:bg-[#1261a0] text-white{% else %}bg-slate-900 hover:bg-slate-800 text-white{% endif %} font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                        <span>Subscribe</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Minimal Footnote & Pay-Per-Application Option -->
+    <div class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div class="flex items-center gap-2">
+            <i data-lucide="lock" class="w-4 h-4 text-slate-400"></i>
+            <span>Payments processed securely via Paystack. Cancel anytime in one click.</span>
+        </div>
+        <div class="flex items-center gap-1.5 font-medium text-slate-700">
+            <span>Need individual document reviews?</span>
+            <a href="{% url 'assistance:home' %}" class="text-[#0b3558] hover:underline font-bold flex items-center gap-0.5">
+                <span>View Expert Services</span>
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

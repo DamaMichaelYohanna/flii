@@ -59,3 +59,16 @@ class Document(models.Model):
         elif bytes_val < 1024 * 1024:
             return f"{bytes_val / 1024:.1f} KB"
         return f"{bytes_val / (1024 * 1024):.1f} MB"
+
+    @property
+    def file_extension(self):
+        if self.file_format:
+            return self.file_format.lower()
+        if self.file and self.file.name:
+            return os.path.splitext(self.file.name)[1].lower().replace('.', '')
+        return ''
+
+    @property
+    def is_previewable(self):
+        ext = self.file_extension
+        return ext in ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'txt']

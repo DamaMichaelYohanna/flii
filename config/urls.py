@@ -16,6 +16,7 @@ urlpatterns = [
     path('notifications/', include('notifications.urls')),
     path('blog/', include('blog.urls')),
     path('assistance/', include('assistance.urls')),
+    path('subscriptions/', include('subscriptions.urls')),
 ]
 
 if settings.DEBUG:

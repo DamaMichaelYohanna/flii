@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Sandbox | Flii{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-12 px-4">
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5 text-center">
+        <!-- Status Pill -->
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            Test Mode Sandbox
+        </span>
+
+        <div>
+            <h1 class="text-xl font-bold text-slate-900 tracking-tight">Payment Gateway Simulation</h1>
+            <p class="text-xs text-slate-500 mt-1">Live Paystack keys not found. Simulating server-side verification.</p>
+        </div>
+
+        <!-- Transaction Details Card -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-left text-xs space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Reference:</span>
+                <span class="font-mono font-medium text-slate-800">{{ reference }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">User:</span>
+                <span class="text-slate-700 font-medium">{{ transaction.user.email }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Order:</span>
+                <span class="text-slate-700 font-medium">{{ transaction.get_transaction_type_display }}</span>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+                <span class="font-bold text-slate-900">Total Due:</span>
+                <span class="text-base font-bold text-slate-900">₦{{ transaction.amount|floatformat:2 }}</span>
+            </div>
+        </div>
+
+        <!-- Simulation Actions Form -->
+        <form method="POST" class="space-y-2 pt-1">
+            {% csrf_token %}
+            <button type="submit" name="action" value="simulate_success" class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>Simulate Successful Payment</span>
+            </button>
+            <button type="submit" name="action" value="simulate_failure" class="w-full py-2 px-4 bg-white hover:bg-slate-50 text-slate-600 font-medium text-xs rounded-xl border border-slate-200 transition-colors">
+                Simulate Cancelled / Failed Payment
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

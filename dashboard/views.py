@@ -38,7 +38,7 @@ def dashboard_index(request):
 
     # Matching engine recommendations
     matching_engine = MatchingEngine(user)
-    opportunities = Opportunity.objects.filter(status='active')[:8]
+    opportunities = Opportunity.objects.filter(status='active')
     scored_opps = []
     for opp in opportunities:
         fit = matching_engine.calculate_deterministic_fit(opp)

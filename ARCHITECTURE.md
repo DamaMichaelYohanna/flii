@@ -50,10 +50,53 @@ Flii is an AI-powered scholarship and postgraduate application assistant built w
 - **`applications`**: Application lifecycle workspaces (Planning -> Preparing -> In Progress -> Ready for Review -> Submitted -> Offer), requirement matrices, document bindings, and action tasks.
 - **`ai`**: `PersonalKnowledgeBase` context compiler, `AIProvider` abstractions, Gemini integration with Pydantic JSON schemas, and AI writing assistant.
 - **`agent`**: ReAct/Tool-calling orchestration agent with human-in-the-loop `AgentAction` approvals (Pending, Approved, Rejected) and `AIAuditLog`.
-- **`notifications`**: In-app notifications for approaching deadlines, pending approvals, and missing requirements.
+- **`subscriptions`**: Centralized monetization & billing engine:
+  - Multi-tier subscriptions (`free`, `monthly` ₦3,000, `quarterly` ₦7,500, `annual` ₦20,000).
+  - Provider abstraction (`BasePaymentProvider`, `PaystackPaymentProvider`, `MockSandboxPaymentProvider`).
+  - Server-side transaction verification and HMAC-SHA512 webhook signature verification.
+  - Idempotent payment processing preventing duplicate activations.
+  - `EntitlementService` (`can_access`, `get_limit`, `can_track_application`, `can_view_opportunity`, `can_use_ai`).
+- **`assistance`**: Pay-Per-Application human & AI-assisted professional services catalogue (₦2,000–₦20,000):
+  - Service management with Django Admin price configurability.
+  - Reviewer workbench with strict applicant data isolation (reviewers only view assigned candidate materials).
+  - Multi-stage service order fulfillment pipeline and deliverable dispatch.
+- **`notifications`**: In-app notifications for approaching deadlines, pending approvals, order updates, and missing requirements.
 - **`dashboard`**: Executive applicant command center aggregating metrics, urgent deadlines, and action items.
 
-## 3. Future Browser Automation Architecture
+## 3. Monetization & Entitlement Architecture
+
+```
+                                 [Applicant]
+                                      |
+                         +------------+------------+
+                         |                         |
+               [Subscription Checkout]     [Service Order Checkout]
+                         |                         |
+                         +------------+------------+
+                                      |
+                                      v
+                          [PaymentProvider Gateway]
+                         (Paystack NGN / Sandbox)
+                                      |
+               +----------------------+----------------------+
+               | Server-side Verify   | Webhook (HMAC-SHA512) |
+               +----------------------+----------------------+
+                                      |
+                                      v
+                           [SubscriptionService]
+                           - Idempotent Transaction
+                           - Plan Activation / Renewal
+                                      |
+                                      v
+                          [EntitlementService]
+                 +--------------------+--------------------+
+                 |                    |                    |
+        [Opportunity Gating]  [Workspace Gating]    [AI Token Limits]
+        (1 Opp Free, Rest     (Max 2 Active Apps   (5/mo Free vs
+         Gradient Blurred)     for Free Tier)       Expanded Premium)
+```
+
+## 4. Future Browser Automation Architecture
 ```
 [ApplicationExecutionService]
           |
@@ -64,3 +107,4 @@ Flii is an AI-powered scholarship and postgraduate application assistant built w
    Human-in-the-Loop Review & Approval -> Submission
 ```
 The MVP contains the abstract interfaces and simulation hooks for this workflow.
+

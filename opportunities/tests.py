@@ -36,6 +36,20 @@ class OpportunityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "DAAD Master Grant")
 
+    def test_free_user_pagination_blocked_and_single_opp(self):
+        self.client.force_login(self.user)
+        # 1. Attempting to navigate to page 2 as a free user redirects to page 1
+        response = self.client.get(reverse('opportunities:list') + '?page=2')
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('opportunities:list'))
+
+        # 2. Loading opportunity list assigns and anchors the single free opportunity
+        response = self.client.get(reverse('opportunities:list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.session.get('free_viewed_opportunity_id'), self.opp.id)
+        # Free users must not see pagination controls
+        self.assertNotContains(response, 'Page 1 of')
+
     def test_opportunity_detail_view(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('opportunities:detail', kwargs={'pk': self.opp.id}))

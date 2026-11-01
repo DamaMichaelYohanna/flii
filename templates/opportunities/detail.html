@@ -17,6 +17,7 @@
             Back to Opportunities
         </a>
         <div class="flex items-center gap-2">
+            {% if user.is_staff %}
             {% if opp.scan_http_status %}
             <span class="inline-flex items-center gap-1.5 {% if opp.scan_http_status < 400 %}text-emerald-700 bg-emerald-50 border-emerald-200{% else %}text-amber-700 bg-amber-50 border-amber-200{% endif %} px-2.5 py-1 rounded-full text-xs font-semibold border">
                 <span class="w-2 h-2 rounded-full {% if opp.scan_http_status < 400 %}bg-emerald-500 animate-pulse{% else %}bg-amber-500{% endif %}"></span>
@@ -27,6 +28,7 @@
                 <i data-lucide="scan-line" class="w-3.5 h-3.5 text-teal-600"></i>
                 <span>Scan Portal (AI)</span>
             </a>
+            {% endif %}
             <span class="inline-flex items-center gap-1 text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full font-medium border border-teal-200 text-xs">
                 <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Verified ({{ opp.source_last_checked|date:"M d, Y" }})
             </span>

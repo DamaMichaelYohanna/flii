@@ -1,229 +1,218 @@
 {% extends "base.html" %}
 
-{% block title %}Book Expert Assistance | Flii{% endblock %}
+{% block title %}Request Paid Assistance | Flii{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6 pb-12">
-    <!-- Breadcrumb & Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="max-w-3xl mx-auto space-y-8 pb-12 py-4">
+    <!-- Minimalist Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div>
-            <nav class="flex items-center gap-2 text-xs text-slate-500 mb-1">
-                <a href="{% url 'assistance:home' %}" class="hover:text-slate-800">Assistance Packages</a>
+            <nav class="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
+                <a href="{% url 'assistance:home' %}" class="hover:text-slate-700">Services</a>
                 <span>/</span>
-                <span class="text-slate-900 font-semibold">Book Assistance</span>
+                <span class="text-slate-800 font-medium">New Order</span>
             </nav>
-            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Request Paid Admin Assistance</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Fill out your goals and materials below. Our platform mentors will review and coordinate your session.</p>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Request Paid Admin Assistance</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Select a service package and provide your draft documents.</p>
         </div>
-        <a href="{% url 'assistance:my_bookings' %}" class="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 self-start shadow-sm">
-            <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i>
-            <span>My Bookings</span>
+        <a href="{% url 'assistance:my_bookings' %}" class="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors self-start shadow-sm">
+            My Orders
         </a>
     </div>
 
-    <!-- Booking Form Container -->
+    <!-- Booking Form -->
     <form method="POST" enctype="multipart/form-data" class="space-y-6" id="bookingForm">
         {% csrf_token %}
 
-        <!-- STEP 1: Select Package -->
-        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">1</div>
-                <div>
-                    <h3 class="font-black text-slate-900 text-base">Select Assistance Package</h3>
-                    <p class="text-xs text-slate-500">Choose the depth of review or session you need.</p>
+        <!-- Unified Smooth Form Card -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 divide-y divide-slate-100 shadow-sm">
+            
+            <!-- Section 1: Selected Service -->
+            <div class="p-6 sm:p-7 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">1. Selected Service</h2>
+                    <a href="{% url 'assistance:home' %}" class="text-xs font-semibold text-[#1261a0] hover:underline flex items-center gap-1 transition-colors">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                        <span>Browse other services</span>
+                    </a>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
-                {% for pkg in packages %}
-                <label class="relative flex flex-col justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all hover:border-[#1261a0] package-card {% if selected_package and selected_package.id == pkg.id %}border-[#1261a0] bg-blue-50/40{% else %}border-slate-200 bg-white{% endif %}">
-                    <input type="radio" name="package_id" value="{{ pkg.id }}" class="sr-only" data-base-price="{{ pkg.price }}" {% if selected_package and selected_package.id == pkg.id or forloop.first and not selected_package %}checked{% endif %} onchange="updateSelectedPackage(this)">
-                    <div>
-                        <div class="flex items-start justify-between gap-2">
-                            <span class="font-black text-sm text-slate-900">{{ pkg.name }}</span>
-                            <span class="text-xs font-black text-[#1261a0] whitespace-nowrap">${{ pkg.price|floatformat:0 }}</span>
+                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pt-1">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight" id="selectedPkgTitle">{{ selected_package.name }}</h3>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded" id="selectedPkgCategory">
+                                {{ selected_package.get_category_display }}
+                            </span>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1 leading-snug">{{ pkg.tagline }}</p>
+                        <p class="text-xs text-slate-500 leading-relaxed max-w-xl" id="selectedPkgTagline">{{ selected_package.tagline }}</p>
                     </div>
-                    <div class="flex items-center justify-between text-[10px] text-slate-400 font-semibold mt-3 pt-2 border-t border-slate-100">
-                        <span class="flex items-center gap-1">
-                            <i data-lucide="clock" class="w-3 h-3"></i>
-                            {{ pkg.turnaround_days }} Days
+
+                    <div class="flex sm:flex-col items-baseline sm:items-end justify-between border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 flex-shrink-0">
+                        <span class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight" id="selectedPkgPrice">{{ selected_package.formatted_price }}</span>
+                        <span class="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                            <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i>
+                            <span id="selectedPkgTurnaround">{{ selected_package.turnaround_days }} Days Delivery</span>
                         </span>
-                        <span class="text-emerald-700 font-bold">{{ pkg.badge|default:"Verified" }}</span>
                     </div>
-                </label>
-                {% endfor %}
-            </div>
-        </div>
+                </div>
 
-        <!-- STEP 2: Scholarship & Target Milestone -->
-        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">2</div>
-                <div>
-                    <h3 class="font-black text-slate-900 text-base">Target Scholarship & Application</h3>
-                    <p class="text-xs text-slate-500">Optionally link this assistance directly to an active application in your workspace.</p>
+                <!-- Hidden input maintaining selected package for form submission -->
+                <input type="hidden" name="package_id" id="packageIdInput" value="{{ selected_package.id }}" data-base-price="{{ selected_package.price }}" data-max-price="{{ selected_package.price_max|default:'' }}">
+
+                <!-- Subtle In-Place Switcher Dropdown -->
+                <div class="pt-2">
+                    <details class="group text-xs">
+                        <summary class="cursor-pointer text-slate-500 hover:text-slate-800 font-semibold list-none flex items-center gap-1.5 select-none transition-colors">
+                            <i data-lucide="shuffle" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <span>Switch to a different service</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 ml-auto transition-transform group-open:rotate-180"></i>
+                        </summary>
+                        <div class="pt-2.5">
+                            <select id="packageSwitcher" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-white text-slate-700 font-medium focus:ring-1 focus:ring-slate-400 focus:outline-none" onchange="onPackageSwitched(this)">
+                                {% for pkg in packages %}
+                                <option value="{{ pkg.id }}" data-name="{{ pkg.name }}" data-category="{{ pkg.get_category_display }}" data-tagline="{{ pkg.tagline }}" data-formatted-price="{{ pkg.formatted_price }}" data-base-price="{{ pkg.price }}" data-max-price="{{ pkg.price_max|default:'' }}" data-turnaround="{{ pkg.turnaround_days }} Days Delivery" {% if selected_package and selected_package.id == pkg.id %}selected{% endif %}>
+                                    {{ pkg.name }} — {{ pkg.formatted_price }} ({{ pkg.turnaround_days }} Days)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </details>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Link from My Applications (Optional)</label>
-                    <select name="application_id" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none" onchange="autoFillScholarship(this)">
-                        <option value="">-- None (Enter custom scholarship below) --</option>
-                        {% for app in user_applications %}
-                        <option value="{{ app.id }}" data-title="{{ app.opportunity.title }}" data-uni="{{ app.opportunity.university }}" {% if selected_app_id == app.id|stringformat:"s" %}selected{% endif %}>
-                            {{ app.opportunity.title|truncatechars:45 }} ({{ app.opportunity.country }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+            <!-- Section 2: Scholarship Context -->
+            <div class="p-6 sm:p-7 space-y-4">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Scholarship Context</h2>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Target Scholarship Name *</label>
-                    <input type="text" name="target_scholarship" id="target_scholarship" required placeholder="e.g. Erasmus Mundus BDMA, DAAD EPOS, Chevening" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
-                </div>
-
-                <div class="sm:col-span-2">
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Target University / Consortium (Optional)</label>
-                    <input type="text" name="target_university" id="target_university" placeholder="e.g. Technical University of Munich, Oxford, University of Paris" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
-                </div>
-            </div>
-        </div>
-
-        <!-- STEP 3: Urgency & Turnaround Speed -->
-        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">3</div>
-                <div>
-                    <h3 class="font-black text-slate-900 text-base">Turnaround Urgency</h3>
-                    <p class="text-xs text-slate-500">How quickly do you need this review or live session?</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                <label class="p-3.5 rounded-2xl border-2 border-slate-200 cursor-pointer hover:border-[#1261a0] transition-colors urgency-label bg-white flex flex-col justify-between">
-                    <input type="radio" name="urgency" value="standard" checked class="sr-only" data-multiplier="1.0" onchange="updateUrgency(this)">
-                    <div>
-                        <span class="font-bold text-xs text-slate-900 block">Standard (3-5 Days)</span>
-                        <span class="text-[11px] text-slate-500">Regular turnaround queue</span>
-                    </div>
-                    <span class="text-xs font-bold text-slate-700 mt-2 block">Included</span>
-                </label>
-
-                <label class="p-3.5 rounded-2xl border-2 border-slate-200 cursor-pointer hover:border-[#1261a0] transition-colors urgency-label bg-white flex flex-col justify-between">
-                    <input type="radio" name="urgency" value="priority" class="sr-only" data-multiplier="1.25" onchange="updateUrgency(this)">
-                    <div>
-                        <span class="font-bold text-xs text-slate-900 block">Priority (48 Hours)</span>
-                        <span class="text-[11px] text-slate-500">Jump ahead in the queue</span>
-                    </div>
-                    <span class="text-xs font-bold text-amber-600 mt-2 block">+25% speed fee</span>
-                </label>
-
-                <label class="p-3.5 rounded-2xl border-2 border-slate-200 cursor-pointer hover:border-[#1261a0] transition-colors urgency-label bg-white flex flex-col justify-between">
-                    <input type="radio" name="urgency" value="rush" class="sr-only" data-multiplier="1.50" onchange="updateUrgency(this)">
-                    <div>
-                        <span class="font-bold text-xs text-slate-900 block">Rush (24 Hours)</span>
-                        <span class="text-[11px] text-slate-500">Urgent deadline intervention</span>
-                    </div>
-                    <span class="text-xs font-bold text-rose-600 mt-2 block">+50% speed fee</span>
-                </label>
-            </div>
-        </div>
-
-        <!-- STEP 4: Goals, Notes & Documents -->
-        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">4</div>
-                <div>
-                    <h3 class="font-black text-slate-900 text-base">Your Notes & Documents</h3>
-                    <p class="text-xs text-slate-500">Tell the reviewer what to focus on and provide your drafts.</p>
-                </div>
-            </div>
-
-            <div class="space-y-4 pt-1">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Specific Goals, Prompts & Questions *</label>
-                    <textarea name="applicant_notes" required rows="4" placeholder="e.g. Reviewing my SOP for Erasmus Mundus BDMA. Prompt asks why this consortium fits my career goals. Please check if my leadership paragraph is compelling and if my technical background is framed effectively." class="w-full text-xs rounded-xl border border-slate-200 p-3 focus:ring-2 focus:ring-[#1261a0] focus:outline-none"></textarea>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Attach Draft Document (PDF, Word, TXT)</label>
-                        <input type="file" name="attached_document" accept=".pdf,.doc,.docx,.txt" class="w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 border border-slate-200 rounded-xl p-1.5">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Or Link from Document Vault</label>
-                        <select name="document_vault_ref" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
-                            <option value="">-- Select from your Document Vault --</option>
-                            {% for doc in user_documents %}
-                            <option value="{{ doc.id }}">{{ doc.title }} ({{ doc.get_document_type_display }})</option>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Link Active Application (Optional)</label>
+                        <select name="application_id" class="w-full text-xs rounded-xl border border-slate-200 bg-white p-2.5 focus:ring-1 focus:ring-slate-400 focus:outline-none" onchange="autoFillScholarship(this)">
+                            <option value="">-- None (Enter custom scholarship below) --</option>
+                            {% for app in user_applications %}
+                            <option value="{{ app.id }}" data-title="{{ app.opportunity.title }}" data-uni="{{ app.opportunity.university }}" {% if selected_app_id == app.id|stringformat:"s" %}selected{% endif %}>
+                                {{ app.opportunity.title }} ({{ app.opportunity.country }})
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Target Scholarship *</label>
+                        <input type="text" name="target_scholarship" id="target_scholarship" required placeholder="e.g. Erasmus Mundus, DAAD, Chevening" class="w-full text-xs rounded-xl border border-slate-200 bg-white p-2.5 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Target University / Consortium</label>
+                        <input type="text" name="target_university" id="target_university" placeholder="e.g. University of Oxford" class="w-full text-xs rounded-xl border border-slate-200 bg-white p-2.5 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Turnaround Speed -->
+            <div class="p-6 sm:p-7 space-y-4">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. Turnaround Speed</h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <label class="p-3.5 rounded-xl border cursor-pointer transition-all urgency-label border-slate-900 bg-white ring-1 ring-slate-900 flex flex-col justify-between">
+                        <input type="radio" name="urgency" value="standard" checked class="sr-only" data-multiplier="1.0" onchange="updateUrgency(this)">
+                        <div>
+                            <span class="font-bold text-xs text-slate-900 block">Standard (3–5 Days)</span>
+                            <span class="text-[11px] text-slate-500">Regular turnaround</span>
+                        </div>
+                        <span class="text-[11px] font-semibold text-slate-600 mt-2 block">Standard fee</span>
+                    </label>
+
+                    <label class="p-3.5 rounded-xl border cursor-pointer hover:border-slate-300 transition-all urgency-label border-slate-200 bg-white flex flex-col justify-between">
+                        <input type="radio" name="urgency" value="priority" class="sr-only" data-multiplier="1.25" onchange="updateUrgency(this)">
+                        <div>
+                            <span class="font-bold text-xs text-slate-900 block">Priority (48 Hours)</span>
+                            <span class="text-[11px] text-slate-500">Fast-track review</span>
+                        </div>
+                        <span class="text-[11px] font-semibold text-teal-700 mt-2 block">+25% fee</span>
+                    </label>
+
+                    <label class="p-3.5 rounded-xl border cursor-pointer hover:border-slate-300 transition-all urgency-label border-slate-200 bg-white flex flex-col justify-between">
+                        <input type="radio" name="urgency" value="rush" class="sr-only" data-multiplier="1.50" onchange="updateUrgency(this)">
+                        <div>
+                            <span class="font-bold text-xs text-slate-900 block">Rush (24 Hours)</span>
+                            <span class="text-[11px] text-slate-500">Urgent deadline intervention</span>
+                        </div>
+                        <span class="text-[11px] font-semibold text-rose-700 mt-2 block">+50% fee</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Section 4: Draft Materials & Reviewer Instructions -->
+            <div class="p-6 sm:p-7 space-y-4">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">4. Review Instructions & Draft Document</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Review Instructions / Questions *</label>
+                        <textarea name="applicant_notes" required rows="3" placeholder="Outline specific questions, prompts, or key areas for your reviewer to inspect..." class="w-full text-xs rounded-xl border border-slate-200 bg-white p-2.5 focus:ring-1 focus:ring-slate-400 focus:outline-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Upload Draft File (PDF / Word)</label>
+                            <input type="file" name="attached_document" accept=".pdf,.doc,.docx,.txt" class="w-full text-xs file:mr-2 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 border border-slate-200 bg-white rounded-xl p-1">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Or Link from Document Vault</label>
+                            <select name="document_vault_ref" class="w-full text-xs rounded-xl border border-slate-200 bg-white p-2.5 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                                <option value="">-- Select from Vault --</option>
+                                {% for doc in user_documents %}
+                                <option value="{{ doc.id }}">{{ doc.title }} ({{ doc.get_document_type_display }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5: Communication Details (Optional) -->
+            <div class="p-6 sm:p-7 space-y-4">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">5. Communication Preferences</h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Preferred Time Slot</label>
+                        <select name="preferred_time_slot" class="w-full text-xs rounded-xl border border-slate-200 bg-white p-2.5 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                            <option value="afternoon" selected>Afternoon (13:00 - 17:00 UTC)</option>
+                            <option value="morning">Morning (09:00 - 12:00 UTC)</option>
+                            <option value="evening">Evening (18:00 - 21:00 UTC)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Preferred Channel</label>
+                        <select name="preferred_contact_method" class="w-full text-xs rounded-xl border border-slate-200 bg-white p-2.5 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                            <option value="google_meet" selected>Google Meet</option>
+                            <option value="zoom">Zoom</option>
+                            <option value="email">Email Markup Only</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp / Phone (Optional)</label>
+                        <input type="text" name="contact_phone" placeholder="+234..." class="w-full text-xs rounded-xl border border-slate-200 bg-white p-2.5 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- STEP 5: Scheduling & Contact -->
-        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-[#0b3558] text-white flex items-center justify-center text-xs font-black">5</div>
-                <div>
-                    <h3 class="font-black text-slate-900 text-base">Scheduling & Communication Preferences</h3>
-                    <p class="text-xs text-slate-500">Provide preferred times for advisory calls and your preferred contact channel.</p>
-                </div>
+        <!-- Clean Checkout Summary Bar -->
+        <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">Total Amount</span>
+                <span class="text-2xl font-bold text-white tracking-tight" id="displayTotal">₦0</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Preferred Date (For Calls)</label>
-                    <input type="date" name="preferred_date" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Preferred Time Slot</label>
-                    <select name="preferred_time_slot" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
-                        <option value="afternoon" selected>Afternoon (13:00 - 17:00 UTC)</option>
-                        <option value="morning">Morning (09:00 - 12:00 UTC)</option>
-                        <option value="evening">Evening (18:00 - 21:00 UTC)</option>
-                        <option value="flexible">Flexible / Any Time</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Meeting / Review Channel</label>
-                    <select name="preferred_contact_method" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
-                        <option value="google_meet" selected>Google Meet</option>
-                        <option value="zoom">Zoom</option>
-                        <option value="whatsapp">WhatsApp Audio / Chat</option>
-                        <option value="email">Email Only (Written Markup)</option>
-                    </select>
-                </div>
-
-                <div class="sm:col-span-3">
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">WhatsApp / Phone with Country Code (Optional)</label>
-                    <input type="text" name="contact_phone" placeholder="e.g. +44 7911 123456 or +234 801 234 5678" class="w-full text-xs rounded-xl border border-slate-200 p-2.5 focus:ring-2 focus:ring-[#1261a0] focus:outline-none">
-                </div>
-            </div>
-        </div>
-
-        <!-- Checkout / Summary Bar -->
-        <div class="bg-gradient-to-r from-slate-900 to-[#0b3558] text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 border border-white/10">
-            <div class="space-y-1">
-                <div class="text-xs uppercase tracking-wider text-blue-200 font-bold">Estimated Total</div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-3xl sm:text-4xl font-black text-white" id="displayTotal">$49.00</span>
-                    <span class="text-xs font-bold text-blue-200 uppercase" id="displayCurrency">USD</span>
-                </div>
-                <p class="text-[11px] text-blue-200/80">Includes rubric audit, annotated deliverables, and direct mentor Q&A.</p>
-            </div>
-
-            <button type="submit" class="px-8 py-3.5 bg-[#ef7d37] hover:bg-[#df6d2b] text-white font-bold text-sm rounded-xl shadow-lg transition-all hover:shadow-orange-500/25 flex items-center justify-center gap-2 self-stretch sm:self-center">
-                <span>Confirm & Proceed to Payment</span>
+            <button type="submit" class="px-6 py-3 bg-[#0b3558] hover:bg-[#1261a0] text-white font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm border border-slate-700">
+                <span>Proceed to Payment</span>
                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </button>
         </div>
@@ -231,40 +220,67 @@
 </div>
 
 <script>
-    let currentBasePrice = 49.0;
+    let currentBasePrice = {{ selected_package.price|stringformat:".2f"|default:"5000.0" }};
+    let currentMaxPrice = {% if selected_package.price_max %}{{ selected_package.price_max|stringformat:".2f" }}{% else %}null{% endif %};
     let currentMultiplier = 1.0;
 
-    function updateSelectedPackage(radio) {
-        document.querySelectorAll('.package-card').forEach(card => {
-            card.classList.remove('border-[#1261a0]', 'bg-blue-50/40');
-            card.classList.add('border-slate-200', 'bg-white');
-        });
-        const parentCard = radio.closest('.package-card');
-        if (parentCard) {
-            parentCard.classList.remove('border-slate-200', 'bg-white');
-            parentCard.classList.add('border-[#1261a0]', 'bg-blue-50/40');
+    function onPackageSwitched(select) {
+        const option = select.options[select.selectedIndex];
+        if (!option) return;
+
+        const input = document.getElementById('packageIdInput');
+        if (input) {
+            input.value = option.value;
+            input.dataset.basePrice = option.dataset.basePrice;
+            input.dataset.maxPrice = option.dataset.maxPrice || '';
         }
-        currentBasePrice = parseFloat(radio.dataset.basePrice) || 49.0;
+
+        const titleEl = document.getElementById('selectedPkgTitle');
+        if (titleEl) titleEl.innerText = option.dataset.name;
+
+        const catEl = document.getElementById('selectedPkgCategory');
+        if (catEl) catEl.innerText = option.dataset.category;
+
+        const taglineEl = document.getElementById('selectedPkgTagline');
+        if (taglineEl) taglineEl.innerText = option.dataset.tagline;
+
+        const priceEl = document.getElementById('selectedPkgPrice');
+        if (priceEl) priceEl.innerText = option.dataset.formattedPrice;
+
+        const turnaroundEl = document.getElementById('selectedPkgTurnaround');
+        if (turnaroundEl) turnaroundEl.innerText = option.dataset.turnaround;
+
+        currentBasePrice = parseFloat(option.dataset.basePrice) || 5000.0;
+        currentMaxPrice = option.dataset.maxPrice ? parseFloat(option.dataset.maxPrice) : null;
         recalculateTotal();
     }
 
     function updateUrgency(radio) {
         document.querySelectorAll('.urgency-label').forEach(label => {
-            label.classList.remove('border-[#1261a0]', 'bg-blue-50/30');
-            label.classList.add('border-slate-200', 'bg-white');
+            label.classList.remove('border-slate-900', 'ring-1', 'ring-slate-900');
+            label.classList.add('border-slate-200');
         });
         const parentLabel = radio.closest('.urgency-label');
         if (parentLabel) {
-            parentLabel.classList.remove('border-slate-200', 'bg-white');
-            parentLabel.classList.add('border-[#1261a0]', 'bg-blue-50/30');
+            parentLabel.classList.remove('border-slate-200');
+            parentLabel.classList.add('border-slate-900', 'ring-1', 'ring-slate-900');
         }
         currentMultiplier = parseFloat(radio.dataset.multiplier) || 1.0;
         recalculateTotal();
     }
 
     function recalculateTotal() {
-        const total = (currentBasePrice * currentMultiplier).toFixed(2);
-        document.getElementById('displayTotal').innerText = '$' + total;
+        let total = currentBasePrice;
+        if (currentMultiplier === 1.25) {
+            total = currentBasePrice * 1.25;
+        } else if (currentMultiplier === 1.50) {
+            if (currentMaxPrice && currentMaxPrice > currentBasePrice) {
+                total = currentMaxPrice;
+            } else {
+                total = currentBasePrice * 1.50;
+            }
+        }
+        document.getElementById('displayTotal').innerText = '₦' + Math.round(total).toLocaleString();
     }
 
     function autoFillScholarship(select) {
@@ -277,19 +293,10 @@
         }
     }
 
-    // Initialize on load
     document.addEventListener('DOMContentLoaded', function() {
-        const checkedPkg = document.querySelector('input[name="package_id"]:checked');
-        if (checkedPkg) {
-            currentBasePrice = parseFloat(checkedPkg.dataset.basePrice) || 49.0;
-        }
         const checkedUrgency = document.querySelector('input[name="urgency"]:checked');
         if (checkedUrgency) {
             currentMultiplier = parseFloat(checkedUrgency.dataset.multiplier) || 1.0;
-            const parentLabel = checkedUrgency.closest('.urgency-label');
-            if (parentLabel) {
-                parentLabel.classList.add('border-[#1261a0]', 'bg-blue-50/30');
-            }
         }
         recalculateTotal();
     });

@@ -1,0 +1,31 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}Delete Post: {{ post.title }} | Flii Admin{% endblock %}
+{% block topbar_title %}Confirm Deletion{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto py-12">
+    <div class="bg-[#0d1322] border border-rose-500/40 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+        <div class="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto">
+            <i data-lucide="trash-2" class="w-7 h-7"></i>
+        </div>
+
+        <div class="space-y-2">
+            <h1 class="text-xl font-black text-white">Permanently Delete Blog Post?</h1>
+            <p class="text-xs text-slate-400">
+                Are you sure you want to delete <strong class="text-white">"{{ post.title }}"</strong>? This action cannot be undone.
+            </p>
+        </div>
+
+        <form method="POST" class="flex items-center justify-center gap-3 pt-2">
+            {% csrf_token %}
+            <a href="{% url 'platform_admin:blog_list' %}" class="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-600/30 transition-all">
+                Yes, Delete Post
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

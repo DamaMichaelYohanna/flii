@@ -1,0 +1,240 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}Fulfill Service Order #{{ booking.order_number }} | Flii Admin{% endblock %}
+{% block topbar_title %}Order Fulfillment Workbench{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6 pb-20">
+    
+    <!-- Top Breadcrumb & Actions -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+            <a href="{% url 'platform_admin:paid_requests' %}" class="hover:text-emerald-400">Paid Requests</a>
+            <span>/</span>
+            <span class="text-emerald-400 font-bold font-mono">#{{ booking.order_number }}</span>
+        </div>
+        <a href="{% url 'platform_admin:paid_requests' %}" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors flex items-center gap-1.5">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to Orders</span>
+        </a>
+    </div>
+
+    <!-- Header Card -->
+    <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="space-y-1.5">
+                <div class="flex items-center gap-2">
+                    <span class="font-mono text-sm font-black text-emerald-400">#{{ booking.order_number }}</span>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {% if booking.payment_status == 'paid' %}bg-emerald-950 text-emerald-300 border border-emerald-800{% elif booking.payment_status == 'pending_verification' %}bg-amber-950 text-amber-300 border border-amber-800{% else %}bg-slate-800 text-slate-400{% endif %}">
+                        {{ booking.get_payment_status_display }}
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
+                        {{ booking.get_status_display }}
+                    </span>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-black text-white">{{ booking.package_title }}</h1>
+                <p class="text-xs text-slate-400">
+                    Applicant: <strong class="text-white">{{ booking.user.email }}</strong> • Created {{ booking.created_at|date:"F j, Y H:i" }}
+                </p>
+            </div>
+
+            <div class="text-right">
+                <span class="text-xs text-slate-400 block font-semibold">Service Price:</span>
+                <span class="text-3xl font-black text-emerald-400 font-mono">₦{{ booking.price|floatformat:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2 Column Workbench -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left 2 Cols: Applicant Submissions & Deliverables -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Applicant Request & Attached Documents -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-4 h-4 text-sky-400"></i>
+                    <span>Applicant Submission Details</span>
+                </h2>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <span class="text-slate-500 block mb-0.5 font-bold">Target Scholarship / University:</span>
+                        <span class="font-bold text-white text-sm">{{ booking.effective_scholarship_title }}</span>
+                    </div>
+
+                    {% if booking.applicant_notes %}
+                    <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+                        <span class="text-slate-400 font-bold block">Applicant Instructions & Goals:</span>
+                        <p class="text-slate-200 leading-relaxed whitespace-pre-line">{{ booking.applicant_notes }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Uploaded Draft Document -->
+                    <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-sky-950 text-sky-400 border border-sky-800 flex items-center justify-center font-bold">
+                                <i data-lucide="file" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-white">Draft Document Submission</p>
+                                {% if booking.attached_document %}
+                                <p class="text-[11px] text-slate-400">{{ booking.attached_document.name }}</p>
+                                {% elif booking.document_vault_ref %}
+                                <p class="text-[11px] text-slate-400">Linked Vault Doc: {{ booking.document_vault_ref.title }}</p>
+                                {% else %}
+                                <p class="text-[11px] text-slate-500">No direct file attached</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if booking.attached_document %}
+                        <a href="{{ booking.attached_document.url }}" target="_blank" download class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Download Draft</span>
+                        </a>
+                        {% elif booking.document_vault_ref and booking.document_vault_ref.file %}
+                        <a href="{{ booking.document_vault_ref.file.url }}" target="_blank" download class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Download Vault File</span>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Payment Proof Screenshot if uploaded -->
+                    {% if booking.payment_proof %}
+                    <div class="p-4 rounded-2xl bg-amber-950/30 border border-amber-800/50 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="receipt" class="w-5 h-5 text-amber-400"></i>
+                            <div>
+                                <p class="font-bold text-amber-200">Payment Receipt Proof Uploaded</p>
+                                <p class="text-[11px] text-amber-400/80">Submitted by applicant for bank verification</p>
+                            </div>
+                        </div>
+                        <a href="{{ booking.payment_proof.url }}" target="_blank" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 rounded-xl text-xs font-bold transition-all">
+                            View Receipt Proof
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fulfill & Upload Deliverable -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Submit Completed Deliverable to Applicant</span>
+                </h2>
+                <p class="text-xs text-slate-400">
+                    Upload the reviewed, annotated essay or comprehensive audit report. Once submitted, order status will change to Completed and the applicant will be alerted.
+                </p>
+
+                <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="submit_deliverable">
+
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-200">Review Feedback & Strategic Suggestions</label>
+                        <textarea name="deliverable_feedback" rows="5" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-slate-500" placeholder="Write feedback, recommendations, strengths and areas of improvement...">{{ booking.deliverable_feedback }}</textarea>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-200">Attach Annotated Document / Deliverable File</label>
+                        <input type="file" name="deliverable_file" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+                        {% if booking.deliverable_file %}
+                        <p class="text-[11px] text-emerald-400 mt-1">Current File: <a href="{{ booking.deliverable_file.url }}" target="_blank" class="underline">{{ booking.deliverable_file.name }}</a></p>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-2xl shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <span>Upload Deliverable & Mark Completed</span>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Right 1 Col: Management Controls -->
+        <div class="space-y-6">
+            
+            <!-- Payment Status Control -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">1. Payment Verification</h3>
+                
+                <form method="POST" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_payment_status">
+
+                    <select name="payment_status" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white font-bold focus:ring-2 focus:ring-emerald-500">
+                        <option value="paid" {% if booking.payment_status == 'paid' %}selected{% endif %}>Paid & Verified</option>
+                        <option value="pending_verification" {% if booking.payment_status == 'pending_verification' %}selected{% endif %}>Pending Verification</option>
+                        <option value="unpaid" {% if booking.payment_status == 'unpaid' %}selected{% endif %}>Unpaid</option>
+                        <option value="waived" {% if booking.payment_status == 'waived' %}selected{% endif %}>Waived / Grant</option>
+                    </select>
+
+                    <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors">
+                        Update Payment Status
+                    </button>
+                </form>
+            </div>
+
+            <!-- Reviewer Assignment -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">2. Reviewer Assignment</h3>
+
+                <form method="POST" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="assign_reviewer">
+
+                    <select name="reviewer_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                        <option value="">— Select Reviewer —</option>
+                        {% for rev in available_reviewers %}
+                        <option value="{{ rev.id }}" {% if booking.assigned_reviewer_id == rev.id %}selected{% endif %}>
+                            {{ rev.get_full_name|default:rev.email }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-colors">
+                        Assign Reviewer
+                    </button>
+                </form>
+            </div>
+
+            <!-- Workflow Status -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">3. Workflow Status</h3>
+
+                <form method="POST" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_workflow_status">
+
+                    <select name="status" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                        <option value="pending_payment" {% if booking.status == 'pending_payment' %}selected{% endif %}>Pending Payment</option>
+                        <option value="awaiting_assignment" {% if booking.status == 'awaiting_assignment' %}selected{% endif %}>Awaiting Assignment</option>
+                        <option value="assigned" {% if booking.status == 'assigned' %}selected{% endif %}>Assigned</option>
+                        <option value="in_progress" {% if booking.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="awaiting_user_info" {% if booking.status == 'awaiting_user_info' %}selected{% endif %}>Awaiting User Info</option>
+                        <option value="ready_for_review" {% if booking.status == 'ready_for_review' %}selected{% endif %}>Ready for Review</option>
+                        <option value="completed" {% if booking.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+
+                    <input type="url" name="meeting_link" value="{{ booking.meeting_link }}" placeholder="Google Meet / Zoom URL" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500">
+
+                    <textarea name="admin_notes" rows="2" placeholder="Internal staff notes..." class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500">{{ booking.admin_notes }}</textarea>
+
+                    <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors">
+                        Update Workflow Status
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

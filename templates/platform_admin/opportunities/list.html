@@ -1,0 +1,189 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}Scholarship Opportunities Directory | Flii Admin{% endblock %}
+{% block topbar_title %}Scholarship Directory{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+    
+    <!-- Header with Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+                <a href="{% url 'platform_admin:dashboard' %}" class="hover:text-emerald-400">Admin</a>
+                <span>/</span>
+                <span class="text-amber-400 font-bold">Scholarships Directory</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                <span>Scholarship Catalog</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-950 text-amber-400 border border-amber-800">
+                    {{ total_count }} Opportunities
+                </span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Manage all global verified funding programs, eligibility rules, and application window cycles.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'opportunities:admin_scout_hub' %}" class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 transition-all flex items-center gap-2">
+                <i data-lucide="radar" class="w-4 h-4 text-teal-400"></i>
+                <span>AI Scout Hub</span>
+            </a>
+            <a href="{% url 'platform_admin:opportunity_create' %}" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2">
+                <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                <span>Upload Scholarship</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            
+            <!-- Search -->
+            <div class="relative lg:col-span-2">
+                <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" name="q" value="{{ search_q }}" placeholder="Search title, provider, country, field..." class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <!-- Degree Level Filter -->
+            <div>
+                <select name="degree" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="all">All Degrees</option>
+                    {% for code, label in degree_choices %}
+                    <option value="{{ code }}" {% if current_degree == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Funding Type Filter -->
+            <div>
+                <select name="funding" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="all">All Funding Types</option>
+                    {% for code, label in funding_choices %}
+                    <option value="{{ code }}" {% if current_funding == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Verification Filter -->
+            <div>
+                <select name="verification" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="all">All Verifications</option>
+                    {% for code, label in verification_choices %}
+                    <option value="{{ code }}" {% if current_verification == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Scholarships Table -->
+    <div class="bg-[#0d1322] border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-[#0a0f1c] text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-800">
+                    <tr>
+                        <th class="px-6 py-4">Opportunity</th>
+                        <th class="px-4 py-4">Degree & Coverage</th>
+                        <th class="px-4 py-4">Location</th>
+                        <th class="px-4 py-4">Deadline</th>
+                        <th class="px-4 py-4">Status</th>
+                        <th class="px-4 py-4">Hero Feature</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                    {% for opp in page_obj %}
+                    <tr class="hover:bg-slate-900/50 transition-colors">
+                        <td class="px-6 py-4 max-w-sm">
+                            <div class="space-y-0.5">
+                                <a href="{% url 'platform_admin:opportunity_edit' opp.id %}" class="font-bold text-white hover:text-emerald-400 transition-colors line-clamp-1">
+                                    {{ opp.title }}
+                                </a>
+                                <p class="text-[11px] text-slate-400 truncate">{{ opp.provider }} {% if opp.university %}• {{ opp.university }}{% endif %}</p>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 space-y-1">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-300 border border-blue-800">
+                                {{ opp.get_degree_level_display }}
+                            </span>
+                            <div>
+                                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                    {{ opp.get_funding_type_display }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 font-medium text-slate-200">
+                            {{ opp.country }}
+                        </td>
+                        <td class="px-4 py-4 text-slate-300 font-mono text-[11px]">
+                            {% if opp.deadline %}
+                            {{ opp.deadline|date:"M d, Y" }}
+                            {% else %}
+                            <span class="text-slate-500">Rolling / Ongoing</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {% if opp.verification_status == 'source_verified' %}bg-emerald-950 text-emerald-300 border border-emerald-800{% elif opp.verification_status == 'needs_review' %}bg-amber-950 text-amber-300 border border-amber-800{% else %}bg-slate-800 text-slate-400 border border-slate-700{% endif %}">
+                                {{ opp.get_verification_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4">
+                            <form method="POST" action="{% url 'platform_admin:opportunity_toggle_featured' opp.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="p-1.5 rounded-lg border transition-colors {% if opp.is_featured %}bg-amber-500/20 text-amber-300 border-amber-500/40{% else %}bg-slate-900 text-slate-500 border-slate-800 hover:text-white{% endif %}" title="Toggle Top 3 Hero Banner">
+                                    <i data-lucide="star" class="w-4 h-4 {% if opp.is_featured %}fill-amber-400 text-amber-400{% endif %}"></i>
+                                </button>
+                            </form>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'opportunities:detail' opp.slug|default:opp.id %}" target="_blank" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" title="View Public Page">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                                <a href="{% url 'platform_admin:opportunity_edit' opp.id %}" class="px-3 py-1 bg-slate-800 hover:bg-emerald-600 text-white rounded-lg text-xs font-semibold transition-colors">
+                                    Edit
+                                </a>
+                                <a href="{% url 'platform_admin:opportunity_delete' opp.id %}" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors" title="Delete">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            <i data-lucide="graduation-cap" class="w-10 h-10 mx-auto mb-2 text-slate-600"></i>
+                            <p class="font-bold text-sm text-slate-300">No scholarships found</p>
+                            <p class="text-xs text-slate-500 mt-1">Upload an opportunity or run the scout crawler.</p>
+                            <a href="{% url 'platform_admin:opportunity_create' %}" class="inline-block mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all">
+                                + Upload Scholarship
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span>Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <div class="flex items-center gap-1.5">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&status={{ current_status }}&degree={{ current_degree }}&funding={{ current_funding }}&verification={{ current_verification }}{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&status={{ current_status }}&degree={{ current_degree }}&funding={{ current_funding }}&verification={{ current_verification }}{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

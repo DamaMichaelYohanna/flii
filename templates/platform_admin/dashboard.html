@@ -1,0 +1,305 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}Executive Command Center | Flii Admin{% endblock %}
+{% block topbar_title %}Command Center Overview{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 pb-12">
+    
+    <!-- Hero Banner with Greeting & Quick Links -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-[#0d1c31] to-emerald-950/60 border border-slate-800 p-6 sm:p-8 shadow-2xl">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    Dedicated Admin Workstation
+                </div>
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
+                    Welcome back, {{ request.user.first_name|default:"Administrator" }}
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
+                    Full executive control over content publishing, scholarship ingestion, user management, and pay-per-application financial requests.
+                </p>
+            </div>
+
+            <!-- Quick Action Grid -->
+            <div class="grid grid-cols-2 gap-2.5 sm:flex sm:items-center">
+                <a href="{% url 'platform_admin:blog_create' %}" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold text-xs rounded-2xl border border-slate-700 transition-all flex items-center justify-center gap-2 shadow-sm">
+                    <i data-lucide="pen-tool" class="w-4 h-4 text-sky-400"></i>
+                    <span>Post Blog</span>
+                </a>
+                <a href="{% url 'platform_admin:opportunity_create' %}" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                    <span>Upload Scholarship</span>
+                </a>
+                <a href="{% url 'platform_admin:paid_requests' %}" class="px-4 py-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold text-xs rounded-2xl transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="credit-card" class="w-4 h-4 text-amber-400"></i>
+                    <span>Paid Requests</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Executive KPI Metrics Grid (5 Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <!-- 1. Registered Users -->
+        <a href="{% url 'platform_admin:user_list' %}" class="bg-[#0f172a] hover:bg-[#131d35] p-5 rounded-2xl border border-slate-800 hover:border-slate-700 shadow-lg transition-all group flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Registered Users</span>
+                <div class="w-9 h-9 rounded-xl bg-purple-950/60 text-purple-400 border border-purple-800/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-white tracking-tight">{{ total_users }}</p>
+                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
+                    <span class="text-emerald-400 font-semibold">{{ onboarding_rate }}% Onboarded</span>
+                    <span>{{ staff_count }} Staff</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- 2. Scholarships & Opportunities -->
+        <a href="{% url 'platform_admin:opportunity_list' %}" class="bg-[#0f172a] hover:bg-[#131d35] p-5 rounded-2xl border border-slate-800 hover:border-slate-700 shadow-lg transition-all group flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Scholarships</span>
+                <div class="w-9 h-9 rounded-xl bg-amber-950/60 text-amber-400 border border-amber-800/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-white tracking-tight">{{ total_opportunities }}</p>
+                <div class="flex items-center justify-between mt-1 text-[11px]">
+                    <span class="text-emerald-400 font-semibold">{{ active_opportunities }} Active Verified</span>
+                    {% if staged_opportunities > 0 %}
+                    <span class="text-amber-400 font-bold bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">{{ staged_opportunities }} Staged</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+
+        <!-- 3. Paid Requests / Financials -->
+        <a href="{% url 'platform_admin:paid_requests' %}" class="bg-[#0f172a] hover:bg-[#131d35] p-5 rounded-2xl border border-slate-800 hover:border-slate-700 shadow-lg transition-all group flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Assistance Revenue</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-2xl font-black text-emerald-400 tracking-tight">₦{{ revenue_bookings|floatformat:0 }}</p>
+                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
+                    <span class="text-emerald-400 font-semibold">{{ paid_bookings_count }} Paid Orders</span>
+                    {% if pending_bookings_count > 0 %}
+                    <span class="text-amber-400 font-semibold">{{ pending_bookings_count }} Pending</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+
+        <!-- 4. Applications Tracked -->
+        <a href="{% url 'platform_admin:applications_pipeline' %}" class="bg-[#0f172a] hover:bg-[#131d35] p-5 rounded-2xl border border-slate-800 hover:border-slate-700 shadow-lg transition-all group flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Applications</span>
+                <div class="w-9 h-9 rounded-xl bg-blue-950/60 text-blue-400 border border-blue-800/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i data-lucide="folder-kanban" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-white tracking-tight">{{ total_applications }}</p>
+                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
+                    <span class="text-sky-400 font-semibold">{{ submitted_applications }} Submitted / Offers</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- 5. Blog Articles -->
+        <a href="{% url 'platform_admin:blog_list' %}" class="bg-[#0f172a] hover:bg-[#131d35] p-5 rounded-2xl border border-slate-800 hover:border-slate-700 shadow-lg transition-all group flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Blog Posts</span>
+                <div class="w-9 h-9 rounded-xl bg-sky-950/60 text-sky-400 border border-sky-800/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i data-lucide="newspaper" class="w-4 h-4"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p class="text-3xl font-black text-white tracking-tight">{{ total_blog_posts }}</p>
+                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
+                    <span class="text-emerald-400 font-semibold">{{ published_blog_posts }} Published</span>
+                    <span>{{ total_blog_posts|add:"-published_blog_posts" }} Drafts</span>
+                </div>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- Main Two-Column Operational Dashboards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Left Column: Paid Requests & Recent Bookings -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                        <i data-lucide="credit-card" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white">Recent Paid Requests</h2>
+                        <p class="text-xs text-slate-400">Pay-per-application service orders</p>
+                    </div>
+                </div>
+                <a href="{% url 'platform_admin:paid_requests' %}" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors">
+                    <span>View All Orders</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </a>
+            </div>
+
+            <div class="space-y-3">
+                {% if recent_bookings %}
+                    {% for booking in recent_bookings %}
+                    <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between hover:border-slate-700 transition-colors">
+                        <div class="space-y-1 min-w-0 pr-3">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs font-bold text-slate-300">#{{ booking.order_number }}</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {% if booking.payment_status == 'paid' %}bg-emerald-950 text-emerald-300 border border-emerald-800{% elif booking.payment_status == 'pending_verification' %}bg-amber-950 text-amber-300 border border-amber-800{% else %}bg-slate-800 text-slate-400{% endif %}">
+                                    {{ booking.get_payment_status_display }}
+                                </span>
+                            </div>
+                            <p class="text-xs font-bold text-white truncate">{{ booking.package_title }}</p>
+                            <p class="text-[11px] text-slate-400 truncate">{{ booking.user.email }}</p>
+                        </div>
+
+                        <div class="text-right flex-shrink-0 space-y-1.5">
+                            <span class="font-black text-sm text-emerald-400">₦{{ booking.price|floatformat:0 }}</span>
+                            <div>
+                                <a href="{% url 'platform_admin:paid_request_detail' booking.id %}" class="px-3 py-1 bg-slate-800 hover:bg-emerald-600 text-white rounded-lg text-xs font-semibold transition-colors inline-block">
+                                    Fulfill →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-8 text-center rounded-2xl bg-slate-900/40 border border-dashed border-slate-800 text-slate-400 text-xs">
+                        No service bookings recorded yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Recent Registered Users -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white">Recent Signups</h2>
+                        <p class="text-xs text-slate-400">Newly registered applicants</p>
+                    </div>
+                </div>
+                <a href="{% url 'platform_admin:user_list' %}" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors">
+                    <span>User Directory</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </a>
+            </div>
+
+            <div class="space-y-3">
+                {% if recent_users %}
+                    {% for user in recent_users %}
+                    <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between hover:border-slate-700 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0 pr-3">
+                            <div class="w-9 h-9 rounded-full bg-slate-800 text-slate-200 border border-slate-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                {{ user.first_name|default:user.email|slice:":1"|upper }}
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <p class="text-xs font-bold text-white truncate">{{ user.get_full_name|default:user.email }}</p>
+                                    {% if user.is_staff %}
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">STAFF</span>
+                                    {% endif %}
+                                </div>
+                                <p class="text-[11px] text-slate-400 truncate">{{ user.email }} • Joined {{ user.date_joined|timesince }} ago</p>
+                            </div>
+                        </div>
+
+                        <a href="{% url 'platform_admin:user_detail' user.id %}" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-purple-300 rounded-lg text-xs font-semibold transition-colors flex-shrink-0">
+                            Inspect 360°
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-8 text-center rounded-2xl bg-slate-900/40 border border-dashed border-slate-800 text-slate-400 text-xs">
+                        No registered users yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Stream: Recent Application Pipeline & AI Governance -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Application Workspaces -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="folder-kanban" class="w-4 h-4 text-blue-400"></i>
+                    <h3 class="text-sm font-bold text-white">Live Application Workspaces</h3>
+                </div>
+                <a href="{% url 'platform_admin:applications_pipeline' %}" class="text-xs font-semibold text-blue-400 hover:underline">View Pipeline →</a>
+            </div>
+
+            <div class="space-y-2.5">
+                {% for app in recent_applications %}
+                <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+                    <div class="min-w-0 pr-2">
+                        <p class="font-bold text-white truncate">{{ app.opportunity.title }}</p>
+                        <p class="text-[11px] text-slate-400">{{ app.user.email }} • Stage: <span class="text-sky-300 font-semibold">{{ app.get_status_display }}</span></p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 font-bold text-[10px]">{{ app.progress_percentage }}%</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-400 py-4 text-center">No active student applications recorded yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- AI Governance Audit Stream -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="cpu" class="w-4 h-4 text-teal-400"></i>
+                    <h3 class="text-sm font-bold text-white">AI Governance & Telemetry</h3>
+                </div>
+                <a href="{% url 'platform_admin:system_health' %}" class="text-xs font-semibold text-teal-400 hover:underline">Full Log →</a>
+            </div>
+
+            <div class="space-y-2.5">
+                {% for log in recent_audit_logs %}
+                <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+                    <div class="min-w-0 pr-2">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-200">{{ log.action_type }}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">{{ log.model_name|default:"Gemini" }}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 truncate">{{ log.user.email|default:"System" }} • {{ log.created_at|timesince }} ago</p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <span class="text-[10px] font-mono text-emerald-400">{{ log.tokens_used|default:"0" }} tokens</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-400 py-4 text-center">No AI audit logs recorded yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

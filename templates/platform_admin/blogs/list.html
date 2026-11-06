@@ -1,0 +1,180 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}Blog Articles Manager | Flii Admin{% endblock %}
+{% block topbar_title %}Blog Management{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+    
+    <!-- Header with Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+                <a href="{% url 'platform_admin:dashboard' %}" class="hover:text-emerald-400">Admin</a>
+                <span>/</span>
+                <span class="text-sky-400 font-bold">Blog Manager</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                <span>Blog Articles & Insights</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-950 text-sky-400 border border-sky-800">
+                    {{ total_count }} Total
+                </span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Publish immigration updates, scholarship winning strategies, and university application guides.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'blog:list' %}" target="_blank" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center gap-1.5">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                <span>View Live Blog</span>
+            </a>
+            <a href="{% url 'platform_admin:blog_create' %}" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Post New Article</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="bg-[#0d1322] border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <!-- Status Tabs -->
+        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+            <a href="?status=all{% if search_q %}&q={{ search_q }}{% endif %}{% if current_category != 'all' %}&category={{ current_category }}{% endif %}" class="px-3 py-1.5 rounded-xl transition-all {% if current_status == 'all' %}bg-sky-600 text-white shadow-md{% else %}bg-slate-900 text-slate-400 hover:text-white{% endif %}">
+                All ({{ total_count }})
+            </a>
+            <a href="?status=published{% if search_q %}&q={{ search_q }}{% endif %}{% if current_category != 'all' %}&category={{ current_category }}{% endif %}" class="px-3 py-1.5 rounded-xl transition-all {% if current_status == 'published' %}bg-emerald-600 text-white shadow-md{% else %}bg-slate-900 text-slate-400 hover:text-white{% endif %}">
+                Published ({{ published_count }})
+            </a>
+            <a href="?status=draft{% if search_q %}&q={{ search_q }}{% endif %}{% if current_category != 'all' %}&category={{ current_category }}{% endif %}" class="px-3 py-1.5 rounded-xl transition-all {% if current_status == 'draft' %}bg-amber-600 text-white shadow-md{% else %}bg-slate-900 text-slate-400 hover:text-white{% endif %}">
+                Drafts ({{ draft_count }})
+            </a>
+        </div>
+
+        <!-- Search Input -->
+        <form method="GET" class="flex items-center gap-2">
+            <input type="hidden" name="status" value="{{ current_status }}">
+            <input type="hidden" name="category" value="{{ current_category }}">
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" name="q" value="{{ search_q }}" placeholder="Search articles, tags..." class="w-64 pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            {% if search_q %}
+            <a href="?status={{ current_status }}&category={{ current_category }}" class="p-2 text-slate-400 hover:text-white" title="Clear search">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </a>
+            {% endif %}
+            <button type="submit" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold">Search</button>
+        </form>
+    </div>
+
+    <!-- Blog Posts Table -->
+    <div class="bg-[#0d1322] border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-[#0a0f1c] text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-800">
+                    <tr>
+                        <th class="px-6 py-4">Article Title</th>
+                        <th class="px-4 py-4">Category</th>
+                        <th class="px-4 py-4">Author</th>
+                        <th class="px-4 py-4">Status</th>
+                        <th class="px-4 py-4">Views</th>
+                        <th class="px-4 py-4">Date</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                    {% for post in page_obj %}
+                    <tr class="hover:bg-slate-900/50 transition-colors">
+                        <td class="px-6 py-4 max-w-sm">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    {% if post.is_breaking_news %}
+                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-rose-950 text-rose-300 border border-rose-800">BREAKING</span>
+                                    {% endif %}
+                                    {% if post.is_pinned %}
+                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-950 text-amber-300 border border-amber-800">PINNED</span>
+                                    {% endif %}
+                                    <a href="{% url 'platform_admin:blog_edit' post.id %}" class="font-bold text-white hover:text-emerald-400 transition-colors line-clamp-1">
+                                        {{ post.title }}
+                                    </a>
+                                </div>
+                                <p class="text-[11px] text-slate-400 line-clamp-1">{{ post.summary }}</p>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4">
+                            {% if post.category %}
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-800 text-sky-300 border border-slate-700">
+                                {{ post.category.name }}
+                            </span>
+                            {% else %}
+                            <span class="text-slate-500">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-4 text-slate-300 font-medium">
+                            {{ post.author.get_full_name|default:post.author.email }}
+                        </td>
+                        <td class="px-4 py-4">
+                            <form method="POST" action="{% url 'platform_admin:blog_toggle_status' post.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" title="Click to toggle status" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-transform active:scale-95 {% if post.status == 'published' %}bg-emerald-950 text-emerald-300 border border-emerald-800 hover:bg-emerald-900{% elif post.status == 'draft' %}bg-amber-950 text-amber-300 border border-amber-800 hover:bg-amber-900{% else %}bg-slate-800 text-slate-400 border border-slate-700{% endif %}">
+                                    {{ post.get_status_display }}
+                                </button>
+                            </form>
+                        </td>
+                        <td class="px-4 py-4 font-mono font-bold text-slate-300">
+                            {{ post.views_count }}
+                        </td>
+                        <td class="px-4 py-4 text-slate-400 text-[11px]">
+                            {{ post.published_at|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'blog:detail' post.slug %}" target="_blank" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" title="Preview public article">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                                <a href="{% url 'platform_admin:blog_edit' post.id %}" class="px-3 py-1 bg-slate-800 hover:bg-emerald-600 text-white rounded-lg text-xs font-semibold transition-colors">
+                                    Edit
+                                </a>
+                                <a href="{% url 'platform_admin:blog_delete' post.id %}" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors" title="Delete">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            <i data-lucide="newspaper" class="w-10 h-10 mx-auto mb-2 text-slate-600"></i>
+                            <p class="font-bold text-sm text-slate-300">No blog articles found</p>
+                            <p class="text-xs text-slate-500 mt-1">Get started by creating your first post.</p>
+                            <a href="{% url 'platform_admin:blog_create' %}" class="inline-block mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all">
+                                + Create New Post
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span>Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <div class="flex items-center gap-1.5">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&status={{ current_status }}&category={{ current_category }}{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&status={{ current_status }}&category={{ current_category }}{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

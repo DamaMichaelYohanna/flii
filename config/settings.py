@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'blog',
     'assistance',
     'subscriptions',
+    'platform_admin',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,280 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}User 360° Profile: {{ target_user.email }} | Flii Admin{% endblock %}
+{% block topbar_title %}User 360° Inspector{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-16">
+    
+    <!-- Top Breadcrumb & Actions -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+            <a href="{% url 'platform_admin:user_list' %}" class="hover:text-emerald-400">User Directory</a>
+            <span>/</span>
+            <span class="text-purple-400 font-bold">{{ target_user.email }}</span>
+        </div>
+        <a href="{% url 'platform_admin:user_list' %}" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors flex items-center gap-1.5">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to Users</span>
+        </a>
+    </div>
+
+    <!-- User Header Card with Account Privileges -->
+    <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex items-start sm:items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-purple-600/30 flex-shrink-0">
+                    {{ target_user.first_name|default:target_user.email|slice:":1"|upper }}
+                </div>
+                <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="text-xl sm:text-2xl font-black text-white">{{ target_user.get_full_name|default:target_user.email }}</h1>
+                        {% if target_user.is_staff %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-800">
+                            Staff Admin
+                        </span>
+                        {% endif %}
+                        {% if target_user.is_active %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-950 text-emerald-400 border border-emerald-800">
+                            Active Account
+                        </span>
+                        {% else %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-950 text-rose-300 border border-rose-800">
+                            Suspended
+                        </span>
+                        {% endif %}
+                        {% if subscription and subscription.is_premium %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1">
+                            <i data-lucide="crown" class="w-3 h-3 text-amber-400"></i>
+                            Premium Subscriber
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        {{ target_user.email }} • Member since {{ target_user.date_joined|date:"F j, Y" }} ({{ target_user.date_joined|timesince }} ago)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Privilege Toggles -->
+            <div class="flex flex-wrap items-center gap-2 border-t md:border-t-0 pt-4 md:pt-0 border-slate-800">
+                <!-- Toggle Staff -->
+                <form method="POST" action="{% url 'platform_admin:user_toggle_staff' target_user.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="px-3 py-2 rounded-xl text-xs font-bold transition-all {% if target_user.is_staff %}bg-slate-800 hover:bg-rose-950 text-rose-300 border border-slate-700{% else %}bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800{% endif %}">
+                        {% if target_user.is_staff %}Revoke Staff{% else %}Grant Staff Privileges{% endif %}
+                    </button>
+                </form>
+
+                <!-- Toggle Active -->
+                <form method="POST" action="{% url 'platform_admin:user_toggle_active' target_user.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="px-3 py-2 rounded-xl text-xs font-bold transition-all {% if target_user.is_active %}bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800{% else %}bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800{% endif %}">
+                        {% if target_user.is_active %}Suspend Account{% else %}Reactivate Account{% endif %}
+                    </button>
+                </form>
+
+                <!-- Toggle Email Verified -->
+                <form method="POST" action="{% url 'platform_admin:user_toggle_verified' target_user.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors">
+                        {% if target_user.is_email_verified %}Mark Unverified{% else %}Mark Email Verified{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid: Profile & Notification Dispatch -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left 2 Cols: Profile & History -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Applicant Profile Card -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-4 h-4 text-purple-400"></i>
+                    <span>Demographic & Academic Profile</span>
+                </h2>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                    <div>
+                        <span class="text-slate-500 block">Nationality:</span>
+                        <span class="font-bold text-white">{{ profile.nationality|default:"Not specified" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">Country of Origin:</span>
+                        <span class="font-bold text-white">{{ profile.country_of_origin|default:"Not specified" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">Target Degree:</span>
+                        <span class="font-bold text-emerald-400">{{ profile.get_target_degree_level_display|default:"Not specified" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">Phone / WhatsApp:</span>
+                        <span class="font-bold text-white">{{ profile.phone_number|default:"Not set" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">Onboarding:</span>
+                        <span class="font-bold {% if target_user.onboarding_completed %}text-emerald-400{% else %}text-amber-400{% endif %}">
+                            {% if target_user.onboarding_completed %}Completed{% else %}Incomplete{% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">Email Verified:</span>
+                        <span class="font-bold {% if target_user.is_email_verified %}text-emerald-400{% else %}text-slate-400{% endif %}">
+                            {% if target_user.is_email_verified %}Yes{% else %}No{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                {% if profile and profile.education_entries.all %}
+                <div class="pt-3 border-t border-slate-800">
+                    <p class="text-xs font-bold text-slate-300 mb-2">Education History</p>
+                    <div class="space-y-2">
+                        {% for edu in profile.education_entries.all %}
+                        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-white">{{ edu.institution }}</p>
+                                <p class="text-[11px] text-slate-400">{{ edu.field_of_study }} • Class of {{ edu.graduation_year }}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px]">{{ edu.grade_classification|default:"Graduated" }}</span>
+                                {% if edu.cgpa %}<p class="text-[10px] text-slate-400 mt-0.5">CGPA: {{ edu.cgpa }}</p>{% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Applications History -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="folder-kanban" class="w-4 h-4 text-blue-400"></i>
+                        <span>Application Workspaces ({{ applications.count }})</span>
+                    </h2>
+                </div>
+
+                <div class="space-y-2.5">
+                    {% for app in applications %}
+                    <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+                        <div class="min-w-0 pr-3">
+                            <p class="font-bold text-white truncate">{{ app.opportunity.title }}</p>
+                            <p class="text-[11px] text-slate-400">{{ app.opportunity.provider }} • Stage: <span class="text-sky-300 font-bold">{{ app.get_status_display }}</span></p>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 font-bold text-[10px]">{{ app.progress_percentage }}%</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-xs text-slate-500 py-3 text-center">User has not created any application workspaces yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Paid Assistance Bookings History -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="credit-card" class="w-4 h-4 text-amber-400"></i>
+                        <span>Service Orders & Paid Requests ({{ bookings.count }})</span>
+                    </h2>
+                </div>
+
+                <div class="space-y-2.5">
+                    {% for booking in bookings %}
+                    <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+                        <div class="min-w-0 pr-3">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-slate-300">#{{ booking.order_number }}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if booking.payment_status == 'paid' %}bg-emerald-950 text-emerald-300{% else %}bg-slate-800 text-slate-400{% endif %}">
+                                    {{ booking.get_payment_status_display }}
+                                </span>
+                            </div>
+                            <p class="font-bold text-white truncate mt-0.5">{{ booking.package_title }}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0 space-y-1">
+                            <span class="font-black text-emerald-400">₦{{ booking.price|floatformat:0 }}</span>
+                            <div>
+                                <a href="{% url 'platform_admin:paid_request_detail' booking.id %}" class="text-[11px] font-bold text-sky-400 hover:underline">
+                                    Manage →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-xs text-slate-500 py-3 text-center">No paid service orders from this user.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right 1 Col: Quick Notification Dispatch & Vault Stats -->
+        <div class="space-y-6">
+            
+            <!-- Send In-App Notification -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="bell" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Send Notification</span>
+                </h2>
+                <p class="text-xs text-slate-400">Dispatch an immediate in-app milestone alert to this applicant.</p>
+
+                <form method="POST" action="{% url 'platform_admin:user_send_notification' target_user.id %}" class="space-y-3">
+                    {% csrf_token %}
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-300">Notification Title</label>
+                        <input type="text" name="title" required placeholder="e.g. Scholarship Shortlist Update" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-300">Message Content</label>
+                        <textarea name="message" rows="3" required placeholder="Write custom alert text..." class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-300">Target Action URL (Optional)</label>
+                        <input type="text" name="action_url" placeholder="/dashboard/applications/" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                        <span>Dispatch Notification</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Documents & Vault Assets -->
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-3">
+                <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-4 h-4 text-teal-400"></i>
+                    <span>Repository Assets</span>
+                </h2>
+
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60">
+                        <span class="text-slate-400">Vault Documents:</span>
+                        <span class="font-bold text-white">{{ documents.count }} files</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60">
+                        <span class="text-slate-400">STAR Experiences:</span>
+                        <span class="font-bold text-white">{{ stories.count }} stories</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60">
+                        <span class="text-slate-400">Payment Transactions:</span>
+                        <span class="font-bold text-white">{{ transactions.count }} records</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

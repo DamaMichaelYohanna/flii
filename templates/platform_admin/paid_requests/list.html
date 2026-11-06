@@ -1,0 +1,259 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}Paid Requests & Financials | Flii Admin{% endblock %}
+{% block topbar_title %}Paid Requests & Orders{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+    
+    <!-- Header with Financial Revenue Summary -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+                <a href="{% url 'platform_admin:dashboard' %}" class="hover:text-emerald-400">Admin</a>
+                <span>/</span>
+                <span class="text-emerald-400 font-bold">Monetization & Orders</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                <span>Paid Requests & Transactions</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+                    ₦{{ total_revenue_assistance|floatformat:0 }} Revenue
+                </span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Inspect pay-per-application service orders, verify bank payments, assign expert reviewers, and monitor subscription transactions.
+            </p>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-[#0f172a] p-4 rounded-2xl border border-slate-800 shadow-md">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Service Orders</span>
+            <p class="text-2xl font-black text-white mt-1">{{ total_service_orders }}</p>
+        </div>
+
+        <div class="bg-[#0f172a] p-4 rounded-2xl border border-slate-800 shadow-md">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Paid & Verified</span>
+            <p class="text-2xl font-black text-emerald-400 mt-1">{{ paid_service_orders }}</p>
+        </div>
+
+        <div class="bg-[#0f172a] p-4 rounded-2xl border border-slate-800 shadow-md">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Pending Payment / Review</span>
+            <p class="text-2xl font-black text-amber-400 mt-1">{{ pending_payment_orders }}</p>
+        </div>
+
+        <div class="bg-[#0f172a] p-4 rounded-2xl border border-slate-800 shadow-md">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400">Fulfillment Completed</span>
+            <p class="text-2xl font-black text-sky-400 mt-1">{{ completed_orders }}</p>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs: Assistance Orders vs Subscription Transactions -->
+    <div class="border-b border-slate-800 flex items-center gap-6 text-xs font-bold">
+        <a href="?tab=assistance" class="pb-3 border-b-2 flex items-center gap-2 transition-all {% if active_tab == 'assistance' %}border-emerald-500 text-emerald-400 font-extrabold{% else %}border-transparent text-slate-400 hover:text-white{% endif %}">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <span>Pay-Per-Application Service Orders ({{ total_service_orders }})</span>
+        </a>
+        <a href="?tab=transactions" class="pb-3 border-b-2 flex items-center gap-2 transition-all {% if active_tab == 'transactions' %}border-emerald-500 text-emerald-400 font-extrabold{% else %}border-transparent text-slate-400 hover:text-white{% endif %}">
+            <i data-lucide="credit-card" class="w-4 h-4"></i>
+            <span>Subscription & Billing Transactions</span>
+        </a>
+    </div>
+
+    {% if active_tab == 'assistance' %}
+    <!-- ===================================================================== -->
+    <!-- TAB 1: EXPERT ASSISTANCE SERVICE ORDERS -->
+    <!-- ===================================================================== -->
+    <div class="space-y-4">
+        
+        <!-- Filter Bar -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            
+            <!-- Status Pills -->
+            <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                <a href="?tab=assistance&status=all{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-xl transition-all {% if status_filter == 'all' %}bg-slate-800 text-white shadow{% else %}bg-slate-900 text-slate-400 hover:text-white{% endif %}">
+                    All Orders
+                </a>
+                <a href="?tab=assistance&status=pending_payment{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-xl transition-all {% if status_filter == 'pending_payment' %}bg-amber-600 text-white shadow{% else %}bg-slate-900 text-slate-400 hover:text-white{% endif %}">
+                    Pending Payment
+                </a>
+                <a href="?tab=assistance&status=in_progress{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-xl transition-all {% if status_filter == 'in_progress' %}bg-purple-600 text-white shadow{% else %}bg-slate-900 text-slate-400 hover:text-white{% endif %}">
+                    In Progress
+                </a>
+                <a href="?tab=assistance&status=completed{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-xl transition-all {% if status_filter == 'completed' %}bg-emerald-600 text-white shadow{% else %}bg-slate-900 text-slate-400 hover:text-white{% endif %}">
+                    Completed
+                </a>
+            </div>
+
+            <!-- Search -->
+            <form method="GET" class="flex items-center gap-2">
+                <input type="hidden" name="tab" value="assistance">
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" name="q" value="{{ search_q }}" placeholder="Order #, email, package..." class="w-64 pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <button type="submit" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold">Search</button>
+            </form>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-[#0a0f1c] text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-800">
+                        <tr>
+                            <th class="px-6 py-4">Order #</th>
+                            <th class="px-4 py-4">Applicant</th>
+                            <th class="px-4 py-4">Package Service</th>
+                            <th class="px-4 py-4">Amount</th>
+                            <th class="px-4 py-4">Payment</th>
+                            <th class="px-4 py-4">Workflow</th>
+                            <th class="px-4 py-4">Assigned To</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80">
+                        {% for b in bookings_page %}
+                        <tr class="hover:bg-slate-900/50 transition-colors">
+                            <td class="px-6 py-4 font-mono font-bold text-white">
+                                <a href="{% url 'platform_admin:paid_request_detail' b.id %}" class="hover:text-emerald-400 transition-colors">
+                                    #{{ b.order_number }}
+                                </a>
+                                <p class="text-[10px] text-slate-500 font-sans mt-0.5">{{ b.created_at|date:"M d, Y" }}</p>
+                            </td>
+                            <td class="px-4 py-4">
+                                <a href="{% url 'platform_admin:user_detail' b.user.id %}" class="font-bold text-white hover:text-purple-400 block truncate">
+                                    {{ b.user.get_full_name|default:b.user.email }}
+                                </a>
+                                <p class="text-[11px] text-slate-400 truncate">{{ b.contact_email|default:b.user.email }}</p>
+                            </td>
+                            <td class="px-4 py-4 max-w-xs">
+                                <p class="font-bold text-slate-200 line-clamp-1">{{ b.package_title }}</p>
+                                <p class="text-[11px] text-slate-400 truncate">{{ b.effective_scholarship_title }}</p>
+                            </td>
+                            <td class="px-4 py-4 font-black text-emerald-400 font-mono text-sm">
+                                ₦{{ b.price|floatformat:0 }}
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {% if b.payment_status == 'paid' %}bg-emerald-950 text-emerald-300 border border-emerald-800{% elif b.payment_status == 'pending_verification' %}bg-amber-950 text-amber-300 border border-amber-800{% else %}bg-slate-800 text-slate-400 border border-slate-700{% endif %}">
+                                    {{ b.get_payment_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-200 border border-slate-700">
+                                    {{ b.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-slate-300">
+                                {% if b.assigned_reviewer %}
+                                <span class="font-medium text-white">{{ b.assigned_reviewer.get_full_name|default:b.assigned_reviewer.email }}</span>
+                                {% else %}
+                                <span class="text-amber-400 font-semibold text-[11px]">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'platform_admin:paid_request_detail' b.id %}" class="px-3.5 py-1.5 bg-slate-800 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-colors inline-block shadow-sm">
+                                    Inspect & Fulfill →
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                                <i data-lucide="credit-card" class="w-10 h-10 mx-auto mb-2 text-slate-600"></i>
+                                <p class="font-bold text-sm text-slate-300">No service requests found</p>
+                                <p class="text-xs text-slate-500 mt-1">Orders will appear here as users purchase paid assistance.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if bookings_page.has_other_pages %}
+            <div class="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                <span>Showing page {{ bookings_page.number }} of {{ bookings_page.paginator.num_pages }}</span>
+                <div class="flex items-center gap-1.5">
+                    {% if bookings_page.has_previous %}
+                    <a href="?tab=assistance&page={{ bookings_page.previous_page_number }}&status={{ status_filter }}{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">Previous</a>
+                    {% endif %}
+                    {% if bookings_page.has_next %}
+                    <a href="?tab=assistance&page={{ bookings_page.next_page_number }}&status={{ status_filter }}{% if search_q %}&q={{ search_q }}{% endif %}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    {% else %}
+    <!-- ===================================================================== -->
+    <!-- TAB 2: SUBSCRIPTION TRANSACTIONS -->
+    <!-- ===================================================================== -->
+    <div class="space-y-4">
+        
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-[#0a0f1c] text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-800">
+                        <tr>
+                            <th class="px-6 py-4">Transaction Reference</th>
+                            <th class="px-4 py-4">Applicant</th>
+                            <th class="px-4 py-4">Type</th>
+                            <th class="px-4 py-4">Linked Plan</th>
+                            <th class="px-4 py-4">Status</th>
+                            <th class="px-4 py-4">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80">
+                        {% for tx in transactions_page %}
+                        <tr class="hover:bg-slate-900/50 transition-colors">
+                            <td class="px-6 py-4 font-mono font-bold text-white">
+                                {{ tx.reference }}
+                            </td>
+                            <td class="px-4 py-4 font-bold text-white">
+                                {{ tx.user.email }}
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">
+                                    {{ tx.get_transaction_type_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-slate-300">
+                                {% if tx.subscription and tx.subscription.plan %}
+                                {{ tx.subscription.plan.name }}
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {% if tx.status == 'success' %}bg-emerald-950 text-emerald-300 border border-emerald-800{% elif tx.status == 'pending' %}bg-amber-950 text-amber-300 border border-amber-800{% else %}bg-rose-950 text-rose-300 border border-rose-800{% endif %}">
+                                    {{ tx.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-slate-400 font-mono text-[11px]">
+                                {{ tx.created_at|date:"M d, Y H:i" }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                                <i data-lucide="receipt" class="w-10 h-10 mx-auto mb-2 text-slate-600"></i>
+                                <p class="font-bold text-sm text-slate-300">No payment transactions recorded</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

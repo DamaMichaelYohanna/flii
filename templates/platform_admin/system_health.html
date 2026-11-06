@@ -1,0 +1,126 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}System Health & AI Telemetry | Flii Admin{% endblock %}
+{% block topbar_title %}System Health & AI Governance{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 pb-12">
+    
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
+                <a href="{% url 'platform_admin:dashboard' %}" class="hover:text-emerald-400">Admin</a>
+                <span>/</span>
+                <span class="text-teal-400 font-bold">System Health</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                <span>AI Governance & Telemetry</span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Operational
+                </span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Full transparent audit trail of automated AI actions, model token expenditures, and human-in-the-loop approvals.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="/admin/" target="_blank" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2 border border-slate-700">
+                <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
+                <span>Open Django Admin</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Telemetry Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-[#0f172a] p-5 rounded-2xl border border-slate-800 shadow-md">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Audit Logged Events</span>
+            <p class="text-3xl font-black text-white mt-1">{{ total_logs_count }}</p>
+        </div>
+
+        <div class="bg-[#0f172a] p-5 rounded-2xl border border-slate-800 shadow-md">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-400">Total Agent Actions</span>
+            <p class="text-3xl font-black text-teal-400 mt-1">{{ total_actions_count }}</p>
+        </div>
+
+        <div class="bg-[#0f172a] p-5 rounded-2xl border border-slate-800 shadow-md">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Pending Human Approval</span>
+            <p class="text-3xl font-black text-amber-400 mt-1">{{ pending_actions_count }}</p>
+        </div>
+    </div>
+
+    <!-- AI Audit Logs Table -->
+    <div class="bg-[#0d1322] border border-slate-800 rounded-3xl overflow-hidden shadow-xl space-y-4">
+        <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="cpu" class="w-4 h-4 text-teal-400"></i>
+                <span>Real-Time AI Audit Logs</span>
+            </h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-[#0a0f1c] text-[10px] uppercase font-bold tracking-wider text-slate-400 border-b border-slate-800">
+                    <tr>
+                        <th class="px-6 py-4">Timestamp</th>
+                        <th class="px-4 py-4">Action / Event</th>
+                        <th class="px-4 py-4">User</th>
+                        <th class="px-4 py-4">AI Model</th>
+                        <th class="px-4 py-4">Tokens Used</th>
+                        <th class="px-6 py-4">Prompt / Result Excerpt</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80 font-mono text-[11px]">
+                    {% for log in page_obj %}
+                    <tr class="hover:bg-slate-900/50 transition-colors">
+                        <td class="px-6 py-4 text-slate-400 whitespace-nowrap">
+                            {{ log.created_at|date:"Y-m-d H:i:s" }}
+                        </td>
+                        <td class="px-4 py-4 font-bold text-white">
+                            {{ log.action_type }}
+                        </td>
+                        <td class="px-4 py-4 text-slate-300 font-sans">
+                            {{ log.user.email|default:"System Engine" }}
+                        </td>
+                        <td class="px-4 py-4 text-teal-400">
+                            {{ log.model_name|default:"Gemini" }}
+                        </td>
+                        <td class="px-4 py-4 text-emerald-400 font-bold">
+                            {{ log.tokens_used|default:"0" }}
+                        </td>
+                        <td class="px-6 py-4 max-w-md font-sans text-slate-400">
+                            <span class="line-clamp-1">{{ log.prompt_snippet|default:log.response_snippet|default:"Completed" }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-slate-400 font-sans">
+                            <p class="font-bold text-sm text-slate-300">No audit logs recorded</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-sans">
+            <span>Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <div class="flex items-center gap-1.5">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

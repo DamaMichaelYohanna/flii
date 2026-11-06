@@ -9,6 +9,7 @@ def robots_txt(request):
     lines = [
         "User-agent: *",
         "Disallow: /dashboard/",
+        "Disallow: /portal-admin/",
         "Disallow: /admin/",
         "Allow: /",
     ]
@@ -22,6 +23,9 @@ urlpatterns = [
     path('blog/', include('blog.urls')),
     path('assistance/', include('assistance.urls')),
     path('subscriptions/', include('subscriptions.urls')),
+
+    # Dedicated Platform Admin Portal (Separated from User Dashboard)
+    path('portal-admin/', include('platform_admin.urls')),
 
     # User Dashboard & Private Workspaces
     path('dashboard/', include('dashboard.urls')),

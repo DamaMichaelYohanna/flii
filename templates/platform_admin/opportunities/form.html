@@ -1,0 +1,357 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}{% if is_edit %}Edit Scholarship: {{ opp.title }}{% else %}Upload Scholarship Opportunity{% endif %} | Flii Admin{% endblock %}
+{% block topbar_title %}{% if is_edit %}Edit Scholarship{% else %}Upload Scholarship Opportunity{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6 pb-20">
+    
+    <!-- Top Breadcrumb & Actions -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+            <a href="{% url 'platform_admin:opportunity_list' %}" class="hover:text-emerald-400">Scholarships Directory</a>
+            <span>/</span>
+            <span class="text-amber-400 font-bold">{% if is_edit %}Edit #{{ opp.id }}{% else %}New Scholarship Upload{% endif %}</span>
+        </div>
+        <a href="{% url 'platform_admin:opportunity_list' %}" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors flex items-center gap-1.5">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Back to Directory</span>
+        </a>
+    </div>
+
+    <!-- Form Container -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="p-4 rounded-2xl bg-rose-950/80 border border-rose-500/50 text-rose-200 text-xs space-y-1">
+            <div class="font-bold flex items-center gap-1.5">
+                <i data-lucide="alert-circle" class="w-4 h-4 text-rose-400"></i>
+                <span>Please fix the following validation errors:</span>
+            </div>
+            <ul class="list-disc list-inside pl-4 space-y-0.5">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Card 1: Core Identification -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-5">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-800">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+                    <i data-lucide="award" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider">1. Core Program Information</h2>
+                    <p class="text-xs text-slate-400">Key identifiers for scholarship listings and SEO cards</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Title -->
+                <div class="md:col-span-2 space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Scholarship Title</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.title }}
+                </div>
+
+                <!-- Slug -->
+                <div class="md:col-span-2 space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center justify-between">
+                        <span>URL Slug</span>
+                        <span class="text-[11px] font-normal text-slate-400">Auto-generated if left empty</span>
+                    </label>
+                    {{ form.slug }}
+                </div>
+
+                <!-- Provider -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Funding Agency / Provider</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.provider }}
+                </div>
+
+                <!-- University -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">University / Consortium</label>
+                    {{ form.university }}
+                </div>
+
+                <!-- Country -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Country / Region</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.country }}
+                </div>
+
+                <!-- Field of Study -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Field / Discipline</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.field_of_study }}
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="space-y-1.5 pt-2">
+                <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                    <span>Full Description</span>
+                    <span class="text-rose-400">*</span>
+                </label>
+                {{ form.description }}
+            </div>
+        </div>
+
+        <!-- Card 2: Degree Level & Financial Coverage -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-5">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-800">
+                <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider">2. Degree Level & Financial Benefits</h2>
+                    <p class="text-xs text-slate-400">Funding classifications and allowance breakdowns</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Degree Level</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.degree_level }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Funding Coverage</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.funding_type }}
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                    <span>Detailed Allowance Breakdown</span>
+                    <span class="text-rose-400">*</span>
+                </label>
+                {{ form.funding_details }}
+                <p class="text-[11px] text-slate-500">Provide details on monthly stipend, tuition waiver, flight ticket, visa refund, health insurance.</p>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                    <span>Target Eligibility Summary</span>
+                    <span class="text-rose-400">*</span>
+                </label>
+                {{ form.eligibility_summary }}
+            </div>
+        </div>
+
+        <!-- Card 3: Deadlines & Portal Strategy -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-5">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-800">
+                <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/30 flex items-center justify-center">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider">3. Deadlines & Application Portals</h2>
+                    <p class="text-xs text-slate-400">Application cycle schedules and official submission links</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Opening Date</label>
+                    {{ form.opening_date }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Deadline</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.deadline }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Timezone</label>
+                    {{ form.deadline_timezone }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Cycle Name</label>
+                    {{ form.cycle_name }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Academic Start</label>
+                    {{ form.start_date }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Program Duration</label>
+                    {{ form.duration }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div class="space-y-1.5 md:col-span-2">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Direct Application Portal URL</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.application_url }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Portal Submission Method</label>
+                    {{ form.portal_type }}
+                </div>
+
+                <div class="space-y-1.5 md:col-span-2">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Official Documentation Page URL</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.official_source_url }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Application Fee</label>
+                    {{ form.application_fee }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Specific Admission Requirements -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-5">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-800">
+                <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/30 flex items-center justify-center">
+                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider">4. Admission & Verification Rules</h2>
+                    <p class="text-xs text-slate-400">Strict requirements matched against applicant profiles</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Academic Requirement (GPA/Grade)</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.academic_requirement }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Language Proficiency</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.language_requirement }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Work Experience Requirement</label>
+                    {{ form.work_experience_requirement }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Nationality / Geographic Eligibility</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.nationality_requirement }}
+                </div>
+
+                <div class="space-y-1.5 md:col-span-2">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Mandatory Documents Required</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    {{ form.documents_required }}
+                </div>
+
+                <div class="space-y-1.5 md:col-span-2">
+                    <label class="text-xs font-bold text-slate-200">How to Apply (Instructions)</label>
+                    {{ form.how_to_apply }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: Publication & Media Settings -->
+        <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-5">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-800">
+                <div class="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/30 flex items-center justify-center">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider">5. Publication Status & Media</h2>
+                    <p class="text-xs text-slate-400">Control catalog visibility and featured placements</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Catalog Visibility</label>
+                    {{ form.status }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Verification Status</label>
+                    {{ form.verification_status }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Cover Image URL</label>
+                    {{ form.image_url }}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-200">Or Upload Featured Image File</label>
+                    {{ form.image }}
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800">
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 cursor-pointer hover:bg-slate-900 transition-colors">
+                    {{ form.is_featured }}
+                    <div>
+                        <span class="text-xs font-bold text-amber-300 block">Pin to Hero Banner (Featured Scholarship)</span>
+                        <span class="text-[10px] text-slate-400 block">Highlights this award in top hero spots and spotlight carousels.</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Submit Toolbar -->
+        <div class="flex items-center justify-end gap-3 pt-4">
+            <a href="{% url 'platform_admin:opportunity_list' %}" class="px-5 py-3 rounded-2xl text-xs font-bold text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-8 py-3.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-2xl shadow-xl shadow-emerald-600/30 transition-all flex items-center gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                <span>{% if is_edit %}Save Scholarship Updates{% else %}Publish Scholarship to Catalog{% endif %}</span>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}

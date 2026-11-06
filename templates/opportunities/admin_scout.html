@@ -518,7 +518,7 @@ async function scoutSingleSource(sourceId, sourceName) {
 async function publishOpportunity(oppId) {
     const card = document.getElementById(`oppCard-${oppId}`);
     try {
-        const resp = await fetch(`/opportunities/admin/scout/${oppId}/publish/`, {
+        const resp = await fetch(`/scholarships/admin/scout/${oppId}/publish/`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         const data = await resp.json();
@@ -544,7 +544,7 @@ async function deleteOpportunity(oppId) {
     if (!confirm("Are you sure you want to discard this staged opportunity?")) return;
     const card = document.getElementById(`oppCard-${oppId}`);
     try {
-        const resp = await fetch(`/opportunities/admin/scout/${oppId}/delete/`, {
+        const resp = await fetch(`/scholarships/admin/scout/${oppId}/delete/`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         const data = await resp.json();

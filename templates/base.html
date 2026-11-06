@@ -526,6 +526,9 @@
     </div>
     {% endif %}
 
+    <!-- Global Mobile Navigation Drawer -->
+    {% include "components/mobile_drawer.html" %}
+
     <script>
         // Dismiss toast notification helper
         function dismissToast(toastEl) {
@@ -572,9 +575,7 @@
             const drawer = document.getElementById('mobileMenuDrawer');
             const panel = document.getElementById('mobileMenuPanel');
             const backdrop = document.getElementById('mobileMenuBackdrop');
-            const openBtn = document.getElementById('mobileMenuOpenBtn');
             const closeBtn = document.getElementById('mobileMenuCloseBtn');
-            const bottomMenuBtn = document.getElementById('mobileBottomMenuBtn');
 
             function openDrawer() {
                 if (!drawer || !panel) return;
@@ -594,10 +595,19 @@
                 document.body.classList.remove('overflow-hidden');
             }
 
-            if (openBtn) openBtn.addEventListener('click', openDrawer);
-            if (bottomMenuBtn) bottomMenuBtn.addEventListener('click', openDrawer);
+            // Bind all trigger buttons (ID or class)
+            document.querySelectorAll('#mobileMenuOpenBtn, #mobileBottomMenuBtn, .mobile-menu-trigger').forEach(btn => {
+                btn.addEventListener('click', openDrawer);
+            });
             if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
             if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+            // Auto-close drawer on inner link clicks
+            if (panel) {
+                panel.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', closeDrawer);
+                });
+            }
 
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape' && drawer && !drawer.classList.contains('pointer-events-none')) {

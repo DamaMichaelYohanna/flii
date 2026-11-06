@@ -358,7 +358,7 @@ class OpportunityDiscoveryService:
                 notification_type='new_opportunity',
                 title=f"AI Scout: {new_count} Discovered, {updated_count} Updated",
                 message=f"Live official portal sync completed across {len(sources)} portals. {new_count} opportunities ready for review.",
-                action_url="/opportunities/admin/scout/"
+                action_url="/scholarships/admin/scout/"
             )
 
             AIAuditLog.objects.create(

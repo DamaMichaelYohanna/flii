@@ -61,6 +61,10 @@ class Opportunity(models.Model):
     ]
 
     title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=280, unique=True, blank=True, null=True, help_text="SEO-friendly URL slug")
+    image_url = models.URLField(max_length=500, blank=True, help_text="Thumbnail or featured hero image URL")
+    image = models.ImageField(upload_to='opportunities/images/', blank=True, null=True, help_text="Optional uploaded featured image")
+    is_featured = models.BooleanField(default=False, help_text="Pin as a top 3 hero featured scholarship")
     provider = models.CharField(max_length=255, help_text="e.g. European Union, DAAD, British Council, Rhodes Trust")
     university = models.CharField(max_length=255, blank=True, help_text="Specific University or Consortium (e.g. Consortium of 3 EU Universities)")
     country = models.CharField(max_length=100, help_text="e.g. Germany, United Kingdom, France, European Union (Multi-Country)")
@@ -88,6 +92,7 @@ class Opportunity(models.Model):
     work_experience_requirement = models.TextField(blank=True, help_text="e.g. 2 years relevant experience, or none required for recent graduates")
     nationality_requirement = models.TextField(help_text="e.g. Open to all nationalities, or DAC-listed developing countries (including Nigeria)")
     documents_required = models.TextField(help_text="List of mandatory documents (CV, Statement of Purpose, Transcripts, 2 Reference Letters, Passport)")
+    how_to_apply = models.TextField(blank=True, help_text="Step-by-step application instructions")
     
     application_fee = models.CharField(max_length=100, default='Free / No Application Fee')
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='active')
@@ -127,6 +132,53 @@ class Opportunity(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.provider} ({self.country})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.title:
+            from django.utils.text import slugify
+            base_slug = slugify(self.title)[:250]
+            slug = base_slug
+            counter = 1
+            while Opportunity.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        if self.slug:
+            return reverse('opportunities:detail_slug', kwargs={'slug': self.slug})
+        return reverse('opportunities:detail', kwargs={'pk': self.pk})
+
+    @property
+    def display_image_url(self):
+        if self.image:
+            return self.image.url
+        if self.image_url:
+            return self.image_url
+        country_lower = (self.country or '').lower()
+        title_lower = (self.title or '').lower()
+        if 'uk' in country_lower or 'united kingdom' in country_lower or 'oxford' in title_lower or 'chevening' in title_lower:
+            return "https://images.unsplash.com/photo-1543872084-c7bd3822856f?q=80&w=800&auto=format&fit=crop"
+        elif 'germany' in country_lower or 'daad' in title_lower:
+            return "https://images.unsplash.com/photo-1527866512907-a35a62a7f673?q=80&w=800&auto=format&fit=crop"
+        elif 'france' in country_lower:
+            return "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=800&auto=format&fit=crop"
+        elif 'europe' in country_lower or 'erasmus' in title_lower or 'intermaths' in title_lower:
+            return "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=800&auto=format&fit=crop"
+        elif 'usa' in country_lower or 'united states' in country_lower or 'georgia' in title_lower:
+            return "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800&auto=format&fit=crop"
+        elif 'canada' in country_lower or 'victoria' in title_lower:
+            return "https://images.unsplash.com/photo-1568792923760-d70635a89fa7?q=80&w=800&auto=format&fit=crop"
+        elif 'australia' in country_lower:
+            return "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?q=80&w=800&auto=format&fit=crop"
+        elif 'china' in country_lower or 'shanghai' in title_lower or 'beijing' in title_lower:
+            return "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?q=80&w=800&auto=format&fit=crop"
+        elif 'sweden' in country_lower or 'norway' in country_lower or 'denmark' in country_lower:
+            return "https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?q=80&w=800&auto=format&fit=crop"
+        return "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop"
+
 
     @property
     def is_deadline_passed(self):

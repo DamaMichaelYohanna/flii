@@ -36,19 +36,20 @@ class OpportunityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "DAAD Master Grant")
 
-    def test_free_user_pagination_blocked_and_single_opp(self):
-        self.client.force_login(self.user)
-        # 1. Attempting to navigate to page 2 as a free user redirects to page 1
-        response = self.client.get(reverse('opportunities:list') + '?page=2')
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('opportunities:list'))
-
-        # 2. Loading opportunity list assigns and anchors the single free opportunity
+    def test_public_directory_and_pagination(self):
+        # 1. Unauthenticated guest can access public directory
         response = self.client.get(reverse('opportunities:list'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.client.session.get('free_viewed_opportunity_id'), self.opp.id)
-        # Free users must not see pagination controls
-        self.assertNotContains(response, 'Page 1 of')
+        self.assertContains(response, "DAAD Master Grant")
+
+        # 2. Public pagination is open for SEO and visitors (not blocked with 302 redirect)
+        response_p2 = self.client.get(reverse('opportunities:list') + '?page=2')
+        self.assertEqual(response_p2.status_code, 200)
+
+        # 3. Authenticated user can also access directory
+        self.client.force_login(self.user)
+        response_auth = self.client.get(reverse('opportunities:list'))
+        self.assertEqual(response_auth.status_code, 200)
 
     def test_opportunity_detail_view(self):
         self.client.force_login(self.user)
@@ -292,6 +293,92 @@ class OpportunityTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         source.refresh_from_db()
         self.assertFalse(source.is_active)
+
+    def test_public_slug_routing_and_schema_markup(self):
+        # Verify slug generation
+        self.assertTrue(bool(self.opp.slug))
+        self.assertIn("daad-master-grant", self.opp.slug)
+
+        # Unauthenticated guest visits public slug URL
+        response = self.client.get(f"/scholarships/{self.opp.slug}/")
+        self.assertEqual(response.status_code, 200)
+        # Verify SEO title and schema.org JSON-LD
+        self.assertContains(response, "DAAD Master Grant | Fully Funded Scholarship | Flii")
+        self.assertContains(response, "application/ld+json")
+        # Verify Signature Quick Summary Table fields
+        self.assertContains(response, "Scholarship Quick Summary")
+        self.assertContains(response, "Germany")
+        self.assertContains(response, "DAAD")
+        self.assertContains(response, "Fully Funded")
+        self.assertContains(response, "https://daad.de/apply")
+        # Verify editorial dossier sections
+        self.assertContains(response, "Programme Overview")
+        self.assertContains(response, "Scholarship Benefits & Financial Coverage")
+        self.assertContains(response, "Published Eligibility Criteria & Requirements")
+        self.assertContains(response, "Mandatory Documents Required")
+        self.assertContains(response, "How to Apply (Step-by-Step Guide)")
+        self.assertContains(response, "CLICK HERE TO APPLY ON OFFICIAL PORTAL")
+
+    def test_guest_visitor_sees_ai_conversion_card_and_sponsored_banner(self):
+        # 1. Detail page as unauthenticated guest: General info + Conversion Hook
+        response = self.client.get(f"/scholarships/{self.opp.slug}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Do You Qualify for This Scholarship?")
+        self.assertContains(response, "Create Free Profile & Check Fit")
+        self.assertNotContains(response, "Your AI Grounded Profile Fit")
+
+        # 2. Directory page as guest: Sponsored education partner placement present
+        list_resp = self.client.get(reverse('opportunities:list'))
+        self.assertEqual(list_resp.status_code, 200)
+        self.assertContains(list_resp, "Prepare for your IELTS & English Proficiency")
+        self.assertContains(list_resp, "SPONSORED RESOURCE")
+
+    def test_authenticated_user_sees_personalized_fit_and_actions(self):
+        self.client.force_login(self.user)
+        response = self.client.get(f"/scholarships/{self.opp.slug}/")
+        self.assertEqual(response.status_code, 200)
+        # Authenticated user sees deterministic profile fit evaluation
+        self.assertContains(response, "Your AI Grounded Profile Fit")
+        self.assertContains(response, "Action Items & Verification")
+        self.assertNotContains(response, "Create Free Profile & Check Fit")
+
+    def test_premium_user_sees_zero_ads(self):
+        from unittest.mock import patch
+        self.client.force_login(self.user)
+        # Mock user having active premium entitlement
+        with patch('subscriptions.entitlements.EntitlementService.has_active_subscription', return_value=True):
+            # Directory page
+            list_resp = self.client.get(reverse('opportunities:list'))
+            self.assertEqual(list_resp.status_code, 200)
+            self.assertNotContains(list_resp, "Prepare for your IELTS examination")
+
+            # Detail page
+            detail_resp = self.client.get(f"/scholarships/{self.opp.slug}/")
+            self.assertEqual(detail_resp.status_code, 200)
+            self.assertNotContains(detail_resp, "Prepare for your IELTS examination")
+
+    def test_public_directory_multi_filters(self):
+        # Filter by Degree Level
+        res_masters = self.client.get(reverse('opportunities:list') + '?degree_level=masters')
+        self.assertEqual(res_masters.status_code, 200)
+        self.assertContains(res_masters, "DAAD Master Grant")
+
+        res_phd = self.client.get(reverse('opportunities:list') + '?degree_level=phd')
+        self.assertEqual(res_phd.status_code, 200)
+        self.assertNotContains(res_phd, "DAAD Master Grant")
+
+        # Filter by Destination Country
+        res_germany = self.client.get(reverse('opportunities:list') + '?country=Germany')
+        self.assertEqual(res_germany.status_code, 200)
+        self.assertContains(res_germany, "DAAD Master Grant")
+
+        res_japan = self.client.get(reverse('opportunities:list') + '?country=Japan')
+        self.assertEqual(res_japan.status_code, 200)
+        self.assertNotContains(res_japan, "DAAD Master Grant")
+
+    def test_opportunities_path_removed_returns_404(self):
+        resp = self.client.get('/opportunities/')
+        self.assertEqual(resp.status_code, 404)
 
 
 

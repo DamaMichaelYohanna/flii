@@ -1,0 +1,53 @@
+<!-- Shared Public Navigation Header -->
+<header class="bg-white/95 backdrop-blur border-b border-slate-100 sticky top-0 z-40">
+    <div class="max-w-7xl h-[72px] sm:h-[76px] mx-auto px-4 sm:px-6 flex items-center justify-between">
+        
+        <!-- Logo -->
+        <div class="flex items-center">
+            {% include "components/logo.html" %}
+        </div>
+
+        <!-- Desktop Navigation Links (Visible on Large Screens) -->
+        <nav class="hidden lg:flex items-center gap-7 text-[12px] font-bold text-slate-600">
+            <a href="/#how-it-works" class="hover:text-teal-700 transition-colors">How it works</a>
+            <a href="{% url 'opportunities:list' %}" class="{% if request.resolver_match.app_name == 'opportunities' %}text-[#0b3558] font-extrabold{% else %}text-slate-600 hover:text-[#0b3558]{% endif %} flex items-center gap-1.5 transition-colors">
+                <i data-lucide="compass" class="w-3.5 h-3.5 text-[#ef7d37]"></i>
+                <span>Scholarships</span>
+            </a>
+            <a href="{% url 'blog:list' %}" class="{% if request.resolver_match.app_name == 'blog' %}text-[#1261a0] font-extrabold{% else %}text-slate-600 hover:text-[#0b3558]{% endif %} flex items-center gap-1.5 transition-colors">
+                <i data-lucide="newspaper" class="w-3.5 h-3.5"></i>
+                <span>Insights & News</span>
+            </a>
+            <a href="/#why" class="hover:text-teal-700 transition-colors">Why Flii</a>
+            <a href="/#faq" class="hover:text-teal-700 transition-colors">FAQs</a>
+        </nav>
+
+        <!-- Right Action Buttons & Mobile Hamburger -->
+        <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold">
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                <a href="{% url 'dashboard:admin_system_dashboard' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span>Admin Hub</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'dashboard:index' %}" class="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-[#0b3558] px-3.5 sm:px-5 py-2 sm:py-2.5 text-white hover:bg-[#1261a0] text-xs sm:text-sm shadow-sm transition-all">
+                    <span>Dashboard</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="hidden sm:inline text-slate-700 hover:text-[#0b3558] transition-colors">Sign in</a>
+                <a href="{% url 'accounts:register' %}" class="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-[#0b3558] px-3.5 sm:px-5 py-2 sm:py-2.5 text-white hover:bg-[#1261a0] text-xs sm:text-sm shadow-sm transition-all">
+                    <span>Start for free</span>
+                    <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                </a>
+            {% endif %}
+
+            <!-- Mobile Hamburger Menu Button (Visible on Screens < lg) -->
+            <button type="button" class="mobile-menu-trigger lg:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none flex items-center justify-center border border-slate-200/80 shadow-sm" aria-label="Open Navigation Menu">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+    </div>
+</header>

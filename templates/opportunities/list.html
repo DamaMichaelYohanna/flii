@@ -1,235 +1,66 @@
 {% extends "base.html" %}
 
-{% block title %}Opportunity Explorer | Flii{% endblock %}
-{% block meta_description %}Explore verified postgraduate scholarships and funded Master's and PhD programmes abroad. Filter by degree level, host country, and funding coverage.{% endblock %}
-{% block og_title %}Discover Scholarship Opportunities | Flii{% endblock %}
-{% block og_description %}Explore verified postgraduate scholarships and funded Master's and PhD programmes abroad. Filter by degree level, host country, and funding coverage.{% endblock %}
-{% block twitter_title %}Discover Scholarship Opportunities | Flii{% endblock %}
-{% block twitter_description %}Explore verified postgraduate scholarships and funded Master's and PhD programmes abroad. Filter by degree level, host country, and funding coverage.{% endblock %}
+{% block title %}Scholarships Directory 2026/2027 | Fully Funded International Scholarships | Flii{% endblock %}
+{% block meta_description %}Browse verified international postgraduate scholarships, Erasmus Mundus programmes, and fully funded Master's and PhD opportunities across the UK, Germany, USA, Canada, and Europe.{% endblock %}
+{% block og_title %}Scholarships Directory 2026/2027 | Fully Funded Scholarships | Flii{% endblock %}
+{% block og_description %}Browse verified international postgraduate scholarships, Erasmus Mundus programmes, and fully funded Master's and PhD opportunities across the UK, Germany, USA, Canada, and Europe.{% endblock %}
+{% block twitter_title %}Scholarships Directory 2026/2027 | Fully Funded Scholarships | Flii{% endblock %}
+{% block twitter_description %}Browse verified international postgraduate scholarships, Erasmus Mundus programmes, and fully funded Master's and PhD opportunities across the UK, Germany, USA, Canada, and Europe.{% endblock %}
 
+{% block extra_head %}
+<!-- Structured Data for SEO: CollectionPage & ItemList -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Scholarships Directory 2026/2027 | Flii",
+  "description": "Browse verified international postgraduate scholarships and fully funded opportunities.",
+  "url": "{{ request.build_absolute_uri }}",
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": [
+      {% for item in page_obj %}
+      {
+        "@type": "ListItem",
+        "position": {{ forloop.counter }},
+        "name": "{{ item.opportunity.title|escapejs }}",
+        "url": "{{ request.scheme }}://{{ request.get_host }}{{ item.opportunity.get_absolute_url }}"
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-6">
-    <!-- Header & Search -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Discover Opportunities</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Explore verified postgraduate scholarships and funded Master's programmes abroad.</p>
-        </div>
-        <div class="flex items-center gap-2.5">
-            {% if user.is_staff %}
-            <a href="{% url 'opportunities:admin_scout_hub' %}" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-teal-300 font-semibold text-xs rounded-xl shadow-sm transition-colors flex items-center gap-1.5 border border-slate-700">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-teal-400"></i>
-                <span>Admin Scout Hub</span>
-            </a>
-            {% endif %}
-            <a href="{% if only_shortlisted %}{% url 'opportunities:list' %}{% else %}?shortlisted=1{% endif %}" class="px-3.5 py-2 text-xs font-semibold rounded-xl border {% if only_shortlisted %}bg-slate-900 text-white border-slate-900{% else %}bg-white text-slate-700 border-slate-200 hover:bg-slate-50{% endif %} transition-colors flex items-center gap-1.5 shadow-sm">
-                <i data-lucide="bookmark" class="w-3.5 h-3.5 {% if only_shortlisted %}fill-white text-white{% endif %}"></i>
-                <span>{% if only_shortlisted %}Showing Shortlisted{% else %}Shortlisted Only{% endif %}</span>
-            </a>
-        </div>
-    </div>
+<div class="max-w-7xl mx-auto space-y-8 pb-16">
+    {% include "opportunities/components/list_content.html" %}
+</div>
+{% endblock %}
 
-    <!-- Filter & Search Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        <form method="GET" action="{% url 'opportunities:list' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div class="lg:col-span-2 relative">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
-                <input type="text" name="q" value="{{ query }}" placeholder="Search keywords, university, or field (e.g. AI, DAAD)..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+{% block public_content %}
+<div class="min-h-screen bg-[#f6f8f7] flex flex-col font-sans">
+    {% include "components/public_header.html" %}
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {% include "opportunities/components/list_content.html" %}
+    </main>
+
+    <footer class="bg-slate-900 text-white text-xs border-t border-slate-800 py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="font-extrabold text-white">Flii</span>
+                <span class="text-slate-500">•</span>
+                <span class="text-slate-400">AI Scholarship & Postgraduate Application Workspace</span>
             </div>
-            <div>
-                <select name="country" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
-                    <option value="">All Countries</option>
-                    {% for c in countries %}
-                    <option value="{{ c }}" {% if selected_country == c %}selected{% endif %}>{{ c }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <select name="funding_type" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:outline-none">
-                    <option value="">All Funding Types</option>
-                    <option value="fully_funded" {% if selected_funding == 'fully_funded' %}selected{% endif %}>Fully Funded Only</option>
-                    <option value="partial" {% if selected_funding == 'partial' %}selected{% endif %}>Partial / Fee Waiver</option>
-                </select>
-            </div>
-            <div>
-                <button type="submit" class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-colors">
-                    Filter Opportunities
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Results Count -->
-    <div class="flex items-center justify-between text-xs text-slate-500 px-1">
-        <span>Showing <strong>{{ total_count }}</strong> verified opportunities</span>
-        <span class="text-teal-700 font-medium"><i data-lucide="shield-check" class="w-3.5 h-3.5 inline"></i> All sources verified with official agency portals</span>
-    </div>
-
-    <!-- Opportunities Grid -->
-    {% if page_obj %}
-
-    <!-- Opportunities Grid Container with Free-Tier Gradient Blur -->
-    <div class="relative">
-        {% if page_obj %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for item in page_obj %}
-            {% with opp=item.opportunity fit=item.fit is_shortlisted=item.is_shortlisted is_applied=item.is_applied %}
-            <div class="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow transition-all flex flex-col justify-between overflow-hidden relative group {% if not is_premium %}{% if page_obj.number > 1 or forloop.counter0 >= 3 %}filter blur-[10px] opacity-15 select-none pointer-events-none{% elif forloop.counter0 == 2 %}filter blur-[6px] opacity-40 select-none pointer-events-none{% elif forloop.counter0 == 1 %}filter blur-[3px] opacity-75 select-none pointer-events-none{% elif opp.id != allowed_opp_id %}filter blur-[10px] opacity-15 select-none pointer-events-none{% endif %}{% endif %}">
-                <!-- Card Body -->
-                <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-                    <!-- Top Row: Category, Verification & Fit -->
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold {% if opp.funding_type == 'fully_funded' %}bg-slate-900 text-white{% else %}bg-slate-100 text-slate-700{% endif %}">
-                                {% if opp.funding_type == 'fully_funded' %}Fully Funded{% elif opp.funding_type == 'tuition_waiver' %}Tuition Waiver{% elif opp.funding_type == 'stipend_only' %}Stipend Only{% else %}Partial Funding{% endif %}
-                            </span>
-                            {% if opp.verification_status == 'source_verified' %}
-                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full" title="Official Source Verified">
-                                <i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i>
-                                <span>Verified</span>
-                            </span>
-                            {% endif %}
-                        </div>
-
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            {% if fit and fit.score %}
-                            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#0b3558] border border-blue-100" title="Profile Fit: {{ fit.label }}">
-                                {{ fit.score }}% Fit
-                            </span>
-                            {% endif %}
-                            <a href="{% url 'opportunities:toggle_shortlist' opp.id %}" title="Save opportunity" class="p-1 rounded-lg text-slate-300 hover:text-slate-700 transition-colors">
-                                <i data-lucide="bookmark" class="w-4 h-4 {% if is_shortlisted %}fill-[#0b3558] text-[#0b3558]{% endif %}"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Provider & Title -->
-                    <div>
-                        <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider truncate mb-1">
-                            {{ opp.provider }}
-                        </div>
-                        <h3 class="font-bold text-slate-900 text-base leading-snug line-clamp-2 group-hover:text-[#0b3558] transition-colors">
-                            <a href="{% url 'opportunities:detail' opp.id %}">{{ opp.title }}</a>
-                        </h3>
-                    </div>
-
-                    <!-- Metadata: Country & Field of Study -->
-                    <div class="flex items-center gap-2 text-xs text-slate-500 pt-0.5 min-w-0">
-                        <span class="inline-flex items-center gap-1 font-medium text-slate-600 flex-shrink-0">
-                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
-                            <span>{{ opp.country }}</span>
-                        </span>
-                        {% if opp.field_of_study %}
-                        <span class="text-slate-300 flex-shrink-0">•</span>
-                        <span class="truncate text-slate-500 min-w-0" title="{{ opp.field_of_study }}">
-                            {{ opp.field_of_study }}
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Minimalist Card Footer -->
-                <div class="px-5 py-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <!-- Deadline / Cycle Status -->
-                    <div class="flex items-center gap-1.5 font-medium text-slate-500">
-                        {% if opp.is_upcoming %}
-                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-500"></i>
-                        <span class="text-blue-700 font-medium">Opens {{ opp.opening_date|date:"M d" }}</span>
-                        {% elif opp.cycle_status == 'closed' %}
-                        <span class="text-slate-400">Closed</span>
-                        {% else %}
-                        <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
-                        <span class="{% if opp.days_remaining <= 7 %}text-rose-600 font-semibold{% else %}text-slate-600{% endif %}">
-                            {{ opp.days_remaining }}d remaining
-                        </span>
-                        {% endif %}
-                    </div>
-
-                    <!-- Action Link -->
-                    <div class="flex items-center gap-2">
-                        {% if is_applied %}
-                        <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">Applied</span>
-                        {% endif %}
-                        <a href="{% url 'opportunities:detail' opp.id %}" class="px-3.5 py-1.5 bg-slate-900 hover:bg-[#0b3558] text-white font-medium rounded-xl text-xs transition-colors shadow-sm">
-                            View Details
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endwith %}
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- Floating Premium Paywall Overlay for Free Users -->
-        {% if not is_premium %}
-        <div class="absolute inset-x-0 bottom-0 top-[280px] md:top-[320px] z-20 flex items-center justify-center pointer-events-none p-4">
-            <div class="pointer-events-auto max-w-xl w-full bg-white/95 backdrop-blur-xl border border-teal-500/40 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
-                <div class="w-14 h-14 bg-gradient-to-tr from-teal-500 to-[#ef7d37] rounded-2xl flex items-center justify-center mx-auto text-white shadow-lg shadow-orange-500/20">
-                    <i data-lucide="lock" class="w-7 h-7"></i>
-                </div>
-
-                <div class="space-y-2">
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-[#ef7d37] text-xs font-bold uppercase tracking-wider">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Free Tier Limit Reached
-                    </div>
-                    <h3 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Unlock Unlimited Verified Scholarships</h3>
-                    <p class="text-xs md:text-sm text-slate-600 leading-relaxed max-w-md mx-auto">
-                        Free accounts can view <strong>1 scholarship opportunity</strong>. The rest are blurred.
-                        Upgrade to Premium to discover unlimited global opportunities, access AI essay drafting, and track your applications.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-                    <div class="flex items-center gap-2 text-slate-700">
-                        <i data-lucide="check" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
-                        <span>Unlimited discovery</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-slate-700">
-                        <i data-lucide="check" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
-                        <span>AI drafting assistant</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-slate-700">
-                        <i data-lucide="check" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
-                        <span>Unlimited tracking</span>
-                    </div>
-                </div>
-
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                    <a href="{% url 'subscriptions:pricing' %}" class="w-full sm:w-auto px-6 py-3 bg-[#0b3558] hover:bg-teal-700 text-white font-bold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                        <span>Upgrade to Premium (₦3,000/mo)</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </a>
-                    <a href="{% url 'subscriptions:pricing' %}" class="w-full sm:w-auto px-4 py-3 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl border border-slate-300 transition-colors">
-                        View 3-Month & Annual Plans
-                    </a>
-                </div>
+            <div class="flex items-center gap-6 text-slate-400">
+                <a href="{% url 'opportunities:list' %}" class="hover:text-white">Scholarships Directory</a>
+                <a href="{% url 'blog:list' %}" class="hover:text-white">Guides & Articles</a>
+                <a href="{% url 'accounts:login' %}" class="hover:text-white">Sign In</a>
+                <a href="{% url 'accounts:register' %}" class="hover:text-white">Register</a>
             </div>
         </div>
-        {% endif %}
-    </div>
-
-    <!-- Pagination (Premium Feature) -->
-    {% if is_premium and page_obj.has_other_pages %}
-    <div class="flex items-center justify-center gap-2 pt-6">
-        {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">← Previous</a>
-        {% endif %}
-        <span class="text-xs text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Next →</a>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    {% else %}
-    <div class="p-12 text-center bg-white rounded-2xl border border-slate-200">
-        <i data-lucide="search-x" class="w-10 h-10 text-slate-400 mx-auto mb-3"></i>
-        <h3 class="text-base font-bold text-slate-900">No matching opportunities found</h3>
-        <p class="text-xs text-slate-500 mt-1">Try clearing some filter criteria or adjusting your search terms.</p>
-        <a href="{% url 'opportunities:list' %}" class="inline-block mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl">Clear All Filters</a>
-    </div>
-    {% endif %}
+    </footer>
 </div>
 {% endblock %}

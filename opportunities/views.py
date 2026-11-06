@@ -1,3 +1,5 @@
+import datetime
+from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -9,15 +11,16 @@ from matching.engine import MatchingEngine
 from ai_core.service import AIService
 from subscriptions.entitlements import EntitlementService
 
-@login_required
 def opportunity_list(request):
-    user = request.user
+    user = request.user if request.user.is_authenticated else None
     query = request.GET.get('q', '').strip()
     country = request.GET.get('country', '').strip()
     degree_level = request.GET.get('degree_level', '').strip()
     funding_type = request.GET.get('funding_type', '').strip()
+    field = request.GET.get('field', '').strip()
+    deadline_filter = request.GET.get('deadline', '').strip()
     sort_by = request.GET.get('sort', 'deadline')
-    only_shortlisted = request.GET.get('shortlisted', '') == '1'
+    only_shortlisted = request.GET.get('shortlisted', '') == '1' and user is not None
 
     qs = Opportunity.objects.filter(status='active')
 
@@ -25,6 +28,7 @@ def opportunity_list(request):
         qs = qs.filter(
             Q(title__icontains=query) |
             Q(provider__icontains=query) |
+            Q(university__icontains=query) |
             Q(description__icontains=query) |
             Q(field_of_study__icontains=query) |
             Q(country__icontains=query)
@@ -39,21 +43,44 @@ def opportunity_list(request):
     if funding_type:
         qs = qs.filter(funding_type=funding_type)
 
-    if only_shortlisted:
+    if field:
+        qs = qs.filter(field_of_study__icontains=field)
+
+    now = timezone.now()
+    if deadline_filter == 'closing_soon':
+        two_weeks = now + datetime.timedelta(days=14)
+        qs = qs.filter(deadline__gte=now, deadline__lte=two_weeks)
+    elif deadline_filter == 'upcoming':
+        qs = qs.filter(opening_date__gt=now)
+    elif deadline_filter == 'open_now':
+        qs = qs.filter(deadline__gte=now).filter(Q(opening_date__isnull=True) | Q(opening_date__lte=now))
+
+    if only_shortlisted and user:
         qs = qs.filter(shortlisted_by=user)
 
     if sort_by == 'deadline':
         qs = qs.order_by('deadline')
     elif sort_by == 'created':
         qs = qs.order_by('-created_at')
+    elif sort_by == 'title':
+        qs = qs.order_by('title')
 
-    # Matching engine fit calculations
-    matching_engine = MatchingEngine(user)
+    # Top 3 Featured Hero Scholarships (Scholarship Region style hero)
+    featured_qs = Opportunity.objects.filter(status='active', is_featured=True).order_by('deadline')[:3]
+    if featured_qs.count() < 3:
+        featured_ids = [f.id for f in featured_qs]
+        backfill = Opportunity.objects.filter(status='active').exclude(id__in=featured_ids).order_by('deadline')[:3 - featured_qs.count()]
+        featured_opportunities = list(featured_qs) + list(backfill)
+    else:
+        featured_opportunities = list(featured_qs)
+
+    # Matching engine fit calculations for authenticated users
+    matching_engine = MatchingEngine(user) if user else None
     opportunity_items = []
     for opp in qs:
-        fit = matching_engine.calculate_deterministic_fit(opp)
-        is_shortlisted = user.shortlisted_opportunities.filter(id=opp.id).exists()
-        is_applied = user.applications.filter(opportunity_id=opp.id).exists()
+        fit = matching_engine.calculate_deterministic_fit(opp) if matching_engine else None
+        is_shortlisted = user.shortlisted_opportunities.filter(id=opp.id).exists() if user else False
+        is_applied = user.applications.filter(opportunity_id=opp.id).exists() if user else False
         opportunity_items.append({
             'opportunity': opp,
             'fit': fit,
@@ -61,80 +88,61 @@ def opportunity_list(request):
             'is_applied': is_applied
         })
 
-    is_premium = EntitlementService.has_active_subscription(user)
+    is_premium = EntitlementService.has_active_subscription(user) if user else False
 
-    # Intercept pagination requests for Free tier users
-    page_param = request.GET.get('page')
-    if not is_premium and page_param and str(page_param).strip() not in ('', '1'):
-        messages.info(
-            request,
-            "Free accounts can view 1 scholarship opportunity. Upgrade to Premium for full catalog access and pagination."
-        )
-        return redirect('opportunities:list')
-
-    # Free tier: anchor the single visible opportunity to ensure consistency
-    allowed_opp_id = None
-    if not is_premium:
-        viewed_key = 'free_viewed_opportunity_id'
-        allowed_opp_id = request.session.get(viewed_key)
-        if not allowed_opp_id:
-            # Anchor to the first available opportunity in default catalog
-            first_opp = Opportunity.objects.filter(status='active').order_by('deadline').first()
-            if first_opp:
-                allowed_opp_id = first_opp.id
-                request.session[viewed_key] = allowed_opp_id
-
-        # Place the single allowed opportunity at position 0 so it remains the visible one
-        if allowed_opp_id and opportunity_items:
-            match_idx = next((i for i, item in enumerate(opportunity_items) if item['opportunity'].id == allowed_opp_id), None)
-            if match_idx is not None and match_idx > 0:
-                allowed_item = opportunity_items.pop(match_idx)
-                opportunity_items.insert(0, allowed_item)
-
-    paginator = Paginator(opportunity_items, 9)
-    page_number = 1 if not is_premium else request.GET.get('page', 1)
+    # Standard public pagination (12 opportunities per page)
+    paginator = Paginator(opportunity_items, 12)
+    page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
     # Filter dropdown choices
-    countries = Opportunity.objects.values_list('country', flat=True).distinct()
-    
+    countries = Opportunity.objects.values_list('country', flat=True).distinct().order_by('country')
+    degrees = Opportunity.DEGREE_LEVELS
+    funding_choices = Opportunity.FUNDING_TYPES
+
     context = {
         'page_obj': page_obj,
+        'featured_opportunities': featured_opportunities,
         'query': query,
         'selected_country': country,
         'selected_degree': degree_level,
         'selected_funding': funding_type,
+        'selected_field': field,
+        'selected_deadline': deadline_filter,
         'sort_by': sort_by,
         'only_shortlisted': only_shortlisted,
         'countries': countries,
+        'degrees': degrees,
+        'funding_choices': funding_choices,
         'total_count': len(opportunity_items),
         'is_premium': is_premium,
-        'allowed_opp_id': allowed_opp_id,
+        'user_is_authenticated': user is not None,
     }
     return render(request, 'opportunities/list.html', context)
 
 
-@login_required
-def opportunity_detail(request, pk):
-    user = request.user
-    opp = get_object_or_404(Opportunity, pk=pk)
+def opportunity_detail(request, pk=None, slug=None):
+    user = request.user if request.user.is_authenticated else None
+    if slug:
+        opp = get_object_or_404(Opportunity, slug=slug)
+    elif pk:
+        opp = get_object_or_404(Opportunity, pk=pk)
+    else:
+        from django.http import Http404
+        raise Http404("Opportunity not found.")
 
-    # Enforce single opportunity view limit for Free users
-    can_view, reason = EntitlementService.can_view_opportunity(user, opp.id, request)
-    if not can_view:
-        messages.warning(
-            request,
-            reason or "Free accounts can view 1 verified scholarship. Upgrade to Premium for unlimited discovery."
-        )
-        return redirect('subscriptions:pricing')
+    matching_engine = MatchingEngine(user) if user else None
+    fit = matching_engine.calculate_deterministic_fit(opp) if matching_engine else None
+    is_shortlisted = user.shortlisted_opportunities.filter(id=opp.id).exists() if user else False
+    application = user.applications.filter(opportunity=opp).first() if user else None
+    is_premium = EntitlementService.has_active_subscription(user) if user else False
 
-    matching_engine = MatchingEngine(user)
-    
-    # Calculate fit and quick breakdown
-    fit = matching_engine.calculate_deterministic_fit(opp)
-    is_shortlisted = user.shortlisted_opportunities.filter(id=opp.id).exists()
-    application = user.applications.filter(opportunity=opp).first()
-    is_premium = EntitlementService.has_active_subscription(user)
+    # Similar opportunities for recommendations
+    similar_opportunities = Opportunity.objects.filter(
+        status='active'
+    ).exclude(id=opp.id).filter(
+        Q(country=opp.country) | Q(degree_level=opp.degree_level)
+    )[:3]
 
     context = {
         'opp': opp,
@@ -142,6 +150,8 @@ def opportunity_detail(request, pk):
         'is_shortlisted': is_shortlisted,
         'application': application,
         'is_premium': is_premium,
+        'similar_opportunities': similar_opportunities,
+        'user_is_authenticated': user is not None,
     }
     return render(request, 'opportunities/detail.html', context)
 

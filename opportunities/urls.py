@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin/scout/sources/<int:pk>/toggle/', views.admin_toggle_source, name='admin_toggle_source'),
     path('admin/scout/sources/add/', views.admin_add_source, name='admin_add_source'),
     path('<int:pk>/', views.opportunity_detail, name='detail'),
+    path('<slug:slug>/', views.opportunity_detail, name='detail_slug'),
     path('<int:pk>/scan/', views.scan_portal_view, name='scan_portal'),
     path('<int:pk>/shortlist/', views.toggle_shortlist, name='toggle_shortlist'),
     path('<int:pk>/eligibility-check/', views.assess_eligibility_api, name='eligibility_api'),

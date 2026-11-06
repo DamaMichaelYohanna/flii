@@ -1,6 +1,7 @@
 import logging
 from typing import Dict, Any, List, Optional
 from django.utils import timezone
+from django.urls import reverse
 from opportunities.models import Opportunity
 from applications.models import Application, ApplicationRequirement, ApplicationTask
 from documents.models import Document
@@ -258,7 +259,7 @@ class FliiAgent:
             notification_type='action_approval_needed',
             title=f"Approval Required: {title}",
             message=description,
-            action_url=f"/agent/actions/{action.id}/"
+            action_url=reverse('agent_hub:action_detail', kwargs={'pk': action.id})
         )
 
         return action

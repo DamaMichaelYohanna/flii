@@ -1,6 +1,7 @@
 import logging
 from typing import Dict, Any, List, Optional
 from django.utils import timezone
+from django.urls import reverse
 from .models import Application, ApplicationRequirement, ApplicationTask
 from documents.models import Document
 from ai_core.service import AIService
@@ -68,7 +69,7 @@ class AutonomousApplicationAssembler:
                 notification_type='application_milestone',
                 title=f"Package Assembled: {self.opportunity.title}",
                 message=f"Your complete application dossier with {drafted_essays_count} drafted essays and {attached_docs_count} linked documents is ready for fast portal submission.",
-                action_url=f"/applications/{self.application.id}/"
+                action_url=reverse('applications:detail', kwargs={'pk': self.application.id})
             )
         except Exception as e:
             logger.warning(f"Failed to create notification: {e}")

@@ -80,10 +80,22 @@ class ApplicationTests(TestCase):
 
         # Test dossier view
         self.client.force_login(self.user)
-        response = self.client.get(f"/applications/{app.id}/dossier/")
+        from django.urls import reverse
+        response = self.client.get(reverse('applications:dossier', args=[app.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Application Dossier & Fast-Copy Hub")
         self.assertContains(response, "University of Lagos")
+
+    def test_create_from_opportunity_url(self):
+        self.client.force_login(self.user)
+        from django.urls import reverse
+        canonical_url = reverse('applications:create_from_opportunity', kwargs={'opportunity_id': self.opp.id})
+        self.assertEqual(canonical_url, f"/dashboard/applications/start/{self.opp.id}/")
+        response = self.client.post(canonical_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Application.objects.filter(user=self.user, opportunity=self.opp).exists())
+
+
 
 
 

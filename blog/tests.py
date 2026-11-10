@@ -38,6 +38,20 @@ class BlogTests(TestCase):
         self.assertTrue(self.published_post.slug.startswith("portugal-migration-report-2025"))
         self.assertEqual(self.published_post.reading_time, 1)
         self.assertEqual(self.published_post.tag_list, ["Portugal", "Visa", "Students"])
+        self.assertEqual(self.published_post.author_display_name, "Admin")
+
+    def test_published_post_author_display_uses_admin_not_email(self):
+        detail_url = reverse('blog:detail', kwargs={'slug': self.published_post.slug})
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Admin")
+        self.assertNotContains(response, self.user.email)
+
+        list_url = reverse('blog:list')
+        list_response = self.client.get(list_url)
+        self.assertEqual(list_response.status_code, 200)
+        self.assertContains(list_response, "Admin")
+        self.assertNotContains(list_response, self.user.email)
 
     def test_blog_list_view_renders_published_posts(self):
         response = self.client.get(reverse('blog:list'))
@@ -69,7 +83,7 @@ class BlogTests(TestCase):
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Portugal Migration Report 2025")
-        self.assertContains(response, "Executive Briefing")
+        self.assertNotContains(response, "Executive Briefing")
         
         self.published_post.refresh_from_db()
         self.assertEqual(self.published_post.views_count, initial_views + 1)
@@ -78,3 +92,42 @@ class BlogTests(TestCase):
         draft_url = reverse('blog:detail', kwargs={'slug': self.draft_post.slug})
         response = self.client.get(draft_url)
         self.assertEqual(response.status_code, 404)
+
+    def test_wysiwyg_html_content_rendering(self):
+        html_post = Post.objects.create(
+            title="Fulbright Scholarship 2026 Strategy",
+            author=self.user,
+            category=self.category,
+            summary="Essential insights for the Fulbright Foreign Student Program.",
+            content="<h2>Application Pillars</h2><p>Focus on your <strong>Study Objective</strong> statement.</p><ul><li>Leadership</li><li>Cultural Exchange</li></ul>",
+            status='published'
+        )
+        self.assertTrue(html_post.has_html_content)
+        self.assertEqual(html_post.reading_time, 1)
+
+        detail_url = reverse('blog:detail', kwargs={'slug': html_post.slug})
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, 200)
+        # Verify HTML tags are rendered as active HTML elements, not escaped entities
+        self.assertContains(response, "<h2>Application Pillars</h2>")
+        self.assertContains(response, "<strong>Study Objective</strong>")
+        self.assertNotContains(response, "&lt;h2&gt;Application Pillars&lt;/h2&gt;")
+
+    def test_escaped_html_content_auto_unescaped(self):
+        # Even if content was accidentally saved with escaped HTML tags (e.g. from plain pasting)
+        escaped_post = Post.objects.create(
+            title="Poland NAWA Document Verification Guide",
+            author=self.user,
+            category=self.category,
+            summary="New NAWA rules for students in Poland.",
+            content="<p>&lt;h2&gt;Overview: Major Reforms in Poland&lt;/h2&gt;&lt;p&gt;If you are planning to study in Poland...&lt;/p&gt;</p>",
+            status='published'
+        )
+        self.assertTrue(escaped_post.has_html_content)
+        self.assertIn("<h2>Overview: Major Reforms in Poland</h2>", escaped_post.rendered_content)
+
+        detail_url = reverse('blog:detail', kwargs={'slug': escaped_post.slug})
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<h2>Overview: Major Reforms in Poland</h2>")
+        self.assertNotContains(response, "&lt;h2&gt;")

@@ -13,6 +13,9 @@ urlpatterns = [
     path('blogs/<int:pk>/edit/', views.blog_edit, name='blog_edit'),
     path('blogs/<int:pk>/delete/', views.blog_delete, name='blog_delete'),
     path('blogs/<int:pk>/toggle-status/', views.blog_toggle_status, name='blog_toggle_status'),
+    path('blogs/categories/', views.blog_category_list, name='blog_category_list'),
+    path('blogs/categories/quick-create/', views.blog_category_quick_create, name='blog_category_quick_create'),
+    path('blogs/categories/<int:pk>/delete/', views.blog_category_delete, name='blog_category_delete'),
 
     # Scholarship Opportunities ("UPLOAD SCHOLARSHIP OPPORTUNITIES")
     path('opportunities/', views.opportunity_list, name='opportunity_list'),

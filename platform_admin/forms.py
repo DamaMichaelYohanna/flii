@@ -5,6 +5,32 @@ from assistance.models import AssistanceBooking
 
 
 class BlogPostForm(forms.ModelForm):
+    category = forms.ModelChoiceField(
+        queryset=PostCategory.objects.all(),
+        required=False,
+        empty_label="— No Category (Optional) —",
+        widget=forms.Select(attrs={
+            'id': 'id_category',
+            'class': 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800'
+        })
+    )
+    summary = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'rows': 3,
+            'class': 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 placeholder-slate-400',
+            'placeholder': 'Optional: Short summary for search engine snippets and social cards...'
+        }),
+        required=False
+    )
+    content = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'id': 'id_content',
+            'rows': 16,
+            'class': 'hidden',
+        }),
+        required=False
+    )
+
     class Meta:
         model = Post
         fields = [
@@ -21,18 +47,10 @@ class BlogPostForm(forms.ModelForm):
                 'class': 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500',
                 'placeholder': 'Leave blank to auto-generate from title'
             }),
-            'category': forms.Select(attrs={
-                'class': 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800'
-            }),
             'summary': forms.Textarea(attrs={
                 'rows': 3,
                 'class': 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 placeholder-slate-400',
                 'placeholder': 'A captivating 2-3 sentence overview for previews, SEO description, and card listings...'
-            }),
-            'content': forms.Textarea(attrs={
-                'rows': 16,
-                'class': 'w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 placeholder-slate-400 leading-relaxed',
-                'placeholder': 'Write the full article body here. Markdown headers (##, ###), bullet points, bold (**text**), and paragraphs are supported...'
             }),
             'featured_image_url': forms.URLInput(attrs={
                 'class': 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 placeholder-slate-400',
@@ -50,6 +68,68 @@ class BlogPostForm(forms.ModelForm):
             }),
             'is_pinned': forms.CheckboxInput(attrs={
                 'class': 'w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500'
+            }),
+        }
+
+    def clean_content(self):
+        content = self.cleaned_data.get('content', '').strip()
+        import html, re
+        for _ in range(4):
+            if '&lt;' in content or '&amp;lt;' in content:
+                new_content = html.unescape(content)
+                if new_content == content:
+                    break
+                content = new_content
+            else:
+                break
+        content = re.sub(r'<p>\s*(<(?:h[1-6]|ul|ol|blockquote|div|pre)[^>]*>)', r'\1', content)
+        content = re.sub(r'(</(?:h[1-6]|ul|ol|blockquote|div|pre)>)\s*</p>', r'\1', content)
+
+        from django.utils.html import strip_tags
+        clean_text = strip_tags(content).strip()
+        if not content or (not clean_text and '<img' not in content and '<iframe' not in content):
+            raise forms.ValidationError("Article body content cannot be empty.")
+        return content
+
+
+class PostCategoryForm(forms.ModelForm):
+    COLOR_CHOICES = [
+        ('bg-blue-50 text-blue-700 border-blue-200', 'Blue (Classic / Strategy)'),
+        ('bg-emerald-50 text-emerald-700 border-emerald-200', 'Emerald (Scholarships / Funding)'),
+        ('bg-rose-50 text-rose-700 border-rose-200', 'Rose (Visa / Migration Alerts)'),
+        ('bg-purple-50 text-purple-700 border-purple-200', 'Purple (Admissions / Guides)'),
+        ('bg-amber-50 text-amber-700 border-amber-200', 'Amber (Opportunities / Deadlines)'),
+        ('bg-sky-50 text-sky-700 border-sky-200', 'Sky (Resources / Updates)'),
+    ]
+
+    badge_color = forms.ChoiceField(
+        choices=COLOR_CHOICES,
+        initial='bg-blue-50 text-blue-700 border-blue-200',
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800'
+        })
+    )
+
+    class Meta:
+        model = PostCategory
+        fields = ['name', 'slug', 'description', 'badge_color', 'icon']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-800 placeholder-slate-400',
+                'placeholder': 'e.g. Visa & Migration Alerts'
+            }),
+            'slug': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500',
+                'placeholder': 'Leave blank to auto-generate'
+            }),
+            'description': forms.Textarea(attrs={
+                'rows': 2,
+                'class': 'w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 placeholder-slate-400',
+                'placeholder': 'Short description of this category topic...'
+            }),
+            'icon': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 placeholder-slate-400',
+                'placeholder': 'e.g. flag, graduation-cap, book-open, file-text'
             }),
         }
 

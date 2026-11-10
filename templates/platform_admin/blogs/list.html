@@ -26,6 +26,10 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <a href="{% url 'platform_admin:blog_category_list' %}" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="tag" class="w-3.5 h-3.5 text-sky-400"></i>
+                <span>Categories</span>
+            </a>
             <a href="{% url 'blog:list' %}" target="_blank" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center gap-1.5">
                 <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                 <span>View Live Blog</span>
@@ -114,7 +118,10 @@
                             {% endif %}
                         </td>
                         <td class="px-4 py-4 text-slate-300 font-medium">
-                            {{ post.author.get_full_name|default:post.author.email }}
+                            <span class="font-semibold text-white">{{ post.author_display_name }}</span>
+                            {% if post.author.email %}
+                            <span class="text-[10px] text-slate-400 block font-normal">{{ post.author.email }}</span>
+                            {% endif %}
                         </td>
                         <td class="px-4 py-4">
                             <form method="POST" action="{% url 'platform_admin:blog_toggle_status' post.id %}" class="inline">

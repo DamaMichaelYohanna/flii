@@ -19,7 +19,7 @@ from stories.models import Story
 from agent_hub.models import AgentAction, AIAuditLog
 from notifications.models import Notification
 
-from .forms import BlogPostForm, OpportunityForm
+from .forms import BlogPostForm, OpportunityForm, PostCategoryForm
 
 
 def staff_required(view_func):
@@ -210,6 +210,57 @@ def blog_toggle_status(request, pk):
         post.save(update_fields=['status'])
         messages.success(request, f"Updated status of '{post.title}' to {post.get_status_display()}.")
     return redirect('platform_admin:blog_list')
+
+
+@staff_required
+def blog_category_list(request):
+    """View and manage all blog categories with article counts and add new category form."""
+    if request.method == 'POST':
+        form = PostCategoryForm(request.POST)
+        if form.is_valid():
+            cat = form.save()
+            messages.success(request, f"✨ Category '{cat.name}' created successfully!")
+            return redirect('platform_admin:blog_category_list')
+    else:
+        form = PostCategoryForm()
+
+    categories = PostCategory.objects.annotate(posts_count=Count('posts')).order_by('name')
+    return render(request, 'platform_admin/blogs/categories.html', {
+        'categories': categories,
+        'form': form,
+    })
+
+
+@staff_required
+def blog_category_quick_create(request):
+    """Quick AJAX endpoint to create a category on the fly while drafting a blog post."""
+    if request.method == 'POST':
+        form = PostCategoryForm(request.POST)
+        if form.is_valid():
+            category = form.save()
+            return JsonResponse({
+                'success': True,
+                'category': {
+                    'id': category.id,
+                    'name': category.name,
+                    'slug': category.slug,
+                }
+            })
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+
+@staff_required
+def blog_category_delete(request, pk):
+    """Delete a blog category. Linked articles have category set to null."""
+    category = get_object_or_404(PostCategory, pk=pk)
+    name = category.name
+    if request.method == 'POST':
+        category.delete()
+        messages.success(request, f"🗑️ Category '{name}' deleted. Associated articles are now uncategorized.")
+        return redirect('platform_admin:blog_category_list')
+    return redirect('platform_admin:blog_category_list')
 
 
 # ==============================================================================

@@ -73,12 +73,12 @@
                 <!-- Author & Date -->
                 <div class="flex items-center gap-3">
                     <img 
-                        src="https://api.dicebear.com/7.x/initials/svg?seed={{ featured_post.author.get_full_name|default:featured_post.author.username }}&backgroundColor=0b3558&textColor=ffffff" 
+                        src="https://api.dicebear.com/7.x/initials/svg?seed={{ featured_post.author_display_name }}&backgroundColor=0b3558&textColor=ffffff" 
                         class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/30" 
                         alt="Author Avatar"
                     >
                     <span class="text-white text-xs sm:text-sm font-semibold">
-                        {{ featured_post.author.get_full_name|default:featured_post.author.username }}
+                        {{ featured_post.author_display_name }}
                     </span>
                     <span class="text-white/40 text-xs">&bull;</span>
                     <span class="text-slate-300 text-xs sm:text-sm flex items-center gap-1.5">
@@ -221,12 +221,12 @@
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
             <div class="flex items-center gap-2">
                 <img 
-                    src="https://api.dicebear.com/7.x/initials/svg?seed={{ post.author.get_full_name|default:post.author.username }}&backgroundColor=0b3558&textColor=ffffff" 
+                    src="https://api.dicebear.com/7.x/initials/svg?seed={{ post.author_display_name }}&backgroundColor=0b3558&textColor=ffffff" 
                     class="w-6 h-6 rounded-full border border-slate-200" 
                     alt="Author Avatar"
                 >
                 <span class="font-semibold text-slate-700 text-xs">
-                    {{ post.author.get_full_name|default:post.author.username }}
+                    {{ post.author_display_name }}
                 </span>
             </div>
             <span class="text-slate-400 text-[11px] font-medium">

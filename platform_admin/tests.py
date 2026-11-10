@@ -121,6 +121,35 @@ class PlatformAdminTests(TestCase):
         self.assertEqual(post.title, 'Updated Erasmus Mundus 2026/2027 Guide')
         self.assertEqual(post.status, 'published')
 
+    def test_blog_wysiwyg_html_and_validation(self):
+        self.client.force_login(self.staff_user)
+        create_url = reverse('platform_admin:blog_create')
+
+        # 1. Post with WYSIWYG formatted HTML
+        wysiwyg_data = {
+            'title': 'Mastering Chevening Interviews 2026',
+            'slug': 'mastering-chevening-interviews-2026',
+            'category': self.category.id,
+            'summary': 'In-depth breakdown of leadership and networking interview questions.',
+            'content': '<h2>Top Strategy</h2><p>Structure your answers using the <strong>STAR method</strong>.</p><ul><li>Situation</li><li>Task</li></ul>',
+            'status': 'published',
+            'tags': 'Chevening, Interview, UK',
+        }
+        response = self.client.post(create_url, wysiwyg_data)
+        self.assertEqual(response.status_code, 302)
+        post = Post.objects.get(slug='mastering-chevening-interviews-2026')
+        self.assertTrue(post.has_html_content)
+        self.assertIn('<strong>STAR method</strong>', post.content)
+
+        # 2. Reject empty or WYSIWYG empty paragraph submission
+        empty_data = wysiwyg_data.copy()
+        empty_data['slug'] = 'empty-article'
+        empty_data['content'] = '<p><br></p>'
+        response_empty = self.client.post(create_url, empty_data)
+        self.assertEqual(response_empty.status_code, 200)
+        self.assertContains(response_empty, "Article body content cannot be empty.")
+        self.assertFalse(Post.objects.filter(slug='empty-article').exists())
+
     def test_opportunity_upload_flow(self):
         self.client.force_login(self.staff_user)
 
@@ -231,3 +260,64 @@ class PlatformAdminTests(TestCase):
         self.booking.refresh_from_db()
         self.assertEqual(self.booking.status, 'completed')
         self.assertIsNotNone(self.booking.completed_at)
+
+    def test_category_optional_and_provision_flows(self):
+        self.client.force_login(self.staff_user)
+
+        # 1. Post article without category (category is optional)
+        create_url = reverse('platform_admin:blog_create')
+        post_data = {
+            'title': 'General Study Abroad Announcement 2026',
+            'slug': 'general-study-abroad-announcement-2026',
+            'category': '',  # Empty category
+            'summary': 'General information not tied to a specific category.',
+            'content': '<p>This is general content without category requirement.</p>',
+            'status': 'published',
+        }
+        res = self.client.post(create_url, post_data)
+        self.assertEqual(res.status_code, 302)
+        post = Post.objects.get(slug='general-study-abroad-announcement-2026')
+        self.assertIsNone(post.category)
+
+        # 2. Quick-create category via AJAX endpoint
+        quick_create_url = reverse('platform_admin:blog_category_quick_create')
+        res_quick = self.client.post(quick_create_url, {
+            'name': 'Work Visas & Permits',
+            'badge_color': 'bg-rose-50 text-rose-700 border-rose-200',
+            'icon': 'briefcase',
+            'description': 'Work permits and post-study work routes.',
+        })
+        self.assertEqual(res_quick.status_code, 200)
+        data = res_quick.json()
+        self.assertTrue(data['success'])
+        new_cat_id = data['category']['id']
+        self.assertTrue(PostCategory.objects.filter(id=new_cat_id).exists())
+        new_cat = PostCategory.objects.get(id=new_cat_id)
+        self.assertEqual(new_cat.slug, 'work-visas-permits')
+
+        # 3. View category list
+        cat_list_url = reverse('platform_admin:blog_category_list')
+        res_list = self.client.get(cat_list_url)
+        self.assertEqual(res_list.status_code, 200)
+        self.assertContains(res_list, 'Work Visas &amp; Permits')
+        self.assertContains(res_list, 'work-visas-permits')
+
+        # 4. Create category via standard form in category list
+        res_cat_create = self.client.post(cat_list_url, {
+            'name': 'Language Tests',
+            'badge_color': 'bg-purple-50 text-purple-700 border-purple-200',
+            'icon': 'book-open',
+            'description': 'IELTS, TOEFL and PTE preparation.',
+        })
+        self.assertEqual(res_cat_create.status_code, 302)
+        self.assertTrue(PostCategory.objects.filter(name='Language Tests').exists())
+
+        # 5. Delete category and ensure linked posts become uncategorized
+        post.category = new_cat
+        post.save()
+        delete_cat_url = reverse('platform_admin:blog_category_delete', kwargs={'pk': new_cat.id})
+        res_del = self.client.post(delete_cat_url)
+        self.assertEqual(res_del.status_code, 302)
+        self.assertFalse(PostCategory.objects.filter(id=new_cat.id).exists())
+        post.refresh_from_db()
+        self.assertIsNone(post.category)

@@ -3,6 +3,83 @@
 {% block title %}{% if is_edit %}Edit Blog Post: {{ post.title }}{% else %}Post New Blog Article{% endif %} | Flii Admin{% endblock %}
 {% block topbar_title %}{% if is_edit %}Edit Blog Article{% else %}Create Blog Article{% endif %}{% endblock %}
 
+{% block extra_head %}
+<!-- Quill Rich Text Editor Stylesheet -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<style>
+    /* Custom Quill Styling for Platform Admin */
+    .ql-toolbar.ql-snow {
+        background: #f8fafc;
+        border-color: #334155 !important;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        padding: 10px 14px;
+    }
+    .ql-container.ql-snow {
+        border-color: #334155 !important;
+        border-bottom-left-radius: 1rem;
+        border-bottom-right-radius: 1rem;
+        background: #ffffff;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .ql-editor {
+        min-height: 380px;
+        max-height: 650px;
+        overflow-y: auto;
+        line-height: 1.75;
+        font-size: 15px;
+        color: #1e293b;
+        padding: 18px 22px;
+    }
+    .ql-editor.ql-blank::before {
+        color: #94a3b8;
+        font-style: normal;
+        left: 22px;
+    }
+    .ql-editor h1, .ql-editor h2, .ql-editor h3, .ql-editor h4 {
+        color: #0f172a;
+        font-weight: 800;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    .ql-editor h1 { font-size: 1.75rem; }
+    .ql-editor h2 { font-size: 1.45rem; }
+    .ql-editor h3 { font-size: 1.2rem; }
+    .ql-editor p { margin-bottom: 0.75rem; }
+    .ql-editor blockquote {
+        border-left: 4px solid #10b981;
+        padding-left: 1rem;
+        color: #475569;
+        font-style: italic;
+        background: #f8fafc;
+        padding: 8px 14px;
+        border-radius: 0 8px 8px 0;
+    }
+    .ql-editor pre.ql-syntax {
+        background-color: #0f172a;
+        color: #38bdf8;
+        border-radius: 8px;
+        padding: 12px;
+    }
+    .ql-snow .ql-picker {
+        color: #475569;
+        font-weight: 600;
+    }
+    .ql-snow .ql-stroke {
+        stroke: #475569;
+    }
+    .ql-snow .ql-fill {
+        fill: #475569;
+    }
+    .ql-snow .ql-picker-options {
+        background-color: #ffffff;
+        border-color: #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-5xl mx-auto space-y-6 pb-16">
     
@@ -70,24 +147,62 @@
 
                     <!-- Summary / Teaser -->
                     <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <label class="text-xs font-bold text-slate-200 flex items-center justify-between">
                             <span>Teaser & SEO Summary</span>
-                            <span class="text-rose-400">*</span>
+                            <span class="text-[11px] font-normal text-slate-400">Optional (for SEO & social links)</span>
                         </label>
                         {{ form.summary }}
-                        <p class="text-[11px] text-slate-500">Short summary for social media previews and search engine snippets.</p>
+                        <p class="text-[11px] text-slate-500">Short teaser for Google search results and link previews. Will not interrupt article body.</p>
                     </div>
 
-                    <!-- Full Body Markdown -->
-                    <div class="space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                    <!-- Article Body WYSIWYG Editor -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <label class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                                <i data-lucide="file-edit" class="w-4 h-4 text-emerald-400"></i>
                                 <span>Article Body</span>
                                 <span class="text-rose-400">*</span>
                             </label>
-                            <span class="text-[11px] text-slate-500">Markdown formatting supported (## headers, **bold**, - lists)</span>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                    <i data-lucide="sparkles" class="w-3 h-3"></i>
+                                    WYSIWYG Active
+                                </span>
+                                <button type="button" id="toggle-source-btn" class="px-3 py-1 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+                                    <i data-lucide="code" class="w-3.5 h-3.5 text-sky-400"></i>
+                                    <span id="source-btn-text">View HTML Source</span>
+                                </button>
+                            </div>
                         </div>
-                        {{ form.content }}
+
+                        <!-- WYSIWYG & HTML Editor Container -->
+                        <div id="editor-wrapper" class="rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl transition-all focus-within:border-emerald-500/80">
+                            <!-- Visual Quill Editor -->
+                            <div id="quill-editor" class="bg-white text-slate-900"></div>
+
+                            <!-- Raw HTML Source Textarea (Hidden by default, toggled via button) -->
+                            <textarea id="raw-html-source" class="w-full p-4 bg-slate-950 font-mono text-xs text-emerald-300 border-0 focus:outline-none hidden leading-relaxed" rows="18" placeholder="Paste or edit raw HTML source code here..."></textarea>
+                        </div>
+
+                        <!-- Live Metrics & Help Sub-bar -->
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 px-1 flex-wrap gap-2">
+                            <span id="word-count-badge" class="font-medium text-emerald-400 flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                <span>0 words • ~0 min read</span>
+                            </span>
+                            <span class="text-slate-500">Supports Headings (H1–H4), Lists, Blockquotes, Links, and Media</span>
+                        </div>
+
+                        <!-- Hidden Form Textarea for Django POST data -->
+                        <div class="hidden">
+                            {{ form.content }}
+                        </div>
+                        {% if form.content.errors %}
+                        <p class="text-[11px] text-rose-400 font-semibold flex items-center gap-1">
+                            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+                            <span>{{ form.content.errors.0 }}</span>
+                        </p>
+                        {% endif %}
                     </div>
 
                 </div>
@@ -126,11 +241,20 @@
 
                     <!-- Category -->
                     <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-slate-200 flex items-center justify-between">
-                            <span>Category</span>
-                            <span class="text-rose-400">*</span>
-                        </label>
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                                <span>Category</span>
+                                <span class="text-[11px] font-normal text-slate-400">(Optional)</span>
+                            </label>
+                            <button type="button" onclick="openQuickCategoryModal()" class="text-[11px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 transition-colors">
+                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                                <span>+ Add Category</span>
+                            </button>
+                        </div>
                         {{ form.category }}
+                        {% if form.category.errors %}
+                        <p class="text-[11px] text-rose-400">{{ form.category.errors.0 }}</p>
+                        {% endif %}
                     </div>
 
                     <!-- Tags -->
@@ -168,19 +292,30 @@
 
                 </div>
 
-                <!-- Markdown Cheat Sheet -->
-                <div class="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 text-xs text-slate-400 space-y-2">
-                    <p class="font-bold text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-sky-400"></i>
-                        <span>Markdown Shortcuts</span>
+                <!-- WYSIWYG Editor Quick Guide -->
+                <div class="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 text-xs text-slate-400 space-y-3">
+                    <p class="font-bold text-slate-200 flex items-center gap-1.5">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+                        <span>WYSIWYG Quick Guide</span>
                     </p>
-                    <div class="space-y-1 font-mono text-[11px] text-slate-400">
-                        <p><span class="text-emerald-400 font-bold">## Heading 2</span></p>
-                        <p><span class="text-emerald-400 font-bold">### Heading 3</span></p>
-                        <p><span class="text-sky-400">**Bold Text**</span></p>
-                        <p><span class="text-amber-400">- Bullet Item</span></p>
-                        <p><span class="text-purple-400">[Link text](url)</span></p>
-                    </div>
+                    <ul class="space-y-2 text-[11px] text-slate-400">
+                        <li class="flex items-start gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+                            <span><strong>Headings:</strong> Select H1–H4 for clear section hierarchies.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-1.5 shrink-0"></span>
+                            <span><strong>Hyperlinks:</strong> Highlight text and click the link icon to link scholarship sources.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 shrink-0"></span>
+                            <span><strong>Images:</strong> Click the image icon to embed direct image URLs into your article body.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0"></span>
+                            <span><strong>HTML Source:</strong> Toggle "View HTML Source" anytime to inspect or edit raw code.</span>
+                        </li>
+                    </ul>
                 </div>
 
             </div>
@@ -188,5 +323,317 @@
         </div>
     </form>
 
+    <!-- Quick Add Category Modal -->
+    <div id="quickCategoryModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#0d1322] border border-slate-700/80 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white">Create New Category</h3>
+                        <p class="text-[11px] text-slate-400">Available instantly in this dropdown</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeQuickCategoryModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form id="quickCategoryForm" class="space-y-3.5">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                        <span>Category Name</span>
+                        <span class="text-rose-400">*</span>
+                    </label>
+                    <input type="text" id="quickCatName" name="name" required placeholder="e.g. Visa & Migration Alerts" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-200">Badge Color Style</label>
+                    <select id="quickCatBadgeColor" name="badge_color" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="bg-blue-50 text-blue-700 border-blue-200">Blue (Classic / Strategy)</option>
+                        <option value="bg-emerald-50 text-emerald-700 border-emerald-200">Emerald (Scholarships / Funding)</option>
+                        <option value="bg-rose-50 text-rose-700 border-rose-200">Rose (Visa / Migration Alerts)</option>
+                        <option value="bg-purple-50 text-purple-700 border-purple-200">Purple (Admissions / Guides)</option>
+                        <option value="bg-amber-50 text-amber-700 border-amber-200">Amber (Deadlines / Urgency)</option>
+                        <option value="bg-sky-50 text-sky-700 border-sky-200">Sky (Resources / Updates)</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-200 flex items-center justify-between">
+                        <span>Lucide Icon Name</span>
+                        <span class="text-[10px] text-slate-500">e.g. flag, book-open, graduation-cap</span>
+                    </label>
+                    <input type="text" id="quickCatIcon" name="icon" value="file-text" placeholder="file-text" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-200">Description (Optional)</label>
+                    <textarea id="quickCatDescription" name="description" rows="2" placeholder="Brief summary of what this category covers..." class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                </div>
+
+                <div id="quickCatError" class="text-xs text-rose-400 font-semibold hidden"></div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                    <button type="button" onclick="closeQuickCategoryModal()" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800">
+                        Cancel
+                    </button>
+                    <button type="submit" id="quickCatSubmitBtn" class="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/30">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                        <span>Add &amp; Select</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Quill Rich Text Editor Script -->
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentInput = document.getElementById('id_content');
+        const quillEditorEl = document.getElementById('quill-editor');
+        const rawSourceTextarea = document.getElementById('raw-html-source');
+        const toggleSourceBtn = document.getElementById('toggle-source-btn');
+        const sourceBtnText = document.getElementById('source-btn-text');
+        const wordCountBadge = document.getElementById('word-count-badge');
+        const form = quillEditorEl ? quillEditorEl.closest('form') : null;
+
+        if (!quillEditorEl) return;
+
+        let isSourceMode = false;
+
+        // Custom toolbar configuration
+        const toolbarOptions = [
+            [{ 'header': [1, 2, 3, 4, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'align': [] }],
+            ['blockquote', 'code-block'],
+            ['link', 'image'],
+            ['clean']
+        ];
+
+        // Initialize Quill Editor
+        const quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            placeholder: 'Draft your full blog article body here. Format headings, add bullet points, insert hyperlinks, and embed images...',
+            modules: {
+                toolbar: toolbarOptions
+            }
+        });
+
+        // Enhanced Image Prompt: prompts for direct image URL
+        const toolbar = quill.getModule('toolbar');
+        if (toolbar) {
+            toolbar.addHandler('image', function() {
+                const url = prompt('Enter direct image URL (e.g. Unsplash, Cloudinary, S3):');
+                if (url && url.trim()) {
+                    const range = quill.getSelection(true);
+                    quill.insertEmbed(range.index, 'image', url.trim());
+                    quill.setSelection(range.index + 1);
+                }
+            });
+        }
+
+        // Helper to unescape HTML tags if content was saved with encoded entities (even multiple levels)
+        function decodeEscapedHtml(str) {
+            if (!str) return '';
+            let decoded = str;
+            for (let i = 0; i < 4; i++) {
+                if (decoded.includes('&lt;') || decoded.includes('&amp;lt;')) {
+                    const doc = new DOMParser().parseFromString(decoded, 'text/html');
+                    const next = doc.body.textContent || decoded;
+                    if (next === decoded) break;
+                    decoded = next;
+                } else {
+                    break;
+                }
+            }
+            return decoded;
+        }
+
+        // Populate initial content if present (edit post or form error reload)
+        if (contentInput && contentInput.value.trim()) {
+            const initialContent = decodeEscapedHtml(contentInput.value.trim());
+            quill.root.innerHTML = initialContent;
+            try {
+                quill.setContents([]);
+                quill.clipboard.dangerouslyPasteHTML(0, initialContent);
+            } catch (err) {
+                quill.root.innerHTML = initialContent;
+            }
+        }
+
+        // Smart Paste Listener: If an author pastes raw HTML code into the visual canvas,
+        // automatically parse it as rich elements instead of letting Quill escape it as plain text!
+        quill.root.addEventListener('paste', function(e) {
+            const clipboardData = e.clipboardData || window.clipboardData;
+            if (!clipboardData) return;
+            const text = clipboardData.getData('text/plain');
+            if (text && /<(?:p|h[1-6]|ul|ol|li|div|blockquote|table|pre|strong|em|b|i|a)[^>]*>/i.test(text)) {
+                e.preventDefault();
+                const unescapedText = decodeEscapedHtml(text.trim());
+                const range = quill.getSelection(true) || { index: 0, length: 0 };
+                try {
+                    quill.clipboard.dangerouslyPasteHTML(range.index, unescapedText);
+                } catch (err) {
+                    quill.root.innerHTML = unescapedText;
+                }
+            }
+        });
+
+        // Live Word & Reading Time Metrics
+        function updateMetrics() {
+            const text = quill.getText().trim();
+            const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+            const readTime = Math.max(1, Math.ceil(words / 200));
+            if (wordCountBadge) {
+                wordCountBadge.innerHTML = `<i data-lucide="clock" class="w-3.5 h-3.5"></i> <span>${words} words • ~${readTime} min read</span>`;
+                if (window.lucide) lucide.createIcons({ root: wordCountBadge });
+            }
+        }
+
+        quill.on('text-change', function() {
+            updateMetrics();
+        });
+        updateMetrics();
+
+        // Toggle HTML Source / Visual WYSIWYG
+        if (toggleSourceBtn && rawSourceTextarea) {
+            toggleSourceBtn.addEventListener('click', function() {
+                const quillToolbar = document.querySelector('.ql-toolbar');
+                const quillContainer = document.querySelector('.ql-container');
+
+                if (!isSourceMode) {
+                    // Switch to HTML Source View
+                    const currentHtml = quill.root.innerHTML;
+                    rawSourceTextarea.value = currentHtml;
+                    if (quillToolbar) quillToolbar.style.display = 'none';
+                    if (quillContainer) quillContainer.style.display = 'none';
+                    rawSourceTextarea.classList.remove('hidden');
+                    sourceBtnText.textContent = 'Back to Visual Editor';
+                    isSourceMode = true;
+                    rawSourceTextarea.focus();
+                } else {
+                    // Switch back to Visual WYSIWYG View
+                    let rawHtml = rawSourceTextarea.value.trim();
+                    rawHtml = decodeEscapedHtml(rawHtml);
+
+                    // Set Quill root HTML directly and sync delta
+                    quill.root.innerHTML = rawHtml;
+                    try {
+                        quill.setContents([]);
+                        quill.clipboard.dangerouslyPasteHTML(0, rawHtml);
+                    } catch (err) {
+                        quill.root.innerHTML = rawHtml;
+                    }
+
+                    rawSourceTextarea.classList.add('hidden');
+                    if (quillToolbar) quillToolbar.style.display = '';
+                    if (quillContainer) quillContainer.style.display = '';
+                    sourceBtnText.textContent = 'View HTML Source';
+                    isSourceMode = false;
+                    updateMetrics();
+                }
+                if (window.lucide) lucide.createIcons();
+            });
+        }
+
+        // Form Submit Hook: sync HTML to hidden form input
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                let htmlToSave = '';
+                if (isSourceMode && rawSourceTextarea) {
+                    htmlToSave = rawSourceTextarea.value.trim();
+                } else {
+                    const text = quill.getText().trim();
+                    // If editor is empty or just blank paragraph
+                    if (!text && (quill.root.innerHTML === '<p><br></p>' || !quill.root.innerHTML)) {
+                        htmlToSave = '';
+                    } else {
+                        htmlToSave = quill.root.innerHTML.trim();
+                    }
+                }
+                contentInput.value = decodeEscapedHtml(htmlToSave);
+            });
+        }
+
+        // Quick Category Modal logic
+        const quickCatModal = document.getElementById('quickCategoryModal');
+        const quickCatForm = document.getElementById('quickCategoryForm');
+        const quickCatSubmitBtn = document.getElementById('quickCatSubmitBtn');
+        const quickCatError = document.getElementById('quickCatError');
+        const quickCatName = document.getElementById('quickCatName');
+        const categorySelect = document.getElementById('id_category');
+
+        window.openQuickCategoryModal = function() {
+            if (quickCatModal) {
+                quickCatModal.classList.remove('hidden');
+                if (quickCatName) quickCatName.focus();
+            }
+        };
+
+        window.closeQuickCategoryModal = function() {
+            if (quickCatModal) quickCatModal.classList.add('hidden');
+            if (quickCatError) quickCatError.classList.add('hidden');
+        };
+
+        if (quickCatForm) {
+            quickCatForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                quickCatSubmitBtn.disabled = true;
+                quickCatSubmitBtn.innerHTML = `<span>Saving...</span>`;
+                quickCatError.classList.add('hidden');
+
+                const formData = new FormData(quickCatForm);
+                const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+                const csrfToken = csrfInput ? csrfInput.value : '';
+
+                try {
+                    const response = await fetch("{% url 'platform_admin:blog_category_quick_create' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        // Add new option and select it
+                        if (categorySelect) {
+                            const newOption = new Option(data.category.name, data.category.id, true, true);
+                            categorySelect.add(newOption);
+                        }
+                        closeQuickCategoryModal();
+                        quickCatForm.reset();
+                    } else {
+                        let errMsg = 'Failed to create category.';
+                        if (data.errors && data.errors.name) {
+                            errMsg = data.errors.name[0].message || data.errors.name[0];
+                        }
+                        quickCatError.textContent = errMsg;
+                        quickCatError.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    quickCatError.textContent = 'Network error while creating category. Please try again.';
+                    quickCatError.classList.remove('hidden');
+                } finally {
+                    quickCatSubmitBtn.disabled = false;
+                    quickCatSubmitBtn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> <span>Add &amp; Select</span>`;
+                    if (window.lucide) lucide.createIcons();
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

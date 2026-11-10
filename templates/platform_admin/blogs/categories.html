@@ -1,0 +1,182 @@
+{% extends "platform_admin/base_admin.html" %}
+
+{% block title %}Manage Blog Categories | Flii Admin{% endblock %}
+{% block topbar_title %}Blog Categories{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6 pb-16">
+    
+    <!-- Top Breadcrumbs & Actions -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+            <a href="{% url 'platform_admin:blog_list' %}" class="hover:text-emerald-400">Blog Manager</a>
+            <span>/</span>
+            <span class="text-sky-400 font-bold">Categories</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'platform_admin:blog_list' %}" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors flex items-center gap-1.5">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                <span>Back to Articles</span>
+            </a>
+            <a href="{% url 'platform_admin:blog_create' %}" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-1.5">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>Post Article</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="space-y-1">
+        <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+            <span>Blog Categories</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-950 text-sky-400 border border-sky-800">
+                {{ categories.count }} Total
+            </span>
+        </h1>
+        <p class="text-xs text-slate-400">
+            Organize articles by topic (e.g. Visa &amp; Migration Alerts, Scholarship Calls, Application Guides).
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        <!-- Left: Categories List (2 Cols) -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+                <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider text-slate-400">Existing Categories</h2>
+                    <span class="text-xs text-slate-500">Click on any category to filter posts in Blog Manager</span>
+                </div>
+
+                <div class="divide-y divide-slate-800/80">
+                    {% for cat in categories %}
+                    <div class="p-5 hover:bg-slate-900/40 transition-colors flex items-center justify-between gap-4">
+                        <div class="space-y-1.5 flex-1 min-w-0">
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold border {{ cat.badge_color }} inline-flex items-center gap-1.5 shadow-sm">
+                                    <i data-lucide="{{ cat.icon }}" class="w-3.5 h-3.5"></i>
+                                    <span>{{ cat.name }}</span>
+                                </span>
+                                <span class="text-xs font-mono text-slate-500 bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-800">
+                                    slug: {{ cat.slug }}
+                                </span>
+                                <span class="text-xs font-semibold text-slate-400">
+                                    {{ cat.posts_count }} article{{ cat.posts_count|pluralize }}
+                                </span>
+                            </div>
+
+                            {% if cat.description %}
+                            <p class="text-xs text-slate-400 leading-relaxed pr-4">
+                                {{ cat.description }}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex items-center gap-2 shrink-0">
+                            <a href="{% url 'platform_admin:blog_list' %}?category={{ cat.slug }}" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-sky-300 border border-slate-800 transition-colors" title="View Articles in this category">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </a>
+                            <form method="POST" action="{% url 'platform_admin:blog_category_delete' cat.id %}" onsubmit="return confirm('Are you sure you want to delete category \'{{ cat.name|escapejs }}\'? Associated articles will become uncategorized.');" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="p-2 rounded-xl bg-slate-900 hover:bg-rose-950 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-800/80 transition-colors" title="Delete category">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 text-center text-slate-500 text-xs">
+                        <i data-lucide="folder" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>
+                        <p class="font-bold text-slate-400">No categories found.</p>
+                        <p class="mt-1">Create your first blog category using the form on the right.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Add New Category Form (1 Col) -->
+        <div class="space-y-4">
+            <div class="bg-[#0d1322] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-bold text-white">Create New Category</h2>
+                        <p class="text-[11px] text-slate-400">Add a new topic tag for articles</p>
+                    </div>
+                </div>
+
+                <form method="POST" class="space-y-4 pt-2">
+                    {% csrf_token %}
+
+                    <!-- Name -->
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                            <span>Category Name</span>
+                            <span class="text-rose-400">*</span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="text-[11px] text-rose-400">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Slug -->
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-200 flex items-center justify-between">
+                            <span>URL Slug</span>
+                            <span class="text-[10px] text-slate-500">Auto-generated if blank</span>
+                        </label>
+                        {{ form.slug }}
+                        {% if form.slug.errors %}
+                        <p class="text-[11px] text-rose-400">{{ form.slug.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Badge Theme Color -->
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-200">Badge Color Style</label>
+                        {{ form.badge_color }}
+                    </div>
+
+                    <!-- Icon -->
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-200 flex items-center justify-between">
+                            <span>Lucide Icon Name</span>
+                            <span class="text-[10px] text-slate-500">e.g. flag, book-open, graduation-cap</span>
+                        </label>
+                        {{ form.icon }}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-200">Description (Optional)</label>
+                        {{ form.description }}
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-1.5 pt-2">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>Save Category</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tip Box -->
+            <div class="p-4 rounded-2xl bg-slate-900/40 border border-slate-800 text-xs text-slate-400 space-y-1.5">
+                <p class="font-bold text-slate-300 flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-3.5 h-3.5 text-sky-400"></i>
+                    <span>Category Flexibility</span>
+                </p>
+                <p class="text-[11px] leading-relaxed">
+                    Categories are completely optional. Authors can publish articles without selecting a category, or pick one to group articles under targeted resource hubs.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+

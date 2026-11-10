@@ -113,12 +113,16 @@
                     <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Content & Publishing</p>
                 </div>
                 <div class="space-y-1">
-                    <a href="{% url 'platform_admin:blog_list' %}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if 'blog' in request.resolver_match.url_name and request.resolver_match.url_name != 'blog_create' %}bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+                    <a href="{% url 'platform_admin:blog_list' %}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {% if 'blog' in request.resolver_match.url_name and request.resolver_match.url_name != 'blog_create' and 'category' not in request.resolver_match.url_name %}bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
                         <div class="flex items-center gap-3">
                             <i data-lucide="newspaper" class="w-4 h-4 text-sky-400"></i>
                             <span>Blog Articles</span>
                         </div>
                         <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-mono">Posts</span>
+                    </a>
+                    <a href="{% url 'platform_admin:blog_category_list' %}" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all {% if 'category' in request.resolver_match.url_name %}bg-emerald-600 text-white font-bold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/50 pl-7{% endif %}">
+                        <i data-lucide="tag" class="w-3.5 h-3.5 text-sky-400"></i>
+                        <span>Categories</span>
                     </a>
                     <a href="{% url 'platform_admin:blog_create' %}" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all {% if request.resolver_match.url_name == 'blog_create' %}bg-emerald-600 text-white font-bold{% else %}text-slate-400 hover:text-white hover:bg-slate-800/50 pl-7{% endif %}">
                         <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i>

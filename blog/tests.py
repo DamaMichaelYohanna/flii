@@ -58,6 +58,8 @@ class BlogTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Portugal Migration Report 2025")
         self.assertContains(response, "Breaking News")
+        self.assertEqual(len(response.context['page_obj']), 1)
+        self.assertNotContains(response, "No articles found")
         # Draft should NOT be in the response
         self.assertNotContains(response, "Upcoming Draft Guide")
 

@@ -40,14 +40,12 @@ def blog_list_view(request):
 
     # Highlighted / Breaking news post (first breaking or pinned post if on page 1 and no search)
     featured_post = None
-    if not query and not category_slug and not tag:
+    page_number = request.GET.get('page', '1')
+    if not query and not category_slug and not tag and page_number == '1':
         featured_post = posts.filter(Q(is_breaking_news=True) | Q(is_pinned=True)).first()
-        if featured_post:
-            posts = posts.exclude(pk=featured_post.pk)
 
     # Pagination: 9 articles per page
     paginator = Paginator(posts, 9)
-    page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     # Active opportunities highlight

@@ -289,4 +289,143 @@ Use your Flii Story Bank to catalogue your experiences now so your essay drafts 
             }
         )
 
-        self.stdout.write(self.style.SUCCESS(f"Successfully seeded blog posts including Poland NAWA guide!"))
+        # -------------------------------------------------------------
+        # 6. Post 5: Airtel Africa Tech Fellowship 2026/2027
+        # -------------------------------------------------------------
+        airtel_tech_content = """<h2>Overview: Empowering the Next Generation of African Tech Leaders</h2>
+<p>The <strong>Airtel Africa Foundation</strong>, in strategic partnership with <strong>The Afara Initiative</strong>, has officially opened applications for the <strong>Airtel Africa Tech Fellowship 2026/2027</strong>. This flagship corporate social responsibility initiative is engineered to discover, fund, and nurture high-potential undergraduate students across Africa who are pursuing technology and ICT-related disciplines.</p>
+
+<p>Targeting talented students from low-income and historically disadvantaged backgrounds, the fellowship provides comprehensive financial, academic, and professional backing from matriculation through graduation. Successful fellows are shielded from rising higher education costs while gaining direct access to corporate mentorship, hands-on internships, and leadership accelerator tracks.</p>
+
+<blockquote>
+    <strong>Key Takeaway:</strong> The Airtel Africa Tech Fellowship is a <strong>100% fully funded undergraduate scholarship</strong>. It covers your entire tuition fees, provides monthly living stipends, equips you with a brand-new laptop, and fast-tracks your career into top-tier tech roles at Airtel Africa and partner organizations.
+</blockquote>
+
+<h2>Comprehensive Fellowship Benefits: What You Receive</h2>
+<p>Unlike standard tuition bursaries, the Airtel Africa Tech Fellowship offers an all-inclusive support ecosystem designed to eliminate financial bottlenecks throughout your university journey:</p>
+
+<ul>
+    <li><strong>100% Full Tuition Coverage:</strong> All statutory university tuition, registration, examination, and faculty fees are fully paid directly to your institution for the entire duration of your undergraduate degree (from 100-level to final-year graduation).</li>
+    <li><strong>Monthly Living & Accommodation Stipends:</strong> Generous annual living allowances distributed across academic semesters to offset campus accommodation, utility bills, books, and feeding costs.</li>
+    <li><strong>Digital Hardware & Connectivity:</strong> Every selected fellow receives a high-performance modern laptop pre-configured for programming, software development, and academic research, accompanied by internet connectivity allowances.</li>
+    <li><strong>Executive 1-on-1 Mentorship:</strong> Personal pairing with senior engineering leads, data architects, and executive directors at Airtel Africa and global tech partners to guide your technical and career trajectory.</li>
+    <li><strong>Priority Internship & Early Career Pipelines:</strong> Exclusive consideration for competitive summer internships, industrial training (IT/SIWES) placements, and direct fast-track evaluation for Airtel Africa's Graduate Management Trainee Programme.</li>
+    <li><strong>Leadership & Soft Skills Accelerator:</strong> Year-round masterclasses delivered by The Afara Initiative focusing on emotional intelligence, project management, technical communication, and corporate etiquette.</li>
+</ul>
+
+<h2>Eligibility Criteria: Who Can Apply?</h2>
+<p>To ensure funds reach the most deserving candidates, the selection committee enforces strict merit-based and need-based standards:</p>
+
+<h3>1. Academic Standing & Enrollment</h3>
+<ul>
+    <li>You must be a newly admitted or currently enrolled <strong>first-year (100-level) undergraduate student</strong> in an accredited public university for the current academic cycle.</li>
+    <li>Demonstrated outstanding academic achievement in secondary school, evidenced by exceptional <strong>O'Level examination results</strong> (WAEC / NECO / WASSCE) with credits in Mathematics, English, Physics, and related subjects in one sitting.</li>
+    <li>Strong performance in the Unified Tertiary Matriculation Examination (<strong>UTME</strong>) and Post-UTME screening tests.</li>
+</ul>
+
+<h3>2. Proven Financial Need</h3>
+<ul>
+    <li>Applicants must demonstrate genuine financial constraints or belong to low-income households that would otherwise struggle to sustain continuous university tuition and living costs.</li>
+    <li>Willingness to provide verifiable proof of household income, socio-economic background, or parental/guardian circumstances.</li>
+</ul>
+
+<h3>3. Eligible Fields of Study (Technology & STEM)</h3>
+<p>Applicants must be formally enrolled in an undergraduate degree program within technology, engineering, or computing faculties, including but not limited to:</p>
+<ul>
+    <li><strong>Computer Science</strong></li>
+    <li><strong>Software Engineering</strong></li>
+    <li><strong>Information and Communications Technology (ICT) / Information Technology</strong></li>
+    <li><strong>Cybersecurity & Digital Forensics</strong></li>
+    <li><strong>Systems Engineering / Computer Engineering</strong></li>
+    <li><strong>Data Science & Artificial Intelligence</strong></li>
+    <li><strong>Telecommunications & Electrical/Electronics Engineering</strong> (with computing focus)</li>
+</ul>
+
+<h2>The 12 Eligible Partner Public Universities</h2>
+<p>For the 2026/2027 cohort, the Airtel Africa Tech Fellowship is tenable at <strong>12 premier public universities</strong> across geopolitical zones in Nigeria:</p>
+
+<ol>
+    <li><strong>University of Lagos (UNILAG)</strong> — South-West</li>
+    <li><strong>University of Ibadan (UI)</strong> — South-West</li>
+    <li><strong>Obafemi Awolowo University (OAU), Ile-Ife</strong> — South-West</li>
+    <li><strong>University of Nigeria, Nsukka (UNN)</strong> — South-East</li>
+    <li><strong>Federal University of Technology, Owerri (FUTO)</strong> — South-East</li>
+    <li><strong>University of Benin (UNIBEN)</strong> — South-South</li>
+    <li><strong>University of Uyo (UNIUYO)</strong> — South-South</li>
+    <li><strong>Ahmadu Bello University (ABU), Zaria</strong> — North-West</li>
+    <li><strong>University of Ilorin (UNILORIN)</strong> — North-Central</li>
+    <li><strong>University of Abuja (UNIABUJA)</strong> — North-Central</li>
+    <li><strong>University of Maiduguri (UNIMAID)</strong> — North-East</li>
+    <li><strong>Tai Solarin University of Education (TASUED)</strong> — South-West</li>
+</ol>
+
+<h2>Required Application Documents Checklist</h2>
+<p>Prepare clean, legible digital scans (PDF or high-resolution JPEG under 2MB each) of the following mandatory records before initiating your online submission:</p>
+
+<ul>
+    <li><strong>Official JAMB Admission Letter</strong> confirming your admission into an eligible partner university.</li>
+    <li><strong>University / Faculty Provisional Admission Letter</strong> or official student bio-data registration slip.</li>
+    <li><strong>UTME Result Slip</strong> showing scores and subjects taken.</li>
+    <li><strong>Senior Secondary School Certificate Examination (SSCE) Results</strong> (WAEC, NECO, or GCE statement of results).</li>
+    <li><strong>Recent Passport-sized Photograph</strong> on a plain light background.</li>
+    <li><strong>Valid Government-Issued Identification</strong> (National Identity Number / NIN slip, Voter's Card, or International Passport).</li>
+    <li><strong>Proof of State of Origin / Local Government Identification Certificate</strong>.</li>
+    <li><strong>Statement of Financial Need / Family Background Form</strong> explaining why financial assistance is critical to completing your university education.</li>
+</ul>
+
+<h2>Step-by-Step Guide to Applying Online</h2>
+<p>Follow this exact submission workflow to avoid disqualification during initial compliance screening:</p>
+
+<h3>Step 1: Access the Official Application Portal</h3>
+<p>Navigate to the designated application portal hosted by the program partners at <a href="https://pulse.theafarainitiative.org/" target="_blank" rel="noopener"><strong>pulse.theafarainitiative.org</strong></a> or verify updates via the <a href="https://airtelafricafoundation.org/" target="_blank" rel="noopener"><strong>Airtel Africa Foundation</strong></a> official website.</p>
+
+<h3>Step 2: Create Your Candidate Account</h3>
+<p>Register with your active personal email address and telephone number. Ensure your registered names match letter-for-letter across your JAMB slip, NIN, and university enrollment records.</p>
+
+<h3>Step 3: Complete the Profile & Academic Details</h3>
+<p>Input your secondary school grades, UTME composite score, matriculation / registration number (if assigned), department, faculty, and current CGPA (if you have completed your first semester examinations).</p>
+
+<h3>Step 4: Draft Your Personal Statement & Essay Responses</h3>
+<p>The online form requires answers to key essay prompts evaluating your drive, problem-solving mindset, and passion for technology. Focus on:</p>
+<ul>
+    <li>Your motivation for choosing a technology-focused career.</li>
+    <li>A practical socio-economic challenge in your community that you envision solving with technology.</li>
+    <li>How receiving full funding will alter your life trajectory and empower you to give back.</li>
+</ul>
+
+<h3>Step 5: Review and Submit Before the Deadline</h3>
+<p>Double-check all uploaded documents for clarity and ensure all fields are filled accurately. Once submitted, download and retain your confirmation slip for reference during interview shortlisting.</p>
+
+<h2>Key Dates & Selection Timeline</h2>
+<ul>
+    <li><strong>Application Deadline:</strong> Early December 2026 (December 4–7, 2026, depending on the portal intake cycle).</li>
+    <li><strong>Initial Screening & Document Verification:</strong> Mid-December 2026.</li>
+    <li><strong>Aptitude Assessment & Virtual Interviews:</strong> January 2027.</li>
+    <li><strong>Final Induction & Cohort Onboarding:</strong> Late January / Early February 2027.</li>
+</ul>
+
+<h2>Pro-Tips for a Winning Fellowship Application</h2>
+<ul>
+    <li><strong>Be authentic about your financial background:</strong> The committee is explicitly searching for high-achieving candidates who genuinely lack financial options. Clearly articulate your circumstances with honesty and dignity.</li>
+    <li><strong>Showcase independent initiative:</strong> Mention any self-taught coding tutorials, online courses (Coursera, freeCodeCamp, edX), tech clubs, or hackathons you have participated in, even at a beginner level.</li>
+    <li><strong>Apply well ahead of the deadline:</strong> Application portals frequently experience heavy server traffic and submission bottlenecks during the final 48 hours. Submit early to guarantee your entry.</li>
+</ul>"""
+
+        Post.objects.update_or_create(
+            slug="airtel-africa-tech-fellowship-undergraduate-scholarship-2026",
+            defaults={
+                "title": "🚀 Airtel Africa Tech Fellowship 2026/2027 for Undergraduates: Fully Funded Tech Scholarship, Laptops & Mentorship",
+                "author": admin_user,
+                "category": cat_scholarship,
+                "summary": "The Airtel Africa Foundation has launched the 2026/2027 Tech Fellowship for undergraduate students in tech and STEM fields across 12 public universities. Enjoy 100% full tuition coverage, living stipends, digital devices, and direct industry mentorship from Airtel executives. Here is everything you need to apply before the December deadline.",
+                "content": airtel_tech_content,
+                "featured_image_url": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80",
+                "is_breaking_news": False,
+                "is_pinned": True,
+                "status": "published",
+                "published_at": timezone.now(),
+                "tags": "Airtel Africa, Tech Fellowship, Undergraduate Scholarships, Fully Funded, STEM, Coding, Nigeria, Scholarships",
+            }
+        )
+
+        self.stdout.write(self.style.SUCCESS(f"Successfully seeded blog posts including Poland NAWA guide and Airtel Africa Tech Fellowship!"))

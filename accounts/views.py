@@ -150,140 +150,110 @@ from applicants.models import Employment, Project, Achievement
 
 @login_required
 def onboarding_view(request):
+    # Support immediate skip via GET ?skip=true or POST action=skip
+    if request.GET.get('skip') == 'true' or request.POST.get('action') == 'skip':
+        request.user.onboarding_completed = True
+        request.user.save(update_fields=['onboarding_completed'])
+        messages.success(request, "👋 Welcome to Flii! You can complete your academic profile and upload documents anytime from your settings.")
+        return redirect('dashboard:index')
+
     profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
-    step = int(request.GET.get('step', 1))
+    study_goal = getattr(profile, 'study_goal', None) if hasattr(profile, 'study_goal') else None
+    education = profile.educations.first()
+
+    try:
+        step = int(request.GET.get('step', 1))
+    except (ValueError, TypeError):
+        step = 1
+
+    if step not in (1, 2):
+        step = 1
 
     if request.method == 'POST':
-        current_step = int(request.POST.get('step', 1))
+        current_step = int(request.POST.get('step', step))
 
         if current_step == 1:
-            # Step 1: Personal Information
-            profile.middle_name = request.POST.get('middle_name', '')
-            profile.phone = request.POST.get('phone', '')
-            profile.country_of_origin = request.POST.get('country_of_origin', 'Nigeria')
-            profile.nationality = request.POST.get('nationality', 'Nigerian')
-            profile.gender = request.POST.get('gender', '')
-            profile.current_location = request.POST.get('current_location', '')
-            profile.headline = request.POST.get('headline', '')
-            profile.save()
-            return redirect('/onboarding/?step=2')
+            # Step 1: Study Ambitions & Target Goals
+            target_degree = request.POST.get('target_degree', "Master's (MSc)").strip()
+            target_fields = request.POST.get('target_fields', '').strip()
+            target_countries = request.POST.get('target_countries', '').strip()
+            funding_preference = request.POST.get('funding_preference', 'fully_funded').strip()
+            career_goals = request.POST.get('career_goals', '').strip()
 
-        elif current_step == 2:
-            # Step 2: Education
-            inst = request.POST.get('institution', '').strip()
-            if inst:
-                Education.objects.create(
-                    profile=profile,
-                    institution=inst,
-                    country=request.POST.get('edu_country', 'Nigeria'),
-                    degree_level=request.POST.get('degree_level', 'bachelors'),
-                    field_of_study=request.POST.get('field_of_study', ''),
-                    graduation_year=int(request.POST.get('graduation_year', 2024)) if request.POST.get('graduation_year') else None,
-                    grade_classification=request.POST.get('grade_classification', ''),
-                    cgpa=float(request.POST.get('cgpa')) if request.POST.get('cgpa') else None,
-                    max_cgpa=float(request.POST.get('max_cgpa', 5.0)) if request.POST.get('max_cgpa') else 5.0,
-                    relevant_coursework=request.POST.get('relevant_coursework', '')
-                )
-            return redirect('/onboarding/?step=3')
-
-        elif current_step == 3:
-            # Step 3: Employment / Experience
-            org = request.POST.get('organization', '').strip()
-            if org:
-                Employment.objects.create(
-                    profile=profile,
-                    organization=org,
-                    job_title=request.POST.get('job_title', ''),
-                    location=request.POST.get('location', ''),
-                    is_current=request.POST.get('is_current') == 'on',
-                    responsibilities=request.POST.get('responsibilities', ''),
-                    achievements=request.POST.get('achievements', '')
-                )
-            return redirect('/onboarding/?step=4')
-
-        elif current_step == 4:
-            # Step 4: Achievements & Projects
-            proj_title = request.POST.get('project_title', '').strip()
-            if proj_title:
-                Project.objects.create(
-                    profile=profile,
-                    title=proj_title,
-                    role=request.POST.get('project_role', ''),
-                    technologies=request.POST.get('technologies', ''),
-                    description=request.POST.get('project_description', ''),
-                    outcome=request.POST.get('project_outcome', '')
-                )
-            return redirect('/onboarding/?step=5')
-
-        elif current_step == 5:
-            # Step 5: Study Goals
             StudyGoal.objects.update_or_create(
                 profile=profile,
                 defaults={
-                    'target_degree': request.POST.get('target_degree', "Master's (MSc)"),
-                    'target_fields': request.POST.get('target_fields', ''),
-                    'target_countries': request.POST.get('target_countries', ''),
-                    'funding_preference': request.POST.get('funding_preference', 'fully_funded'),
-                    'career_goals': request.POST.get('career_goals', ''),
+                    'target_degree': target_degree,
+                    'target_fields': target_fields,
+                    'target_countries': target_countries,
+                    'funding_preference': funding_preference,
+                    'career_goals': career_goals,
+                    'long_term_goals': '',
                 }
             )
-            return redirect('/onboarding/?step=6')
+            return redirect('/onboarding/?step=2')
 
-        elif current_step == 6:
-            # Step 6: Core Documents Upload
-            uploaded_cv = request.FILES.get('cv_file')
-            if uploaded_cv:
-                Document.objects.create(
-                    user=request.user,
-                    title=f"{request.user.first_name or 'Applicant'} Academic CV",
-                    document_type='cv',
-                    file=uploaded_cv,
-                    verification_status='verified'
-                )
-            uploaded_transcript = request.FILES.get('transcript_file')
-            if uploaded_transcript:
-                Document.objects.create(
-                    user=request.user,
-                    title=f"Official Academic Transcript",
-                    document_type='transcript',
-                    file=uploaded_transcript,
-                    verification_status='verified'
-                )
-            uploaded_cert = request.FILES.get('cert_file')
-            if uploaded_cert:
-                Document.objects.create(
-                    user=request.user,
-                    title=f"Degree Certificate / Statement of Result",
-                    document_type='degree_certificate',
-                    file=uploaded_cert,
-                    verification_status='verified'
-                )
-            return redirect('/onboarding/?step=7')
+        elif current_step == 2:
+            # Step 2: Academic Snapshot & Personal Details
+            country_of_origin = request.POST.get('country_of_origin', '').strip() or profile.country_of_origin or 'Nigeria'
+            nationality = request.POST.get('nationality', '').strip() or profile.nationality or 'Nigerian'
+            profile.country_of_origin = country_of_origin
+            profile.nationality = nationality
+            profile.phone = request.POST.get('phone', '').strip()
+            profile.current_location = request.POST.get('current_location', '').strip()
+            profile.headline = request.POST.get('headline', '').strip()
+            profile.save()
 
-        elif current_step == 7:
-            # Step 7: Initial Story Bank Entry
-            title = request.POST.get('story_title', '').strip()
-            if title:
-                Story.objects.create(
-                    user=request.user,
-                    category=request.POST.get('story_category', 'leadership'),
-                    title=title,
-                    situation=request.POST.get('situation', ''),
-                    challenge=request.POST.get('challenge', ''),
-                    action=request.POST.get('action', ''),
-                    result=request.POST.get('result', ''),
-                    lesson_learned=request.POST.get('lesson_learned', ''),
-                    skills_demonstrated=request.POST.get('skills_demonstrated', '')
-                )
+            inst = request.POST.get('institution', '').strip()
+            field = request.POST.get('field_of_study', '').strip()
+            if inst or field:
+                grade = request.POST.get('grade_classification', '').strip()
+                deg_level = request.POST.get('degree_level', 'bachelors').strip()
+                cgpa_val = None
+                if request.POST.get('cgpa'):
+                    try:
+                        cgpa_val = float(request.POST.get('cgpa'))
+                    except ValueError:
+                        pass
+                max_cgpa_val = 5.0
+                if request.POST.get('max_cgpa'):
+                    try:
+                        max_cgpa_val = float(request.POST.get('max_cgpa'))
+                    except ValueError:
+                        pass
+
+                existing_edu = profile.educations.first()
+                if existing_edu:
+                    existing_edu.institution = inst or existing_edu.institution
+                    existing_edu.field_of_study = field or existing_edu.field_of_study
+                    existing_edu.degree_level = deg_level
+                    existing_edu.grade_classification = grade
+                    existing_edu.cgpa = cgpa_val
+                    existing_edu.max_cgpa = max_cgpa_val
+                    existing_edu.country = country_of_origin
+                    existing_edu.save()
+                else:
+                    Education.objects.create(
+                        profile=profile,
+                        institution=inst or 'University of Degree',
+                        field_of_study=field or 'General Studies',
+                        degree_level=deg_level,
+                        grade_classification=grade,
+                        cgpa=cgpa_val,
+                        max_cgpa=max_cgpa_val,
+                        country=country_of_origin
+                    )
 
             # Mark onboarding complete
             request.user.onboarding_completed = True
-            request.user.save()
-            messages.success(request, "🎉 Your profile and Document Vault are ready! Explore verified scholarship matches.")
+            request.user.save(update_fields=['onboarding_completed'])
+            messages.success(request, "🎉 Profile setup complete! Explore scholarships tailored to your ambitions.")
             return redirect('dashboard:index')
 
     context = {
         'profile': profile,
+        'study_goal': study_goal,
+        'education': education,
         'step': step,
         'hide_app_shell': True
     }

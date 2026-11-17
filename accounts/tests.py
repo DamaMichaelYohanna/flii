@@ -126,4 +126,84 @@ class AccountTests(TestCase):
         login_success = self.client.login(username=user.email, password=new_password)
         self.assertTrue(login_success)
 
+    def test_onboarding_express_two_step_flow(self):
+        user = User.objects.create_user(
+            username='express_scholar',
+            email='express@example.com',
+            password='Password123!',
+            first_name='Chioma'
+        )
+        self.client.login(username='express@example.com', password='Password123!')
+
+        # 1. Access Step 1
+        res = self.client.get(reverse('accounts:onboarding'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Where do you want to study next?")
+        self.assertContains(res, "Skip to Dashboard")
+
+        # 2. Submit Step 1: Study Ambitions
+        post_step1 = self.client.post(reverse('accounts:onboarding'), {
+            'step': 1,
+            'target_degree': "Master's (MSc)",
+            'target_fields': 'Artificial Intelligence, Data Science',
+            'target_countries': 'Germany, United Kingdom',
+            'funding_preference': 'fully_funded',
+            'career_goals': 'Lead AI research for African languages'
+        })
+        self.assertRedirects(post_step1, '/onboarding/?step=2')
+
+        # Verify StudyGoal was persisted
+        user.refresh_from_db()
+        profile = user.applicant_profile
+        self.assertTrue(hasattr(profile, 'study_goal'))
+        self.assertEqual(profile.study_goal.target_degree, "Master's (MSc)")
+        self.assertIn('Germany', profile.study_goal.target_countries)
+
+        # 3. Access Step 2
+        res_step2 = self.client.get(reverse('accounts:onboarding') + '?step=2')
+        self.assertEqual(res_step2.status_code, 200)
+        self.assertContains(res_step2, "Your Academic & Geographic Snapshot")
+
+        # 4. Submit Step 2: Academic Snapshot
+        post_step2 = self.client.post(reverse('accounts:onboarding'), {
+            'step': 2,
+            'institution': 'University of Lagos',
+            'field_of_study': 'Computer Science',
+            'degree_level': 'bachelors',
+            'grade_classification': 'First Class Honours',
+            'cgpa': '4.85',
+            'max_cgpa': '5.00',
+            'country_of_origin': 'Nigeria',
+            'nationality': 'Nigerian',
+            'current_location': 'Lagos, Nigeria',
+            'phone': '+2348012345678',
+            'headline': 'First-Class CS Graduate | AI Enthusiast'
+        })
+        self.assertRedirects(post_step2, reverse('dashboard:index'))
+
+        # Verify user marked onboarding complete
+        user.refresh_from_db()
+        self.assertTrue(user.onboarding_completed)
+        self.assertEqual(profile.educations.count(), 1)
+        edu = profile.educations.first()
+        self.assertEqual(edu.institution, 'University of Lagos')
+        self.assertEqual(edu.grade_classification, 'First Class Honours')
+
+    def test_onboarding_skip_link_immediately_unlocks_dashboard(self):
+        user = User.objects.create_user(
+            username='skipper',
+            email='skipper@example.com',
+            password='Password123!'
+        )
+        self.assertFalse(user.onboarding_completed)
+        self.client.login(username='skipper@example.com', password='Password123!')
+
+        # Hit skip via GET ?skip=true
+        res = self.client.get(reverse('accounts:onboarding') + '?skip=true')
+        self.assertRedirects(res, reverse('dashboard:index'))
+
+        user.refresh_from_db()
+        self.assertTrue(user.onboarding_completed)
+
+
 

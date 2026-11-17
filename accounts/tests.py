@@ -162,7 +162,7 @@ class AccountTests(TestCase):
         # 3. Access Step 2
         res_step2 = self.client.get(reverse('accounts:onboarding') + '?step=2')
         self.assertEqual(res_step2.status_code, 200)
-        self.assertContains(res_step2, "Your Academic & Geographic Snapshot")
+        self.assertContains(res_step2, "Academic Background")
 
         # 4. Submit Step 2: Academic Snapshot
         post_step2 = self.client.post(reverse('accounts:onboarding'), {

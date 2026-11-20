@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Verification Link Expired | Flii Workspace{% endblock %}
+
+{% block public_content %}
+<div class="min-h-screen bg-[#eaf5fa] flex flex-col justify-start py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div class="my-auto w-full max-w-md mx-auto">
+        <div class="text-center mb-6">
+            {% include "components/logo.html" with size="lg" %}
+        </div>
+
+        <div class="bg-white py-8 px-6 sm:px-9 shadow-[0_20px_55px_rgba(15,47,71,.10)] border border-[#dce7e9] rounded-2xl text-center space-y-6">
+            <div class="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 mx-auto flex items-center justify-center text-amber-600">
+                <i data-lucide="alert-triangle" class="w-8 h-8 text-amber-600"></i>
+            </div>
+
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">Verification Link Expired</h1>
+                <p class="mt-2 text-sm text-slate-600 leading-relaxed">
+                    This confirmation link is invalid or has expired. For your security, email verification links are time-limited to 24 hours.
+                </p>
+            </div>
+
+            <div class="pt-2 flex flex-col gap-3">
+                <a href="{% url 'accounts:resend_verification' %}" class="w-full inline-flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-[#0b3558] hover:bg-[#1261a0] transition-colors">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    <span>Request New Verification Link</span>
+                </a>
+                <a href="{% url 'accounts:login' %}" class="text-xs font-semibold text-slate-500 hover:text-slate-800 py-1">
+                    Return to Sign In
+                </a>
+            </div>
+        </div>
+
+        <div class="text-center mt-6 text-xs text-slate-400 pb-4">
+            Protected by Flii Intelligent Workspace &copy; 2026
+        </div>
+    </div>
+</div>
+{% endblock %}

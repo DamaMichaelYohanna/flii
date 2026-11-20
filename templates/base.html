@@ -349,6 +349,23 @@
 
             <!-- Page Content (padded at bottom on mobile to accommodate bottom nav) -->
             <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-8 bg-[#f6f8f7]">
+                {% if request.user.is_authenticated and not request.user.is_email_verified %}
+                <div class="mb-5 bg-amber-50/90 border border-amber-200/90 rounded-2xl p-3.5 sm:p-4 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="mail-question" class="w-5 h-5 text-amber-600 shrink-0"></i>
+                        <span>
+                            <strong>Please confirm your email:</strong> We sent a verification link to <span class="font-bold underline">{{ request.user.email }}</span>.
+                        </span>
+                    </div>
+                    <form method="POST" action="{% url 'accounts:resend_verification' %}" class="inline-flex shrink-0">
+                        {% csrf_token %}
+                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-sm">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                            <span>Resend Confirmation</span>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
                 {% block content %}{% endblock %}
             </main>
         </div>

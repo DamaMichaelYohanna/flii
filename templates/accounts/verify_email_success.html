@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Email Verified | Flii Workspace{% endblock %}
+
+{% block public_content %}
+<div class="min-h-screen bg-[#eaf5fa] flex flex-col justify-start py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div class="my-auto w-full max-w-md mx-auto">
+        <div class="text-center mb-6">
+            {% include "components/logo.html" with size="lg" %}
+        </div>
+
+        <div class="bg-white py-8 px-6 sm:px-9 shadow-[0_20px_55px_rgba(15,47,71,.10)] border border-[#dce7e9] rounded-2xl text-center space-y-6">
+            <div class="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 mx-auto flex items-center justify-center text-emerald-600">
+                <i data-lucide="badge-check" class="w-8 h-8 text-emerald-600"></i>
+            </div>
+
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">Email Verified!</h1>
+                <p class="mt-2 text-sm text-slate-600 leading-relaxed">
+                    Your email address has been successfully verified. Your Flii account is now verified and fully secured.
+                </p>
+            </div>
+
+            <div class="pt-2">
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:index' %}" class="w-full inline-flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-[#0b3558] hover:bg-[#1261a0] transition-colors">
+                    <span>Continue to Your Dashboard</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="w-full inline-flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-[#0b3558] hover:bg-[#1261a0] transition-colors">
+                    <span>Sign In to Your Workspace</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="text-center mt-6 text-xs text-slate-400 pb-4">
+            Protected by Flii Intelligent Workspace &copy; 2026
+        </div>
+    </div>
+</div>
+{% endblock %}

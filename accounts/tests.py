@@ -205,5 +205,87 @@ class AccountTests(TestCase):
         user.refresh_from_db()
         self.assertTrue(user.onboarding_completed)
 
+    def test_registration_sends_confirmation_email_and_verification_flow(self):
+        from django.core import mail
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.contrib.auth.tokens import default_token_generator
+
+        mail.outbox.clear()
+
+        # 1. Register a new user
+        reg_response = self.client.post(reverse('accounts:register'), {
+            'username': 'confirmeduser',
+            'first_name': 'Chinedu',
+            'last_name': 'Okafor',
+            'email': 'chinedu@example.com',
+            'password1': 'SecurePassword123!',
+            'password2': 'SecurePassword123!',
+        })
+        self.assertRedirects(reg_response, reverse('accounts:onboarding'))
+
+        # User is created but unverified initially
+        user = User.objects.get(email='chinedu@example.com')
+        self.assertFalse(user.is_email_verified)
+
+        # 2. Check outbox for verification email
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.to, ['chinedu@example.com'])
+        self.assertIn("Confirm your email address", msg.subject)
+        self.assertIn("verify-email", msg.body)
+        self.assertTrue(any(content_type == 'text/html' for _, content_type in msg.alternatives))
+
+        # 3. Simulate clicking valid verification link
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        verify_url = reverse('accounts:verify_email', kwargs={'uidb64': uidb64, 'token': token})
+
+        verify_response = self.client.get(verify_url)
+        # Authenticated user gets redirected forward to onboarding
+        self.assertRedirects(verify_response, reverse('accounts:onboarding'))
+
+        user.refresh_from_db()
+        self.assertTrue(user.is_email_verified)
+
+    def test_verify_email_invalid_token(self):
+        user = User.objects.create_user(
+            username='invalidtokenuser',
+            email='invalid@example.com',
+            password='Password123!'
+        )
+        self.assertFalse(user.is_email_verified)
+
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+
+        # Access with garbage token
+        verify_url = reverse('accounts:verify_email', kwargs={'uidb64': uidb64, 'token': 'bad-token-123'})
+        response = self.client.get(verify_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Verification Link Expired")
+
+        user.refresh_from_db()
+        self.assertFalse(user.is_email_verified)
+
+    def test_resend_verification_email(self):
+        from django.core import mail
+        mail.outbox.clear()
+
+        user = User.objects.create_user(
+            username='resenduser',
+            email='resend@example.com',
+            password='Password123!'
+        )
+        self.assertFalse(user.is_email_verified)
+        self.client.login(username='resend@example.com', password='Password123!')
+
+        # Resend as authenticated user
+        self.client.post(reverse('accounts:resend_verification'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['resend@example.com'])
+
+
 
 

@@ -17,7 +17,7 @@ def register_view(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_email_verified = True  # Verified for MVP
+            user.is_email_verified = False  # Requires email verification
             user.save()
             
             # Initialize empty profile
@@ -28,7 +28,15 @@ def register_view(request):
             )
             
             login(request, user)
-            messages.success(request, f"Welcome to Flii, {user.first_name}! Let's build your applicant profile.")
+
+            # Dispatch confirmation email
+            from .emails import send_verification_email
+            email_sent = send_verification_email(request, user)
+            if email_sent:
+                messages.success(request, f"Welcome to Flii, {user.first_name}! We sent a confirmation link to {user.email}.")
+            else:
+                messages.info(request, f"Welcome to Flii, {user.first_name}! Let's build your applicant profile.")
+            
             return redirect('accounts:onboarding')
     else:
         form = CustomUserCreationForm()
@@ -143,6 +151,65 @@ def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect('accounts:landing')
+
+
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import get_user_model
+
+def verify_email_view(request, uidb64, token):
+    User = get_user_model()
+    user = None
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.filter(pk=uid).first()
+    except (TypeError, ValueError, OverflowError):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_email_verified = True
+        user.save(update_fields=['is_email_verified'])
+        messages.success(request, "🎉 Your email address has been successfully verified! Your Flii workspace is now fully secured.")
+
+        if request.user.is_authenticated and request.user.pk == user.pk:
+            if not request.user.onboarding_completed:
+                return redirect('accounts:onboarding')
+            return redirect('dashboard:index')
+
+        return render(request, 'accounts/verify_email_success.html', {'verified_user': user, 'hide_app_shell': True})
+    else:
+        return render(request, 'accounts/verify_email_failed.html', {'hide_app_shell': True})
+
+
+def resend_verification_view(request):
+    User = get_user_model()
+
+    if request.user.is_authenticated:
+        if request.user.is_email_verified:
+            messages.info(request, "Your email address is already verified!")
+            return redirect('dashboard:index')
+
+        from .emails import send_verification_email
+        send_verification_email(request, request.user)
+        messages.success(request, f"A fresh verification email has been sent to {request.user.email}. Please check your inbox.")
+
+        next_url = request.META.get('HTTP_REFERER')
+        if next_url and next_url.startswith('http'):
+            return redirect(next_url)
+        return redirect('dashboard:index')
+
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        user = User.objects.filter(email__iexact=email).first()
+        if user and not user.is_email_verified:
+            from .emails import send_verification_email
+            send_verification_email(request, user)
+
+        messages.success(request, "If an unverified account exists with that email, a verification link has been sent. Please check your inbox.")
+        return redirect('accounts:login')
+
+    return render(request, 'accounts/resend_verification.html', {'hide_app_shell': True})
 
 
 from documents.models import Document

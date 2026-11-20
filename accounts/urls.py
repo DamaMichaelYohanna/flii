@@ -14,11 +14,16 @@ urlpatterns = [
     path('auth/google/login/', views.google_login_view, name='google_login'),
     path('auth/google/callback/', views.google_callback_view, name='google_callback'),
 
+    # Email Verification Workflow
+    path('verify-email/<uidb64>/<token>/', views.verify_email_view, name='verify_email'),
+    path('resend-verification/', views.resend_verification_view, name='resend_verification'),
+
     # Password Reset Workflow
     path('password-reset/',
          auth_views.PasswordResetView.as_view(
              template_name='accounts/password_reset_form.html',
-             email_template_name='accounts/password_reset_email.html',
+             email_template_name='accounts/emails/password_reset_email.txt',
+             html_email_template_name='accounts/emails/password_reset_email.html',
              subject_template_name='accounts/password_reset_subject.txt',
              success_url=reverse_lazy('accounts:password_reset_done'),
              form_class=CustomPasswordResetForm

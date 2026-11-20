@@ -74,7 +74,22 @@ class CustomPasswordResetForm(PasswordResetForm):
         return super().save(**kwargs)
 
     def send_mail(self, subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=None):
-        super().send_mail(subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=html_email_template_name)
+        import logging
+        logger = logging.getLogger(__name__)
+        try:
+            super().send_mail(
+                subject_template_name,
+                email_template_name,
+                context,
+                from_email,
+                to_email,
+                html_email_template_name=html_email_template_name
+            )
+        except Exception as e:
+            logger.error(f"Failed to dispatch password reset email to {to_email}: {e}", exc_info=True)
+            if getattr(settings, 'DEBUG', False):
+                print(f"  [FLII DEV EMAIL ERROR] Password reset email could not be sent: {e}")
+
         if getattr(settings, 'DEBUG', False):
             protocol = context.get('protocol', 'http')
             domain = context.get('domain', '127.0.0.1:8000')

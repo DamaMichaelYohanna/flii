@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.sitemaps.views import sitemap
 
 from django.http import HttpResponse
+from .sitemaps import StaticViewSitemap, PostSitemap, OpportunitySitemap
 
 def robots_txt(request):
     lines = [
@@ -12,11 +14,24 @@ def robots_txt(request):
         "Disallow: /portal-admin/",
         "Disallow: /admin/",
         "Allow: /",
+        "Sitemap: https://leapatlas.org/sitemap.xml",
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
 urlpatterns = [
     path('robots.txt', robots_txt, name='robots_txt'),
+    path(
+        'sitemap.xml',
+        sitemap,
+        {
+            'sitemaps': {
+                'static': StaticViewSitemap,
+                'posts': PostSitemap,
+                'opportunities': OpportunitySitemap,
+            }
+        },
+        name='sitemap',
+    ),
     path('admin/', admin.site.urls),
     path('', include('accounts.urls')),
     path('scholarships/', include('opportunities.urls')),

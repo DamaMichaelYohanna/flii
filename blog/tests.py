@@ -34,6 +34,14 @@ class BlogTests(TestCase):
             status='draft'
         )
 
+    def test_sitemap_contains_public_pages_and_published_post(self):
+        response = self.client.get('/sitemap.xml', HTTP_HOST='leapatlas.org')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/xml')
+        self.assertContains(response, '/blog/')
+        self.assertContains(response, f'/blog/{self.published_post.slug}/')
+        self.assertContains(response, 'leapatlas.org')
+
     def test_post_creation_and_slug_auto_generation(self):
         self.assertTrue(self.published_post.slug.startswith("portugal-migration-report-2025"))
         self.assertEqual(self.published_post.reading_time, 1)

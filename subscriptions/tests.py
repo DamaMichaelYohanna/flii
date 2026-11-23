@@ -27,7 +27,7 @@ class SubscriptionEntitlementTests(TestCase):
 
         self.user = User.objects.create_user(
             username='applicant_test',
-            email='applicant@flii.org',
+            email='applicant@leapatlas.org',
             password='TestPassword2026!'
         )
 

@@ -559,7 +559,7 @@ def user_send_notification(request, user_id):
 def user_export_csv(request):
     """Export all registered users with key profile fields to CSV."""
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="flii_users_export_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+    response['Content-Disposition'] = f'attachment; filename="leapatlas_users_export_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
 
     writer = csv.writer(response)
     writer.writerow([

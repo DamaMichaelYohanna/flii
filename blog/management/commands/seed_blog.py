@@ -169,7 +169,7 @@ Here are the 4 fundamental pillars every competitive candidate needs:
 3. Document Verification Early: Ensure your degree certificate, academic transcripts, and passport are verified and uploaded ahead of peak application deadlines.
 4. Alignment with Funding Agency Goals: Understand what the scholarship provider values (e.g. DAAD focuses on development impact; Chevening focuses on diplomatic leadership).
 
-Use your Flii Story Bank to catalogue your experiences now so your essay drafts are grounded in real, verifiable facts."""
+Use your LeapAtlas Story Bank to catalogue your experiences now so your essay drafts are grounded in real, verifiable facts."""
 
         Post.objects.update_or_create(
             slug="how-to-build-a-competitive-scholarship-profile",

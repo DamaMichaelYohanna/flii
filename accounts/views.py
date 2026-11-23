@@ -33,9 +33,9 @@ def register_view(request):
             from .emails import send_verification_email
             email_sent = send_verification_email(request, user)
             if email_sent:
-                messages.success(request, f"Welcome to Flii, {user.first_name}! We sent a confirmation link to {user.email}.")
+                messages.success(request, f"Welcome to LeapAtlas, {user.first_name}! We sent a confirmation link to {user.email}.")
             else:
-                messages.info(request, f"Welcome to Flii, {user.first_name}! Let's build your applicant profile.")
+                messages.info(request, f"Welcome to LeapAtlas, {user.first_name}! Let's build your applicant profile.")
             
             return redirect('accounts:onboarding')
     else:
@@ -64,7 +64,7 @@ def login_view(request):
                 U = get_user_model()
                 matched = U.objects.filter(email__iexact=raw_email).first()
                 print("\n" + "=" * 70)
-                print(f"  [FLII DEV LOGIN ATTEMPT FAILED]")
+                print(f"  [LEAPATLAS DEV LOGIN ATTEMPT FAILED]")
                 print(f"  Submitted email: '{raw_email}'")
                 if matched:
                     print(f"  Account found: {matched.email} (is_active: {matched.is_active})")
@@ -135,7 +135,7 @@ def google_callback_view(request):
         user, created = oauth.get_or_create_user(google_info)
         login(request, user)
         if created:
-            messages.success(request, f"Welcome to Flii, {user.first_name}! Your Google account is verified.")
+            messages.success(request, f"Welcome to LeapAtlas, {user.first_name}! Your Google account is verified.")
             return redirect('accounts:onboarding')
         else:
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
@@ -170,7 +170,7 @@ def verify_email_view(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_email_verified = True
         user.save(update_fields=['is_email_verified'])
-        messages.success(request, "🎉 Your email address has been successfully verified! Your Flii workspace is now fully secured.")
+        messages.success(request, "🎉 Your email address has been successfully verified! Your LeapAtlas workspace is now fully secured.")
 
         if request.user.is_authenticated and request.user.pk == user.pk:
             if not request.user.onboarding_completed:
@@ -221,7 +221,7 @@ def onboarding_view(request):
     if request.GET.get('skip') == 'true' or request.POST.get('action') == 'skip':
         request.user.onboarding_completed = True
         request.user.save(update_fields=['onboarding_completed'])
-        messages.success(request, "👋 Welcome to Flii! You can complete your academic profile and upload documents anytime from your settings.")
+        messages.success(request, "👋 Welcome to LeapAtlas! You can complete your academic profile and upload documents anytime from your settings.")
         return redirect('dashboard:index')
 
     profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)

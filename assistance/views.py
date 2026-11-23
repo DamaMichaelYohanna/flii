@@ -182,7 +182,7 @@ def service_checkout(request, pk):
         return redirect('assistance:booking_detail', pk=booking.id)
 
     provider = get_payment_provider()
-    reference = f"FLII-SRV-{booking.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+    reference = f"LEAPATLAS-SRV-{booking.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
     callback_url = request.build_absolute_uri(reverse('assistance:payment_callback', kwargs={'pk': booking.id}))
 
     # Create PaymentTransaction record

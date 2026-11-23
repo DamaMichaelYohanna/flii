@@ -18,7 +18,7 @@ def get_base_url(request=None):
         domain = request.get_host()
     else:
         protocol = 'https' if not getattr(settings, 'DEBUG', False) else 'http'
-        domain = os.environ.get('APP_DOMAIN', 'useflii.up.railway.app' if not getattr(settings, 'DEBUG', False) else '127.0.0.1:8000')
+        domain = os.environ.get('APP_DOMAIN', 'leapatlas.org')
     return protocol, domain
 
 def send_verification_email(request, user):
@@ -35,8 +35,8 @@ def send_verification_email(request, user):
         token = default_token_generator.make_token(user)
         verify_url = f"{protocol}://{domain}/verify-email/{uidb64}/{token}/"
 
-        subject = "Confirm your email address - Flii Workspace"
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Flii Workspace <no-reply@flii.app>')
+        subject = "Confirm your email address - LeapAtlas Workspace"
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'LeapAtlas Support <support@leapatlas.org>')
         to_email = user.email
 
         context = {
@@ -57,7 +57,7 @@ def send_verification_email(request, user):
 
         if getattr(settings, 'DEBUG', False):
             print("\n" + "=" * 70)
-            print(f"  [FLII DEV EMAIL] VERIFICATION LINK SENT TO: {to_email}")
+            print(f"  [LEAPATLAS DEV EMAIL] VERIFICATION LINK SENT TO: {to_email}")
             print(f"  CLICKABLE VERIFICATION URL:")
             print(f"  --> {verify_url}")
             print("=" * 70 + "\n")
@@ -67,5 +67,5 @@ def send_verification_email(request, user):
     except Exception as e:
         logger.error(f"Failed to dispatch email verification message to {getattr(user, 'email', 'unknown')}: {e}", exc_info=True)
         if getattr(settings, 'DEBUG', False):
-            print(f"  [FLII DEV EMAIL ERROR] Could not dispatch verification email: {e}")
+            print(f"  [LEAPATLAS DEV EMAIL ERROR] Could not dispatch verification email: {e}")
         return False

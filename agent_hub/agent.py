@@ -13,7 +13,7 @@ from notifications.models import Notification
 
 logger = logging.getLogger(__name__)
 
-class FliiAgent:
+class LeapAtlasAgent:
     """
     Modular AI Agent with specialized tool execution and strict human-in-the-loop controls.
     """
@@ -344,7 +344,7 @@ class FliiAgent:
         else:
             profile_summary = self.kb.get_summary_text()
             text = (
-                f"Hello! I am your Flii Application Agent. I have your verified applicant profile loaded:\n\n"
+                f"Hello! I am your LeapAtlas Application Agent. I have your verified applicant profile loaded:\n\n"
                 f"*{profile_summary[:180]}...*\n\n"
                 "I can help you:\n"
                 "1. **Discover verified scholarships** (e.g. 'Find fully funded MSc in Germany')\n"

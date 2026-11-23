@@ -1,6 +1,6 @@
-# Flii - AI Safety & Grounding Rules
+# LeapAtlas - AI Safety & Grounding Rules
 
-To ensure maximum credibility, accuracy, and applicant trust, all AI operations within Flii MUST adhere to the following non-negotiable principles:
+To ensure maximum credibility, accuracy, and applicant trust, all AI operations within LeapAtlas MUST adhere to the following non-negotiable principles:
 
 ## 1. Zero Hallucination of Applicant Facts
 - The AI **must never** invent achievements, employers, grades, GPAs, test scores, awards, publications, experiences, or project outcomes.

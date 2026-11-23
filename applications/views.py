@@ -7,7 +7,7 @@ from .models import Application, ApplicationRequirement, ApplicationTask
 from opportunities.models import Opportunity
 from documents.models import Document
 from ai_core.service import AIService
-from agent_hub.agent import FliiAgent
+from agent_hub.agent import LeapAtlasAgent
 from .services import AutonomousApplicationAssembler
 from subscriptions.entitlements import EntitlementService
 
@@ -40,7 +40,7 @@ def create_from_opportunity(request, opportunity_id):
         )
         return redirect('subscriptions:pricing')
 
-    agent = FliiAgent(request.user)
+    agent = LeapAtlasAgent(request.user)
     result = agent.create_application(opportunity_id)
     messages.success(request, f"Application workspace created for '{result['opportunity']}'!")
     return redirect('applications:detail', pk=result['application_id'])

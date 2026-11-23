@@ -1,6 +1,6 @@
 Hello {{ first_name }},
 
-Welcome to Flii!
+Welcome to LeapAtlas!
 
 Please confirm your email address to secure your workspace for scholarship matching and application tracking:
 
@@ -8,8 +8,8 @@ Please confirm your email address to secure your workspace for scholarship match
 
 Security note:
 - This link is valid for 24 hours.
-- If you did not create an account on Flii, you can safely ignore this email.
+- If you did not create an account on LeapAtlas, you can safely ignore this email.
 
 Best regards,
-The Flii Application Assistant Team
-https://useflii.up.railway.app
+The LeapAtlas Application Assistant Team
+https://leapatlas.up.railway.app

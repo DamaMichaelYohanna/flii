@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
 from .models import AgentAction, AIAuditLog
-from .agent import FliiAgent
+from .agent import LeapAtlasAgent
 
 
 @login_required

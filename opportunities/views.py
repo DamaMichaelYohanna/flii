@@ -196,7 +196,7 @@ def opportunity_import(request):
             # Attempt safe HTTP fetch if URL is provided and no text is pasted
             try:
                 import requests
-                resp = requests.get(source_url, timeout=6, headers={'User-Agent': 'Flii-Discovery/1.0'})
+                resp = requests.get(source_url, timeout=6, headers={'User-Agent': 'LeapAtlas-Discovery/1.0'})
                 if resp.status_code == 200:
                     raw_text = resp.text[:10000]
             except Exception as e:
@@ -256,7 +256,7 @@ def opportunity_import(request):
             verification_status='ai_extracted'
         )
 
-        messages.success(request, f"🎉 Successfully extracted and added '{opp.title}' ({opp.provider}) to Flii database!")
+        messages.success(request, f"🎉 Successfully extracted and added '{opp.title}' ({opp.provider}) to LeapAtlas database!")
         return redirect('opportunities:detail', pk=opp.id)
 
     return render(request, 'opportunities/import.html')

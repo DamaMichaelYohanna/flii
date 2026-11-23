@@ -198,7 +198,7 @@ class OpportunityTests(TestCase):
 
     def test_agent_portal_verification_and_application_readiness(self):
         from unittest.mock import patch
-        from agent_hub.agent import FliiAgent
+        from agent_hub.agent import LeapAtlasAgent
         from opportunities.scanner import ParallelOpportunityScanner
 
         mock_page = {
@@ -212,7 +212,7 @@ class OpportunityTests(TestCase):
         }
 
         with patch.object(ParallelOpportunityScanner, 'fetch_portal_page', return_value=mock_page):
-            agent = FliiAgent(self.user)
+            agent = LeapAtlasAgent(self.user)
             res = agent.verify_portal_for_application(self.opp.id)
             self.assertEqual(res["status_code"], 200)
             self.assertTrue(res["is_live"])
@@ -303,7 +303,7 @@ class OpportunityTests(TestCase):
         response = self.client.get(f"/scholarships/{self.opp.slug}/")
         self.assertEqual(response.status_code, 200)
         # Verify SEO title and schema.org JSON-LD
-        self.assertContains(response, "DAAD Master Grant | Fully Funded Scholarship | Flii")
+        self.assertContains(response, "DAAD Master Grant | Fully Funded Scholarship | LeapAtlas")
         self.assertContains(response, "application/ld+json")
         # Verify Signature Quick Summary Table fields
         self.assertContains(response, "Scholarship Quick Summary")

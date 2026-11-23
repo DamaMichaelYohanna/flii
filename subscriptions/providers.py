@@ -226,7 +226,7 @@ class MockSandboxPaymentProvider(BasePaymentProvider):
             "reference": reference,
             "channel": "test_sandbox_card",
             "paid_at": timezone.now().isoformat(),
-            "gateway_response": "Successful test transaction (Flii Sandbox)",
+            "gateway_response": "Successful test transaction (LeapAtlas Sandbox)",
             "raw_response": {"simulated": True},
         }
 

@@ -364,7 +364,7 @@ class OpportunityDiscoveryService:
             AIAuditLog.objects.create(
                 user=user,
                 action_type="autonomous_scout_discovery",
-                provider="flii_scout_engine",
+                provider="leapatlas_scout_engine",
                 summary=f"Official portal scout finished: {new_count} new staged, {updated_count} refreshed, {failed_count} errors.",
                 input_ref=f"{len(sources)} Active Official Portals",
                 output_summary=f"Discovered: {new_count}, Updated: {updated_count}",
@@ -395,7 +395,7 @@ class OpportunityDiscoveryService:
                 "source_url": data.get("official_source_url") or data.get("application_url") or "",
                 "source_type": "erasmus" if "erasmus" in data.get("provider", "").lower() else "government",
                 "last_verified": now,
-                "verification_notes": "Scraped from official public catalogue by Flii Scout."
+                "verification_notes": "Scraped from official public catalogue by LeapAtlas Scout."
             }
         )
 

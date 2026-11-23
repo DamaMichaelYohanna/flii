@@ -538,7 +538,7 @@ def admin_users_export_csv(request):
 
     response = HttpResponse(content_type='text/csv')
     timestamp = timezone.now().strftime('%Y%m%d_%H%M')
-    response['Content-Disposition'] = f'attachment; filename="flii_users_export_{timestamp}.csv"'
+    response['Content-Disposition'] = f'attachment; filename="leapatlas_users_export_{timestamp}.csv"'
 
     writer = csv.writer(response)
     writer.writerow([

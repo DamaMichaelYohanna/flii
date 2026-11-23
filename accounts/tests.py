@@ -90,7 +90,7 @@ class AccountTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
         self.assertEqual(email.to, ['reset_user@example.com'])
-        self.assertIn("Reset your Flii Workspace password", email.subject)
+        self.assertIn("Reset your LeapAtlas Workspace password", email.subject)
         self.assertIn("password-reset-confirm", email.body)
 
         # 4. Test password reset done page renders

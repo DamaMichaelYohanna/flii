@@ -66,7 +66,7 @@ class CustomPasswordResetForm(PasswordResetForm):
         matching_users = list(self.get_users(email))
         if getattr(settings, 'DEBUG', False) and not matching_users:
             print("\n" + "=" * 70)
-            print(f"  [FLII DEV WARNING] Password reset requested for: '{email}'")
+            print(f"  [LEAPATLAS DEV WARNING] Password reset requested for: '{email}'")
             print(f"  NO MATCHING ACTIVE USER FOUND in database with this email!")
             print(f"  Existing user emails in DB: {[u.email for u in User.objects.all()]}")
             print(f"  Django suppresses email dispatch when no user matches.")
@@ -88,7 +88,7 @@ class CustomPasswordResetForm(PasswordResetForm):
         except Exception as e:
             logger.error(f"Failed to dispatch password reset email to {to_email}: {e}", exc_info=True)
             if getattr(settings, 'DEBUG', False):
-                print(f"  [FLII DEV EMAIL ERROR] Password reset email could not be sent: {e}")
+                print(f"  [LEAPATLAS DEV EMAIL ERROR] Password reset email could not be sent: {e}")
 
         if getattr(settings, 'DEBUG', False):
             protocol = context.get('protocol', 'http')
@@ -97,7 +97,7 @@ class CustomPasswordResetForm(PasswordResetForm):
             token = context.get('token', '')
             reset_url = f"{protocol}://{domain}/password-reset-confirm/{uid}/{token}/"
             print("\n" + "=" * 70)
-            print(f"  [FLII DEV] PASSWORD RESET LINK GENERATED FOR: {to_email}")
+            print(f"  [LEAPATLAS DEV] PASSWORD RESET LINK GENERATED FOR: {to_email}")
             print(f"  CLICKABLE RESET URL:")
             print(f"  --> {reset_url}")
             print("=" * 70 + "\n")

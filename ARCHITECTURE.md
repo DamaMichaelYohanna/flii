@@ -1,6 +1,6 @@
-# Flii - System Architecture
+# LeapAtlas - System Architecture
 
-Flii is an AI-powered scholarship and postgraduate application assistant built with Django, PostgreSQL/SQLite, Celery/Redis, Tailwind CSS, and Google Gemini.
+LeapAtlas is an AI-powered scholarship and postgraduate application assistant built with Django, PostgreSQL/SQLite, Celery/Redis, Tailwind CSS, and Google Gemini.
 
 ## 1. Core Architecture Principles
 
@@ -24,7 +24,7 @@ Flii is an AI-powered scholarship and postgraduate application assistant built w
         |                                       |                     |
         v                                       v                     v
 +------------------+                   +------------------+   +---------------------+
-| RELATIONAL DB    |                   | FLII AGENT       |   | CELERY / REDIS      |
+| RELATIONAL DB    |                   | LEAPATLAS AGENT       |   | CELERY / REDIS      |
 | (PostgreSQL/     |                   | - Tools Registry |   | - Deadline Checks   |
 |  SQLite)         |                   | - Action Approval|   | - Opportunity Sync  |
 +------------------+                   | - Audit Logger   |   | - Async Matching    |

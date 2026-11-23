@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     restart: always
     environment:
-      POSTGRES_DB: flii
-      POSTGRES_USER: flii_user
-      POSTGRES_PASSWORD: flii_secure_password
+      POSTGRES_DB: leapatlas
+      POSTGRES_USER: leapatlas_user
+      POSTGRES_PASSWORD: leapatlas_secure_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -29,8 +29,8 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=False
-      - SECRET_KEY=production-secure-key-flii-2026-xyz
-      - DATABASE_URL=postgres://flii_user:flii_secure_password@db:5432/flii
+      - SECRET_KEY=production-secure-key-leapatlas-2026-xyz
+      - DATABASE_URL=postgres://leapatlas_user:leapatlas_secure_password@db:5432/leapatlas
       - REDIS_URL=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ALLOWED_HOSTS=localhost,127.0.0.1,web
@@ -45,8 +45,8 @@ services:
     command: celery -A config worker --loglevel=info
     environment:
       - DEBUG=False
-      - SECRET_KEY=production-secure-key-flii-2026-xyz
-      - DATABASE_URL=postgres://flii_user:flii_secure_password@db:5432/flii
+      - SECRET_KEY=production-secure-key-leapatlas-2026-xyz
+      - DATABASE_URL=postgres://leapatlas_user:leapatlas_secure_password@db:5432/leapatlas
       - REDIS_URL=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:

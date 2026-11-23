@@ -47,7 +47,7 @@ class AIService:
         user_context = kb.assemble_context()
         
         system_prompt = (
-            "You are the Flii Eligibility Reasoner. Your job is to strictly compare the applicant's verified facts "
+            "You are the LeapAtlas Eligibility Reasoner. Your job is to strictly compare the applicant's verified facts "
             "against the official published scholarship requirements. DO NOT invent eligibility facts. DO NOT claim admission "
             "is guaranteed. If a requirement is not clearly met or documents are unverified, mark as 'needs_clarification'. "
             "Distinguish between satisfied, needs_clarification, and unmet. Calculate a realistic 'profile_fit_score' from 0-100."
@@ -96,7 +96,7 @@ class AIService:
         kb = PersonalKnowledgeBase(user)
         
         system_prompt = (
-            "You are the Flii AI Writing Assistant. Your mandate is to draft application essays GROUNDED EXCLUSIVELY "
+            "You are the LeapAtlas AI Writing Assistant. Your mandate is to draft application essays GROUNDED EXCLUSIVELY "
             "in the applicant's verified personal profile, educations, employments, and STAR stories. "
             "RULE 1: NEVER invent jobs, awards, GPAs, percentages, companies, or experiences that do not exist in the applicant context. "
             "RULE 2: If key information is missing, explicitly note: 'I need additional information from you.' "
@@ -142,7 +142,7 @@ class AIService:
 
     def extract_opportunity_from_text(self, user, raw_text: str, source_url: str = "") -> OpportunityExtractionSchema:
         system_prompt = (
-            "You are the Flii Opportunity Intelligence Extractor. "
+            "You are the LeapAtlas Opportunity Intelligence Extractor. "
             "Extract structured scholarship metadata from the provided official announcement text. "
             "Never invent criteria. Extract exact degree levels, deadline dates, funding specifics, and published requirements. "
             "Return valid JSON matching OpportunityExtractionSchema."
@@ -180,7 +180,7 @@ class AIService:
 
     def verify_and_scan_portal(self, url: str, html_or_text: str, title: str = "", http_status: int = 200, user=None) -> PortalVerificationSchema:
         system_prompt = (
-            "You are the Flii Autonomous Application Intelligence Verifier. "
+            "You are the LeapAtlas Autonomous Application Intelligence Verifier. "
             "Analyze the live scholarship portal webpage to determine whether it is active, "
             "what kind of application system it uses (direct_portal, external_portal, nomination_required, email_submission), "
             "and whether an AI applicant agent or student can immediately launch and execute an application. "

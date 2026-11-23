@@ -25,7 +25,7 @@ class PlatformAdminTests(TestCase):
         # Create staff user
         self.staff_user = User.objects.create_user(
             username='admin_user',
-            email='admin@flii.io',
+            email='admin@leapatlas.io',
             password='Password123!',
             is_staff=True
         )

@@ -9,11 +9,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-flii-key-development-2026')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-leapatlas-key-development-2026')
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,testserver,useflii.up.railway.app,.railway.app,.vercel.app').split(',') if host.strip()]
-for default_host in ['127.0.0.1', 'localhost', 'testserver', 'useflii.up.railway.app', '.railway.app', '.vercel.app']:
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,testserver,leapatlas.org,www.leapatlas.org,leapatlas.up.railway.app,.railway.app,.vercel.app').split(',') if host.strip()]
+for default_host in ['127.0.0.1', 'localhost', 'testserver', 'leapatlas.org', 'www.leapatlas.org', 'leapatlas.up.railway.app', '.railway.app', '.vercel.app']:
     if default_host not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append(default_host)
 
@@ -21,10 +21,10 @@ for default_host in ['127.0.0.1', 'localhost', 'testserver', 'useflii.up.railway
 CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in os.environ.get(
         'CSRF_TRUSTED_ORIGINS',
-        'https://useflii.up.railway.app,https://*.railway.app,https://*.vercel.app,http://127.0.0.1:8000,http://localhost:8000'
+        'https://leapatlas.org,https://www.leapatlas.org,https://leapatlas.up.railway.app,https://*.railway.app,https://*.vercel.app,http://127.0.0.1:8000,http://localhost:8000'
     ).split(',') if origin.strip()
 ]
-for default_origin in ['https://useflii.up.railway.app', 'https://*.railway.app', 'https://*.vercel.app']:
+for default_origin in ['https://leapatlas.org', 'https://www.leapatlas.org', 'https://leapatlas.up.railway.app', 'https://*.railway.app', 'https://*.vercel.app']:
     if default_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(default_origin)
 
@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
 
-    # Flii Core Apps
+    # LeapAtlas Core Apps
     'accounts',
     'applicants',
     'stories',
@@ -230,9 +230,14 @@ GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
 
 # Email Configuration
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+    'django.core.mail.backends.locmem.EmailBackend' if 'test' in sys.argv else (
+        'accounts.email_backend.ResendEmailBackend' if RESEND_API_KEY else (
+        'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+        )
+    )
 )
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
@@ -242,7 +247,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', 10))
 
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Flii Workspace <no-reply@flii.app>')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'LeapAtlas Support <support@leapatlas.org>')
 
 # Payment Gateway Configuration (Paystack & Test Sandbox)
 PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', '')

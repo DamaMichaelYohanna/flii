@@ -248,7 +248,7 @@ class SubscriptionService:
             raise ValueError("Free tier does not require payment processing.")
 
         provider = get_payment_provider()
-        reference = f"FLII-SUB-{user.id}-{uuid.uuid4().hex[:10].upper()}"
+        reference = f"LEAPATLAS-SUB-{user.id}-{uuid.uuid4().hex[:10].upper()}"
 
         # 1. Create pending PaymentTransaction record server-side
         tx = PaymentTransaction.objects.create(

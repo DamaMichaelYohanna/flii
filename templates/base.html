@@ -5,59 +5,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Flii | AI Scholarship & Postgraduate Application Workspace{% endblock %}</title>
+    <title>{% block title %}LeapAtlas | AI Scholarship & Postgraduate Application Workspace{% endblock %}</title>
 
     <!-- Standard SEO Meta Tags -->
     <meta name="description"
         content="{% block meta_description %}Discover fully funded scholarships matched to your unique profile. Organize evidence in a private vault, draft compelling STAR stories with grounded AI, and track every application deadline.{% endblock %}">
     <meta name="keywords"
         content="{% block meta_keywords %}scholarships, postgraduate funding, fully funded masters, PhD scholarships, Erasmus Mundus, Chevening, DAAD, Commonwealth, AI scholarship assistant, statement of purpose, study abroad{% endblock %}">
-    <meta name="author" content="Flii">
+    <meta name="author" content="LeapAtlas">
     <meta name="robots"
         content="{% block meta_robots %}index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1{% endblock %}">
     <meta name="theme-color" content="#0b3558">
-    <meta name="application-name" content="Flii">
-    <meta name="apple-mobile-web-app-title" content="Flii">
+    <meta name="application-name" content="LeapAtlas">
+    <meta name="apple-mobile-web-app-title" content="LeapAtlas">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="canonical"
-        href="{% block canonical_url %}{% if request %}{{ request.build_absolute_uri }}{% else %}https://useflii.up.railway.app/{% endif %}{% endblock %}">
+        href="{% block canonical_url %}{% if request %}{{ request.build_absolute_uri }}{% else %}https://leapatlas.up.railway.app/{% endif %}{% endblock %}">
 
     <!-- Open Graph / Facebook / LinkedIn / WhatsApp Social Media Preview -->
     {% static 'images/og-preview.png' as default_og_image %}
-    <meta property="og:site_name" content="Flii">
+    <meta property="og:site_name" content="LeapAtlas">
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:url"
-        content="{% block og_url %}{% if request %}{{ request.build_absolute_uri }}{% else %}https://useflii.up.railway.app/{% endif %}{% endblock %}">
+        content="{% block og_url %}{% if request %}{{ request.build_absolute_uri }}{% else %}https://leapatlas.up.railway.app/{% endif %}{% endblock %}">
     <meta property="og:title"
-        content="{% block og_title %}Flii | AI Scholarship & Postgraduate Application Workspace{% endblock %}">
+        content="{% block og_title %}LeapAtlas | AI Scholarship & Postgraduate Application Workspace{% endblock %}">
     <meta property="og:description"
         content="{% block og_description %}Discover fully funded scholarships matched to your unique profile. Organize evidence in a private vault, draft compelling STAR stories with grounded AI, and track every application deadline.{% endblock %}">
     <meta property="og:image"
-        content="{% block og_image %}{% if request %}{{ request.scheme }}://{{ request.get_host }}{{ default_og_image }}{% else %}https://useflii.up.railway.app{{ default_og_image }}{% endif %}{% endblock %}">
+        content="{% block og_image %}{% if request %}{{ request.scheme }}://{{ request.get_host }}{{ default_og_image }}{% else %}https://leapatlas.up.railway.app{{ default_og_image }}{% endif %}{% endblock %}">
     <meta property="og:image:secure_url"
-        content="{% block og_image_secure %}{% if request %}{{ request.scheme }}://{{ request.get_host }}{{ default_og_image }}{% else %}https://useflii.up.railway.app{{ default_og_image }}{% endif %}{% endblock %}">
+        content="{% block og_image_secure %}{% if request %}{{ request.scheme }}://{{ request.get_host }}{{ default_og_image }}{% else %}https://leapatlas.up.railway.app{{ default_og_image }}{% endif %}{% endblock %}">
     <meta property="og:image:width" content="{% block og_image_width %}1200{% endblock %}">
     <meta property="og:image:height" content="{% block og_image_height %}630{% endblock %}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:alt"
-        content="{% block og_image_alt %}Flii - AI Scholarship & Postgraduate Application Workspace{% endblock %}">
+        content="{% block og_image_alt %}LeapAtlas - AI Scholarship & Postgraduate Application Workspace{% endblock %}">
     <meta property="og:locale" content="en_US">
 
     <!-- Twitter / X Card Meta Tags -->
     <meta name="twitter:card" content="{% block twitter_card %}summary_large_image{% endblock %}">
-    <meta name="twitter:site" content="@useflii">
-    <meta name="twitter:creator" content="@useflii">
+    <meta name="twitter:site" content="@leapatlas">
+    <meta name="twitter:creator" content="@leapatlas">
     <meta name="twitter:url"
-        content="{% block twitter_url %}{% if request %}{{ request.build_absolute_uri }}{% else %}https://useflii.up.railway.app/{% endif %}{% endblock %}">
+        content="{% block twitter_url %}{% if request %}{{ request.build_absolute_uri }}{% else %}https://leapatlas.up.railway.app/{% endif %}{% endblock %}">
     <meta name="twitter:title"
-        content="{% block twitter_title %}Flii | AI Scholarship & Postgraduate Application Workspace{% endblock %}">
+        content="{% block twitter_title %}LeapAtlas | AI Scholarship & Postgraduate Application Workspace{% endblock %}">
     <meta name="twitter:description"
         content="{% block twitter_description %}Discover fully funded scholarships matched to your unique profile. Organize evidence in a private vault, draft compelling STAR stories with grounded AI, and track every application deadline.{% endblock %}">
     <meta name="twitter:image"
-        content="{% block twitter_image %}{% if request %}{{ request.scheme }}://{{ request.get_host }}{{ default_og_image }}{% else %}https://useflii.up.railway.app{{ default_og_image }}{% endif %}{% endblock %}">
+        content="{% block twitter_image %}{% if request %}{{ request.scheme }}://{{ request.get_host }}{{ default_og_image }}{% else %}https://leapatlas.up.railway.app{{ default_og_image }}{% endif %}{% endblock %}">
     <meta name="twitter:image:alt"
-        content="{% block twitter_image_alt %}Flii - AI Scholarship & Postgraduate Application Workspace{% endblock %}">
+        content="{% block twitter_image_alt %}LeapAtlas - AI Scholarship & Postgraduate Application Workspace{% endblock %}">
 
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5231324721259764"
@@ -70,7 +70,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/favicon-192x192.png' %}">
 
-    <!-- Shared Flii typography -->
+    <!-- Shared LeapAtlas typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -309,7 +309,7 @@
                 </div>
 
                 <div class="hidden md:flex items-center gap-2 text-sm text-slate-500">
-                    <span class="font-semibold text-slate-800">Flii Application Workspace</span>
+                    <span class="font-semibold text-slate-800">LeapAtlas Application Workspace</span>
                     <span class="text-slate-300">•</span>
                     <span class="text-[10px] uppercase tracking-wide px-2.5 py-1 rounded-full bg-[#eaf5fa] text-[#0b4e84] font-bold border border-[#b7d9ea]">AI grounded & human-led</span>
                 </div>

@@ -23,7 +23,7 @@ class AssistanceTests(TestCase):
         )
         self.staff_user = User.objects.create_user(
             username='admin_test',
-            email='mentor@flii.org',
+            email='mentor@leapatlas.org',
             password='TestPassword123!',
             is_staff=True,
             first_name='Admin',

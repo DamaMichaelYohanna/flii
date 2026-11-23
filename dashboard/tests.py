@@ -163,7 +163,7 @@ class DashboardTests(TestCase):
         resp = self.client.get(reverse('dashboard:admin_users_export'))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'text/csv')
-        self.assertIn('attachment; filename="flii_users_export_', resp['Content-Disposition'])
+        self.assertIn('attachment; filename="leapatlas_users_export_', resp['Content-Disposition'])
         content = resp.content.decode('utf-8')
         self.assertIn('applicant@example.com', content)
         self.assertIn('admin@example.com', content)

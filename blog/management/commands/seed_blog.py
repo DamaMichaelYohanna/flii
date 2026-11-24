@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db import models
 from django.utils import timezone
 from accounts.models import User
 from blog.models import PostCategory, Post
@@ -7,8 +8,26 @@ class Command(BaseCommand):
     help = "Seed initial blog categories and featured migration reports"
 
     def handle(self, *args, **options):
+        def next_category_id():
+            current_max = PostCategory.objects.aggregate(models.Max("id"))["id__max"] or 0
+            return current_max + 1
+
+        def category_update_or_create(slug, defaults):
+            if not PostCategory.objects.filter(slug=slug).exists():
+                defaults["id"] = next_category_id()
+            return PostCategory.objects.update_or_create(slug=slug, defaults=defaults)
+
+        def next_post_id():
+            current_max = Post.objects.aggregate(models.Max("id"))["id__max"] or 0
+            return current_max + 1
+
+        def post_update_or_create(slug, defaults):
+            if not Post.objects.filter(slug=slug).exists():
+                defaults["id"] = next_post_id()
+            return Post.objects.update_or_create(slug=slug, defaults=defaults)
+
         # 1. Categories
-        cat_visa, _ = PostCategory.objects.get_or_create(
+        cat_visa, _ = category_update_or_create(
             slug="visa-migration",
             defaults={
                 "name": "Visa & Migration Alerts",
@@ -18,7 +37,7 @@ class Command(BaseCommand):
             }
         )
 
-        cat_scholarship, _ = PostCategory.objects.get_or_create(
+        cat_scholarship, _ = category_update_or_create(
             slug="scholarship-updates",
             defaults={
                 "name": "Scholarship Calls & Funding",
@@ -28,13 +47,23 @@ class Command(BaseCommand):
             }
         )
 
-        cat_guides, _ = PostCategory.objects.get_or_create(
+        cat_guides, _ = category_update_or_create(
             slug="application-guides",
             defaults={
                 "name": "Application Strategy & Guides",
                 "description": "Step-by-step guidance on motivation essays, recommendation letters, and university portals.",
                 "badge_color": "bg-blue-50 text-blue-700 border-blue-200",
                 "icon": "book-open"
+            }
+        )
+
+        cat_branding, _ = category_update_or_create(
+            slug="career-academic-branding",
+            defaults={
+                "name": "Career & Academic Branding",
+                "description": "Practical guidance for building a strong professional identity, career profile, CV, and academic application.",
+                "badge_color": "bg-violet-50 text-violet-700 border-violet-200",
+                "icon": "briefcase-business"
             }
         )
 
@@ -87,7 +116,7 @@ WORK DOMINATES:
 4. Bangladesh
 5. Pakistan"""
 
-        portugal_post, _ = Post.objects.update_or_create(
+        portugal_post, _ = post_update_or_create(
             slug="portugal-official-2025-migration-report-student-visa-changes",
             defaults={
                 "title": "🇵🇹 BREAKING: Portugal's Official 2025 Migration Report Is Out 📊",
@@ -140,7 +169,7 @@ For non-NATO Master's or Bachelor's students, dependent family reunification is 
 Want Permanent Residency in Latvia?
 You now need to have held a 5-year Temporary Residence permit in Latvia before you qualify."""
 
-        latvia_post, _ = Post.objects.update_or_create(
+        latvia_post, _ = post_update_or_create(
             slug="latvia-new-immigration-law-in-force-student-family-rules",
             defaults={
                 "title": "🇱🇻 BREAKING: Latvia's New Immigration Law Is Now in Force 🚨",
@@ -171,7 +200,7 @@ Here are the 4 fundamental pillars every competitive candidate needs:
 
 Use your LeapAtlas Story Bank to catalogue your experiences now so your essay drafts are grounded in real, verifiable facts."""
 
-        Post.objects.update_or_create(
+        post_update_or_create(
             slug="how-to-build-a-competitive-scholarship-profile",
             defaults={
                 "title": "How to Build a High-Fit Postgraduate Scholarship Profile in 2026",
@@ -272,7 +301,7 @@ Use your LeapAtlas Story Bank to catalogue your experiences now so your essay dr
 
 <p>By preparing your documentation through NAWA early, you ensure a smooth, compliant transition into Poland's higher education system and protect your investment in your academic future.</p>"""
 
-        Post.objects.update_or_create(
+        post_update_or_create(
             slug="poland-nawa-document-verification-guide",
             defaults={
                 "title": "🇵🇱 BREAKING: Poland Enforces Mandatory NAWA Document Verification for International Students",
@@ -289,4 +318,140 @@ Use your LeapAtlas Story Bank to catalogue your experiences now so your essay dr
             }
         )
 
-        self.stdout.write(self.style.SUCCESS(f"Successfully seeded blog posts including Poland NAWA guide!"))
+        # -------------------------------------------------------------
+        # 7. TDA Career & Academic Personal Branding Masterclass
+        # -------------------------------------------------------------
+        branding_content = """<h2>Your Qualifications Matter. How You Present Them Matters More.</h2>
+<p>Having the right degree, skills, certificates, or experience is important—but opportunities rarely go to candidates with qualifications alone. In a highly competitive job market and academic landscape, people are selected, interviewed, and considered because they can clearly communicate what makes them valuable.</p>
+
+<p>The Career &amp; Academic Personal Branding Masterclass, facilitated by <strong>TDA in collaboration with Grow With TDA</strong>, is designed to help students, graduates, professionals, and postgraduate applicants position themselves strategically for jobs, graduate trainee programmes, scholarships, and graduate school admissions.</p>
+
+<blockquote>
+    <strong>Event dates:</strong> Saturday 28th November – Sunday 29th November 2026<br>
+    <strong>Registration:</strong> <a href="https://bit.ly/TDA_CAPBM" target="_blank" rel="noopener noreferrer">bit.ly/TDA_CAPBM</a><br>
+    <strong>Available places:</strong> 100 slots
+</blockquote>
+
+<h2>Why Personal Branding Matters</h2>
+<p>Personal branding is not about exaggerating your experience or creating an unrealistic online identity. It is the deliberate process of making your strengths, interests, achievements, and ambitions clear and easy for the right people to understand.</p>
+
+<p>Whether a recruiter opens your CV, a selection committee reads your LinkedIn profile, or an admissions team reviews your personal statement, they are asking one important question: <strong>Why should we choose you?</strong></p>
+
+<p>A strong personal brand helps you answer that question consistently across every application document and professional interaction.</p>
+
+<h2>What You Will Learn at the Masterclass</h2>
+
+<h3>1. Build a Compelling, ATS-Friendly CV</h3>
+<p>Your CV should do more than list responsibilities. It should present a clear evidence-based account of what you studied, accomplished, contributed, and improved.</p>
+
+<p>The masterclass will cover how to structure a CV that applicant-tracking systems and human recruiters can quickly interpret. Participants will learn how to:</p>
+<ul>
+    <li>Choose the best CV structure for their career stage.</li>
+    <li>Use relevant keywords without forcing every job description into their document.</li>
+    <li>Write achievement statements instead of repetitive duty descriptions.</li>
+    <li>Highlight education, projects, leadership, volunteering, technical skills, and work experience with impact.</li>
+    <li>Format a CV for readability, clarity, and professional presentation.</li>
+</ul>
+
+<p>An effective CV begins with evidence. Instead of writing “Responsible for social media,” a stronger statement might explain what was improved, who benefited, or what measurable result was achieved.</p>
+
+<h3>2. Optimise Your LinkedIn Profile for Visibility</h3>
+<p>LinkedIn is now an important discovery and networking tool. A complete profile can help recruiters find you, allow professional contacts to understand your direction, and give your applications added credibility.</p>
+
+<p>Participants will learn how to align the main elements of their profiles, including:</p>
+<ul>
+    <li>A professional headline that communicates value rather than only a job title.</li>
+    <li>A clear summary that connects education, skills, experience, and career goals.</li>
+    <li>Relevant experience descriptions that demonstrate results.</li>
+    <li>Skills and achievements that match your target opportunities.</li>
+    <li>A consistent professional image and profile voice.</li>
+</ul>
+
+<p>The goal is not to appear perfect. It is to present a believable, searchable, and coherent professional story.</p>
+
+<h3>3. Position Yourself for Jobs and Graduate Trainee Programs</h3>
+<p>Entering the graduate job market requires more than submitting applications repeatedly. It requires understanding the role, identifying the evidence you already have, and communicating that evidence clearly.</p>
+
+<p>The session will help participants think strategically about:</p>
+<ul>
+    <li>The industries and roles that match their qualifications and interests.</li>
+    <li>The competencies employers repeatedly request in job descriptions.</li>
+    <li>How to translate academic projects and volunteer experience into employable skills.</li>
+    <li>How to prepare a consistent application narrative.</li>
+    <li>How to speak confidently about strengths, goals, and development areas.</li>
+</ul>
+
+<p>This is especially useful for final-year students, recent graduates, and early-career professionals preparing for competitive graduate trainee and entry-level opportunities.</p>
+
+<h3>4. Strengthen Your Graduate School Applications and Personal Statements</h3>
+<p>Graduate admissions decisions depend heavily on whether your academic goals, preparation, and proposed field of study make sense together.</p>
+
+<p>The masterclass will address how to build a compelling application narrative, including how to:</p>
+<ul>
+    <li>Explain your motivation for a specific degree or research area.</li>
+    <li>Connect your previous academic and professional experiences to future goals.</li>
+    <li>Show subject knowledge without using unnecessary jargon.</li>
+    <li>Write about achievements with specificity and humility.</li>
+    <li>Create a clear statement of purpose that remains personal and authentic.</li>
+</ul>
+
+<p>Your personal statement should not simply repeat your CV. It should explain how your past experiences informed your interests and why the programme you are applying to is the appropriate next step.</p>
+
+<h3>5. Communicate Your Value with Confidence</h3>
+<p>Strong content can still be overlooked if it is presented without clarity or confidence. Personal branding is also reflected in how you introduce yourself, answer interview questions, speak about your goals, and engage with professional communities.</p>
+
+<p>Participants will be encouraged to develop a concise professional introduction that answers:</p>
+<ol>
+    <li>Who are you professionally or academically?</li>
+    <li>What are you skilled or knowledgeable in?</li>
+    <li>What have you done that demonstrates that ability?</li>
+    <li>What type of opportunity are you pursuing?</li>
+</ol>
+
+<p>When these answers are clear, it becomes easier to communicate your value in interviews, networking conversations, applications, and everyday professional interactions.</p>
+
+<h2>Who Should Attend?</h2>
+<p>This masterclass is suitable for:</p>
+<ul>
+    <li>Undergraduate and postgraduate students preparing for internships or scholarships.</li>
+    <li>Recent graduates seeking jobs or graduate trainee positions.</li>
+    <li>Early-career professionals who want to improve their CV and LinkedIn presence.</li>
+    <li>Applicants preparing graduate school personal statements or statements of purpose.</li>
+    <li>Anyone who wants to communicate qualifications more effectively and confidently.</li>
+</ul>
+
+<h2>How to Prepare for the Masterclass</h2>
+<p>Before the event, gather the following materials:</p>
+<ul>
+    <li>Your most recent CV or résumé.</li>
+    <li>Your LinkedIn profile link.</li>
+    <li>A list of current and target programmes or job roles.</li>
+    <li>Your degree, project, internship, volunteering, or leadership achievements.</li>
+    <li>Notes on the skills you want to develop or present more clearly.</li>
+</ul>
+
+<p>Bringing these materials will help you identify practical improvements rather than leaving with general advice.</p>
+
+<h2>Be Intentional About How the World Sees Your Potential</h2>
+<p>You do not need to wait until you have every qualification or every opportunity to begin presenting yourself strategically. Start with what you have, make your evidence clear, and build a professional identity that supports where you want to go.</p>
+
+<p>Register now using <strong><a href="https://bit.ly/TDA_CAPBM" target="_blank" rel="noopener noreferrer">bit.ly/TDA_CAPBM</a></strong>. With only 100 slots available, interested participants should complete their registration early.</p>"""
+
+        post_update_or_create(
+            slug="career-academic-personal-branding-masterclass",
+            defaults={
+                "title": "Career & Academic Personal Branding Masterclass: Present Your Value with Confidence",
+                "author": admin_user,
+                "category": cat_branding,
+                "summary": "TDA and Grow With TDA are hosting a Career & Academic Personal Branding Masterclass on 28–29 November 2026. Learn how to build an ATS-friendly CV, optimise LinkedIn, pursue jobs and scholarships, strengthen graduate applications, and communicate your value.",
+                "content": branding_content,
+                "featured_image_url": "/static/images/tda-career-academic-branding-masterclass.jpg",
+                "is_breaking_news": False,
+                "is_pinned": True,
+                "status": "published",
+                "published_at": timezone.now(),
+                "tags": "Personal Branding, ATS CV, LinkedIn, Graduate Trainee, Scholarships, Graduate School, Career Development",
+            }
+        )
+
+        self.stdout.write(self.style.SUCCESS("Successfully seeded blog posts including the TDA Career & Academic Personal Branding Masterclass!"))

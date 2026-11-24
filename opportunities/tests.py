@@ -51,6 +51,29 @@ class OpportunityTests(TestCase):
         response_auth = self.client.get(reverse('opportunities:list'))
         self.assertEqual(response_auth.status_code, 200)
 
+    def test_scholarship_directory_renders_native_ad_after_six_results(self):
+        for index in range(5):
+            Opportunity.objects.create(
+                title=f"Test Scholarship {index}",
+                provider="Test Provider",
+                country="United Kingdom",
+                degree_level="masters",
+                field_of_study="Public Policy",
+                description="Test funded postgraduate opportunity",
+                funding_type="fully_funded",
+                application_url=f"https://example.com/scholarship-{index}",
+                official_source_url=f"https://example.com/official-{index}",
+                deadline=timezone.now() + datetime.timedelta(days=30 + index),
+                status="active",
+            )
+
+        response = self.client.get(reverse('opportunities:list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-ad-slot="4530028988"')
+        self.assertContains(response, 'data-ad-layout-key="-g6+t-2n-cw+xg"')
+        self.assertContains(response, "Advertisement")
+
     def test_opportunity_detail_view(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('opportunities:detail', kwargs={'pk': self.opp.id}))

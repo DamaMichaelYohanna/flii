@@ -19,6 +19,20 @@ echo "==> Ensuring Vercel static asset routing compatibility..."
 mkdir -p staticfiles_build/static/images
 mkdir -p staticfiles_build/images
 
+# Remove stale logo variants from mirrored output before copying the current assets
+rm -f staticfiles_build/static/images/logo.png
+rm -f staticfiles_build/static/images/logo_icon.png
+rm -f staticfiles_build/static/images/logo_tight.png
+rm -f staticfiles_build/static/images/logo_transparent.png
+rm -f staticfiles_build/static/images/logo_icon_tight.png
+rm -f staticfiles_build/static/images/logo_icon_transparent.png
+rm -f staticfiles_build/images/logo.png
+rm -f staticfiles_build/images/logo_icon.png
+rm -f staticfiles_build/images/logo_tight.png
+rm -f staticfiles_build/images/logo_transparent.png
+rm -f staticfiles_build/images/logo_icon_tight.png
+rm -f staticfiles_build/images/logo_icon_transparent.png
+
 # Mirror static images into root and static subfolders of staticfiles_build
 if [ -d "static/images" ]; then
     cp -r static/images/* staticfiles_build/static/images/ 2>/dev/null || true
